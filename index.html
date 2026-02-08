@@ -3,175 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoMusic - Khớp Lời Từng Giây</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>LingoMusic Studio - Sync Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
         .active-line { 
-            background: #eff6ff; 
-            color: #2563eb !important; 
-            font-weight: 700; 
-            border-left: 5px solid #2563eb;
+            background: rgba(37, 99, 235, 0.2); 
+            color: #60a5fa !important; 
+            border-left: 4px solid #3b82f6;
+            transform: scale(1.05);
+            transition: all 0.2s ease;
         }
-        .lyrics-line { transition: all 0.2s ease; border-radius: 12px; }
-        .tap-mode { border: 2px dashed #2563eb; background: #f8fafc; }
+        .lyrics-line { transition: all 0.3s ease; border-radius: 8px; cursor: pointer; padding: 12px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        #player-container { border-radius: 1rem; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+        .next-line-hint { border: 2px solid #3b82f6; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
-<body class="bg-slate-50">
+<body class="p-4 md:p-8">
 
-    <nav class="bg-white border-b py-4 px-8 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <span class="text-xl font-bold text-blue-600">LingoMusic <span class="text-slate-400 font-normal">| Sync Pro</span></span>
-            <div class="space-x-4">
-                <button onclick="exportData()" class="text-xs font-bold text-slate-500 hover:text-blue-600 uppercase">Xuất dữ liệu lời</button>
-            </div>
-        </div>
-    </nav>
+    <div class="max-w-[1600px] mx-auto">
+        <header class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-black tracking-tighter text-blue-500">LINGOMUSIC <span class="text-white font-light text-sm">STUDIO SYNC</span></h1>
+            <div id="syncStatus" class="bg-slate-800 px-4 py-1 rounded-full text-xs font-bold text-slate-400">CHỜ TẢI DỮ LIỆU</div>
+        </header>
 
-    <main class="max-w-7xl mx-auto p-6 lg:p-10">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <div class="lg:col-span-5 space-y-6">
-                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                    <input type="text" id="videoUrl" value="https://www.youtube.com/watch?v=LmBYPXGqtss"
-                           class="w-full p-4 bg-slate-50 border rounded-2xl mb-4 outline-none focus:ring-2 focus:ring-blue-400">
-                    
-                    <textarea id="rawLyrics" rows="6" placeholder="Dán lời bài hát vào đây (mỗi dòng 1 câu)..." 
-                              class="w-full p-4 bg-slate-50 border rounded-2xl outline-none text-sm"></textarea>
-                    
-                    <button onclick="prepareLyrics()" class="w-full mt-4 bg-slate-800 text-white py-4 rounded-2xl font-bold hover:bg-black transition-all">
-                        1. TẢI LỜI & VIDEO
-                    </button>
+            <div class="lg:col-span-8 space-y-6">
+                <div class="bg-slate-800 p-4 rounded-2xl flex gap-3">
+                    <input type="text" id="videoUrl" value="https://www.youtube.com/watch?v=LmBYPXGqtss" 
+                           class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm outline-none focus:border-blue-500">
+                    <button onclick="initStudio()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-xl font-bold transition-all">TẢI VIDEO</button>
                 </div>
 
-                <div class="bg-blue-600 p-6 rounded-3xl text-white shadow-xl shadow-blue-100">
-                    <h3 class="font-bold mb-2"><i class="fas fa-stopwatch"></i> Chế độ Gõ nhịp (Sync)</h3>
-                    <p class="text-sm opacity-90 mb-4">Nhấn nút bên dưới hoặc phím <b>SPACE</b> mỗi khi ca sĩ bắt đầu hát một câu mới.</p>
-                    <button id="tapBtn" onclick="recordTimestamp()" disabled 
-                            class="w-full bg-white text-blue-600 py-6 rounded-2xl font-black text-2xl active:scale-95 transition-all shadow-lg">
-                        GÕ NHỊP NGAY
-                    </button>
-                </div>
-
-                <div class="rounded-3xl overflow-hidden shadow-2xl bg-black aspect-video">
+                <div id="player-container" class="w-full aspect-video bg-black relative">
                     <div id="player"></div>
                 </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <button id="tapBtn" onclick="recordTime()" disabled
+                            class="py-8 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-2xl text-3xl font-black shadow-2xl shadow-blue-900/20 active:scale-95 transition-all">
+                        NHẤN ĐỂ KHỚP LỜI (SPACE)
+                    </button>
+                    <div class="flex justify-between text-slate-400 text-sm font-medium px-2">
+                        <span>Nhấn khi ca sĩ bắt đầu hát mỗi câu</span>
+                        <span id="progressInfo">0 / 0 câu</span>
+                    </div>
+                </div>
+
+                <details class="bg-slate-800 rounded-2xl overflow-hidden">
+                    <summary class="p-4 cursor-pointer font-bold text-slate-300">Dán lời bài hát vào đây</summary>
+                    <textarea id="rawLyrics" rows="10" class="w-full bg-slate-900 p-4 text-sm outline-none border-t border-slate-700" placeholder="Mỗi dòng là một câu hát..."></textarea>
+                </details>
             </div>
 
-            <div class="lg:col-span-7">
-                <div class="bg-white rounded-[2.5rem] border border-slate-200 h-[750px] flex flex-col overflow-hidden shadow-sm">
-                    <div class="p-6 border-b flex justify-between items-center bg-slate-50/50">
-                        <span class="font-bold text-slate-700 uppercase text-xs">Lời bài hát khớp từng giây</span>
-                        <span id="lineCounter" class="text-blue-600 font-bold text-sm">0/0 dòng</span>
+            <div class="lg:col-span-4">
+                <div class="bg-slate-800 rounded-3xl h-[calc(100vh-150px)] flex flex-col overflow-hidden border border-slate-700">
+                    <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                        <h2 class="font-bold">DANH SÁCH ĐỐI CHIẾU</h2>
+                        <button onclick="location.reload()" class="text-xs text-slate-500 hover:text-white"><i class="fas fa-undo"></i> Reset</button>
                     </div>
-                    <div id="lyricsContent" class="flex-1 overflow-y-auto p-6 space-y-2 custom-scrollbar">
-                        </div>
+                    <div id="lyricsList" class="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                        <p class="text-slate-500 text-center mt-10">Vui lòng dán lời và nhấn Tải Video</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        let player, lyricsData = [], currentLineIdx = 0, isSyncing = false;
+        let player, lyricsData = [], currentIdx = 0, timer;
 
-        function prepareLyrics() {
+        function initStudio() {
             const url = document.getElementById('videoUrl').value;
             const id = extractId(url);
-            const rawText = document.getElementById('rawLyrics').value;
-            if (!id || !rawText) return alert("Thiếu link hoặc lời!");
+            const text = document.getElementById('rawLyrics').value;
+            if (!id || !text) return alert("Vui lòng nhập Link và Lời bài hát!");
 
-            const lines = rawText.split('\n').filter(l => l.trim() !== "");
-            lyricsData = lines.map(t => ({ s: 0, t: t, v: '' }));
-            
-            document.getElementById('lineCounter').innerText = `0/${lyricsData.length} dòng`;
-            renderLyrics();
+            lyricsData = text.split('\n').filter(l => l.trim()).map(t => ({ s: -1, t: t, v: '' }));
+            currentIdx = 0;
+            updateProgress();
+            renderList();
 
             if (player) player.destroy();
             player = new YT.Player('player', {
                 videoId: id,
-                events: { 'onReady': () => { 
+                width: '100%', height: '100%',
+                playerVars: { 'autoplay': 1, 'modestbranding': 1 },
+                events: { 'onReady': () => {
                     document.getElementById('tapBtn').disabled = false;
-                    player.playVideo();
-                }, 'onStateChange': onPlayerStateChange }
+                    document.getElementById('syncStatus').innerText = "ĐANG ĐỒNG BỘ";
+                }, 'onStateChange': handleState }
             });
         }
 
-        // Ghi mốc thời gian khi người dùng nhấn nút hoặc phím Space
-        async function recordTimestamp() {
-            if (currentLineIdx >= lyricsData.length) return;
+        async function recordTime() {
+            if (currentIdx >= lyricsData.length) return;
 
-            const now = player.getCurrentTime();
-            lyricsData[currentLineIdx].s = now;
+            const time = player.getCurrentTime();
+            lyricsData[currentIdx].s = time;
             
-            // Tự động dịch câu đó sang tiếng Việt luôn
-            const translated = await translateText(lyricsData[currentLineIdx].t);
-            lyricsData[currentLineIdx].v = translated;
+            // Highlight dòng tiếp theo
+            currentIdx++;
+            updateProgress();
+            
+            // Dịch ngầm câu vừa rồi
+            const lastIdx = currentIdx - 1;
+            translateText(lyricsData[lastIdx].t).then(res => {
+                lyricsData[lastIdx].v = res;
+                renderList();
+            });
 
-            renderLyrics();
-            
-            currentLineIdx++;
-            document.getElementById('lineCounter').innerText = `${currentLineIdx}/${lyricsData.length} dòng`;
-            
-            if (currentLineIdx >= lyricsData.length) {
-                document.getElementById('tapBtn').innerText = "ĐÃ KHỚP XONG!";
-                document.getElementById('tapBtn').classList.replace('text-blue-600', 'text-green-600');
+            if (currentIdx === lyricsData.length) {
+                document.getElementById('syncStatus').innerText = "HOÀN THÀNH";
             }
         }
 
         async function translateText(text) {
-            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURI(text)}`);
-            const data = await res.json();
-            return data[0][0][0];
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURI(text)}`);
+                const data = await res.json();
+                return data[0][0][0];
+            } catch { return "Lỗi dịch"; }
         }
 
-        function renderLyrics() {
-            const container = document.getElementById('lyricsContent');
+        function renderList() {
+            const container = document.getElementById('lyricsList');
             container.innerHTML = lyricsData.map((l, i) => `
-                <div id="line-${i}" onclick="player.seekTo(${l.s})" class="lyrics-line p-4 border-l-4 border-transparent hover:bg-slate-50">
-                    <div class="flex justify-between items-start">
-                        <p class="text-lg font-bold text-slate-800 flex-1">${l.t}</p>
-                        <span class="text-[10px] font-mono text-slate-400">${l.s.toFixed(2)}s</span>
+                <div id="line-${i}" class="lyrics-line ${i === currentIdx ? 'next-line-hint' : ''}">
+                    <div class="flex justify-between items-center opacity-40 text-[10px] mb-1">
+                        <span>DÒNG ${i+1}</span>
+                        <span>${l.s > -1 ? l.s.toFixed(2) + 's' : 'CHƯA KHỚP'}</span>
                     </div>
-                    <p class="text-blue-600 italic text-sm mt-1">${l.v || '...'}</p>
+                    <p class="font-bold text-sm leading-tight">${l.t}</p>
+                    ${l.v ? `<p class="text-blue-400 text-xs mt-1 font-medium">${l.v}</p>` : ''}
                 </div>
             `).join('');
+            
+            // Cuộn đến dòng đang chờ
+            const activeEl = document.getElementById(`line-${currentIdx}`);
+            if (activeEl) activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.PLAYING) {
-                setInterval(() => {
+        function updateProgress() {
+            document.getElementById('progressInfo').innerText = `${currentIdx} / ${lyricsData.length} câu`;
+        }
+
+        function handleState(e) {
+            if (e.data == YT.PlayerState.PLAYING) {
+                timer = setInterval(() => {
                     const now = player.getCurrentTime();
                     lyricsData.forEach((line, i) => {
                         const el = document.getElementById(`line-${i}`);
-                        if (line.s > 0 && now >= line.s && (i === lyricsData.length - 1 || now < lyricsData[i+1].s)) {
+                        if (line.s > -1 && now >= line.s && (i === lyricsData.length-1 || now < lyricsData[i+1].s)) {
                             document.querySelectorAll('.lyrics-line').forEach(l => l.classList.remove('active-line'));
                             el.classList.add('active-line');
-                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
                     });
                 }, 200);
-            }
+            } else { clearInterval(timer); }
         }
 
-        // Bắt phím Space
         window.addEventListener('keydown', (e) => {
             if (e.code === "Space" && !document.getElementById('tapBtn').disabled) {
                 e.preventDefault();
-                recordTimestamp();
+                recordTime();
             }
         });
 
         function extractId(url) {
             const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
             return (match && match[2].length == 11) ? match[2] : false;
-        }
-
-        function exportData() {
-            console.log(JSON.stringify(lyricsData));
-            alert("Dữ liệu đã xuất ra Console (F12). Bạn có thể lưu lại để dùng cho lần sau!");
         }
     </script>
 </body>
