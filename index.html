@@ -3,82 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - Chạm để làm nổi bật từ khó</title>
+    <title>LingoPro - Minimalist Learning</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/korean-romanization@1.0.11/dist/korean-romanization.min.js"></script>
     <style>
-        body { background: #f8fafc; color: #1e293b; font-family: 'Inter', sans-serif; }
+        body { background: #fafafa; color: #1e293b; font-family: 'Inter', sans-serif; }
         
-        /* Hiệu ứng cho từng từ */
-        .word-span {
-            display: inline-block;
-            padding: 0 2px;
+        /* Container của từ */
+        .word-wrapper {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin: 0 6px 15px 0;
             cursor: pointer;
-            transition: all 0.2s ease;
-            border-radius: 4px;
+            transition: all 0.2s;
         }
-        .word-span:hover { background: #e2e8f0; }
-        .word-span.highlighted {
+
+        /* Chữ Hangul chính */
+        .word-hangul {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #334155;
+            transition: color 0.2s ease;
+        }
+
+        /* Romaji nhỏ, xám nằm dưới */
+        .word-romaji {
+            font-size: 0.75rem;
+            color: transparent; /* Ẩn mặc định */
+            font-weight: 400;
+            margin-top: -2px;
+            transition: all 0.2s ease;
+        }
+
+        /* Hiệu ứng khi được nhấn (Active) */
+        .word-wrapper.active .word-hangul {
+            color: #ef4444 !important; /* In đỏ Hangul */
+            font-weight: 800;
+        }
+        .word-wrapper.active .word-romaji {
+            color: #94a3b8 !important; /* Hiện màu xám cho Romaji */
+        }
+
+        /* Nghĩa tiếng Việt */
+        .vi-word { transition: all 0.2s ease; }
+        .vi-word.highlight-red {
             color: #ef4444 !important;
-            font-weight: 900 !important;
-            text-decoration: underline;
-            transform: scale(1.1);
-            background: #fee2e2;
+            font-weight: 800;
         }
 
         .lyric-card { 
             background: white;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            margin-bottom: 1.5rem;
             border: 1px solid #f1f5f9;
-            transition: all 0.3s ease;
-        }
-        .lyric-card:hover { border-color: #3b82f6; }
-
-        .romaji-box { 
-            max-height: 0; opacity: 0; overflow: hidden; 
-            transition: all 0.3s ease; 
-        }
-        .lyric-card.active .romaji-box { 
-            max-height: 100px; opacity: 1; margin-top: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
 
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body class="p-4 lg:p-10">
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-            <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Lingo<span class="text-blue-600">Pro</span></h1>
-            <div class="bg-blue-50 text-blue-600 px-6 py-2 rounded-full text-xs font-bold border border-blue-100 uppercase tracking-widest">
-                Chạm vào từ để In Đỏ & Nổi Bật
-            </div>
-        </div>
+        <header class="flex justify-between items-center mb-10">
+            <h1 class="text-2xl font-black text-slate-800 tracking-tighter">LINGO<span class="text-red-500">PRO</span></h1>
+            <p class="text-[10px] font-bold text-slate-400 border border-slate-200 px-4 py-2 rounded-full uppercase">
+                Nhấn từ để hiện Romaji xám bên dưới
+            </p>
+        </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div class="space-y-6">
-                <div class="aspect-video bg-black rounded-[2rem] overflow-hidden shadow-2xl">
+                <div class="aspect-video bg-black rounded-[2.5rem] overflow-hidden shadow-2xl">
                     <div id="player"></div>
                 </div>
 
-                <div class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+                <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
                     <input type="text" id="videoUrl" placeholder="Link YouTube..." 
-                           class="w-full mb-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
+                           class="w-full mb-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-1 focus:ring-red-400">
                     
-                    <textarea id="rawLyrics" rows="6" placeholder="Dán lời tiếng Hàn vào đây..." 
-                              class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <textarea id="rawLyrics" rows="5" placeholder="Dán lời tiếng Hàn..." 
+                              class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-1 focus:ring-red-400"></textarea>
                     
-                    <button onclick="createLesson()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all">
-                        TẠO BÀI HỌC
+                    <button onclick="buildLesson()" class="w-full mt-4 bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-black transition-all">
+                        PHÂN TÍCH BÀI HỌC
                     </button>
                 </div>
             </div>
 
-            <div id="lyricsContent" class="h-[750px] overflow-y-auto pr-4 space-y-4 custom-scrollbar">
-                <div class="flex flex-col items-center justify-center h-full opacity-20 italic">
-                    <i class="fas fa-hand-pointer text-6xl mb-4"></i>
-                    <p>Click vào từng từ để đánh dấu từ khó</p>
+            <div id="lyricsContainer" class="h-[750px] overflow-y-auto pr-4 space-y-2 custom-scrollbar">
+                <div class="flex flex-col items-center justify-center h-full opacity-20">
+                    <i class="fas fa-spell-check text-5xl mb-4"></i>
+                    <p>Nhấn vào từng chữ để học phát âm và nghĩa</p>
                 </div>
             </div>
         </div>
@@ -88,37 +108,46 @@
     <script>
         let player;
 
-        async function createLesson() {
+        async function buildLesson() {
             const url = document.getElementById('videoUrl').value;
             const id = extractId(url);
             const text = document.getElementById('rawLyrics').value;
             
-            if (!id || !text) return alert("Vui lòng nhập Link và Lời!");
+            if (!id || !text) return;
 
             const lines = text.split('\n').filter(l => l.trim());
-            const container = document.getElementById('lyricsContent');
-            container.innerHTML = `<div class="p-10 text-center"><i class="fas fa-spinner fa-spin"></i> Đang phân tích dữ liệu...</div>`;
+            const container = document.getElementById('lyricsContainer');
+            container.innerHTML = `<div class="p-10 text-center"><i class="fas fa-spinner fa-spin text-red-500"></i> Đang tải lời...</div>`;
 
             let html = "";
-            for (let line of lines) {
-                const romaji = convertRomaji(line);
-                const translation = await translate(line);
-                
-                // Tách từng từ để click được
-                const words = line.split(' ');
-                const wordSpans = words.map(w => `<span class="word-span" onclick="event.stopPropagation(); this.classList.toggle('highlighted')">${w}</span>`).join(' ');
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const words = line.split(/\s+/);
+                const fullTranslation = await translate(line);
+                const viWords = fullTranslation.split(/\s+/);
+
+                const wordElements = words.map((w, j) => {
+                    const romaji = kroman.parse(w);
+                    return `
+                        <div class="word-wrapper" onclick="showWordInfo(${i}, ${j})">
+                            <span class="word-hangul">${w}</span>
+                            <span class="word-romaji">${romaji}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const viElements = viWords.map((vw, k) => 
+                    `<span class="vi-word line-${i}-vi" id="line-${i}-vi-${k}">${vw}</span>`
+                ).join(' ');
 
                 html += `
-                    <div class="lyric-card p-6 rounded-2xl" onclick="this.classList.toggle('active')">
-                        <div class="text-xl font-bold text-slate-800 leading-relaxed">
-                            ${wordSpans}
+                    <div class="lyric-card">
+                        <div class="mb-4 flex flex-wrap">
+                            ${wordElements}
                         </div>
-                        <div class="romaji-box">
-                            <p class="text-xs text-slate-400 font-medium italic">${romaji}</p>
+                        <div class="pt-4 border-t border-slate-50 text-blue-600 font-medium">
+                            ${viElements}
                         </div>
-                        <p class="text-blue-600 text-sm font-semibold mt-3 pt-3 border-t border-slate-50">
-                            ${translation}
-                        </p>
                     </div>
                 `;
             }
@@ -128,16 +157,33 @@
             player = new YT.Player('player', { videoId: id });
         }
 
-        function convertRomaji(text) {
-            try { return kroman.parse(text); } catch (e) { return ""; }
+        function showWordInfo(lineIdx, wordIdx) {
+            // Xóa trạng thái cũ
+            document.querySelectorAll(`.word-wrapper`).forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`.vi-word`).forEach(el => el.classList.remove('highlight-red'));
+
+            // Tìm và active từ mới trong danh sách hiển thị
+            // Lưu ý: Do cấu trúc DOM, ta cần nhắm chính xác phần tử trong card
+            const cards = document.querySelectorAll('.lyric-card');
+            const targetCard = cards[lineIdx];
+            const targetWord = targetCard.querySelectorAll('.word-wrapper')[wordIdx];
+            
+            targetWord.classList.add('active');
+
+            // Highlight nghĩa tiếng Việt
+            const viElements = targetCard.querySelectorAll(`.vi-word`);
+            const wordsCount = targetCard.querySelectorAll('.word-wrapper').length;
+            const targetViIdx = Math.floor((wordIdx / wordsCount) * viElements.length);
+            
+            if (viElements[targetViIdx]) {
+                viElements[targetViIdx].classList.add('highlight-red');
+            }
         }
 
         async function translate(text) {
-            try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURI(text)}`);
-                const data = await res.json();
-                return data[0][0][0];
-            } catch { return "..."; }
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURI(text)}`);
+            const data = await res.json();
+            return data[0][0][0];
         }
 
         function extractId(url) {
