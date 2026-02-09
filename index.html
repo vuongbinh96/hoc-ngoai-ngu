@@ -3,75 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoMusic - Interactive Learning</title>
+    <title>LingoPro - Chạm để làm nổi bật từ khó</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/korean-romanization@1.0.11/dist/korean-romanization.min.js"></script>
     <style>
-        body { background: #fdfeff; color: #1e293b; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f8fafc; color: #1e293b; font-family: 'Inter', sans-serif; }
+        
+        /* Hiệu ứng cho từng từ */
+        .word-span {
+            display: inline-block;
+            padding: 0 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+        .word-span:hover { background: #e2e8f0; }
+        .word-span.highlighted {
+            color: #ef4444 !important;
+            font-weight: 900 !important;
+            text-decoration: underline;
+            transform: scale(1.1);
+            background: #fee2e2;
+        }
+
         .lyric-card { 
-            transition: all 0.2s ease; 
-            border: 1px solid #e2e8f0;
             background: white;
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
         }
-        .lyric-card:hover { 
-            border-color: #3b82f6; 
-            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1);
+        .lyric-card:hover { border-color: #3b82f6; }
+
+        .romaji-box { 
+            max-height: 0; opacity: 0; overflow: hidden; 
+            transition: all 0.3s ease; 
         }
-        .vocab-focus { 
-            color: #ef4444; 
-            font-weight: 700; 
-            text-decoration: underline; 
-            cursor: help;
+        .lyric-card.active .romaji-box { 
+            max-height: 100px; opacity: 1; margin-top: 10px; 
         }
-        .quiz-hidden { filter: blur(5px); transition: all 0.3s; cursor: pointer; }
-        .quiz-hidden:hover { filter: blur(0); }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-4 lg:p-10">
 
     <div class="max-w-7xl mx-auto">
-        <header class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-black text-slate-800 tracking-tight">LINGO<span class="text-blue-600">STUDY</span></h1>
-            <div class="flex gap-4">
-                <button onclick="toggleQuizMode()" class="bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-sm font-bold hover:bg-amber-200">
-                    <i class="fas fa-brain"></i> CHẾ ĐỘ BÀI TẬP
-                </button>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+            <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">Lingo<span class="text-blue-600">Pro</span></h1>
+            <div class="bg-blue-50 text-blue-600 px-6 py-2 rounded-full text-xs font-bold border border-blue-100 uppercase tracking-widest">
+                Chạm vào từ để In Đỏ & Nổi Bật
             </div>
-        </header>
+        </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div class="space-y-6">
-                <div class="rounded-3xl overflow-hidden bg-black aspect-video shadow-2xl">
+                <div class="aspect-video bg-black rounded-[2rem] overflow-hidden shadow-2xl">
                     <div id="player"></div>
                 </div>
 
-                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                    <input type="text" id="videoUrl" placeholder="Dán link YouTube..." 
-                           class="w-full mb-4 p-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+                    <input type="text" id="videoUrl" placeholder="Link YouTube..." 
+                           class="w-full mb-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
                     
-                    <textarea id="rawLyrics" rows="6" placeholder="Dán lời bài hát tiếng Hàn vào đây..." 
-                              class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
+                    <textarea id="rawLyrics" rows="6" placeholder="Dán lời tiếng Hàn vào đây..." 
+                              class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     
-                    <div class="mt-4 p-4 bg-blue-50 rounded-2xl text-xs text-blue-700 leading-relaxed">
-                        <i class="fas fa-lightbulb"></i> <b>Mẹo:</b> Để nhấn mạnh một từ khó, hãy đặt từ đó trong dấu ngoặc vuông. 
-                        Ví dụ: 멈춘 [시간] 속 (từ "시간" sẽ nổi bật hơn).
-                    </div>
-
-                    <button onclick="generateLesson()" class="w-full mt-4 bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-black transition-all">
-                        TẠO BÀI HỌC TƯƠNG TÁC
+                    <button onclick="createLesson()" class="w-full mt-4 bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all">
+                        TẠO BÀI HỌC
                     </button>
                 </div>
             </div>
 
-            <div class="h-[800px] flex flex-col">
-                <div id="lyricsContainer" class="flex-1 overflow-y-auto space-y-4 pr-4 custom-scrollbar">
-                    <div class="text-center py-40 text-slate-300">
-                        <i class="fas fa-book-open text-6xl mb-4"></i>
-                        <p>Dán lời bài hát và bắt đầu học tương tác.</p>
-                    </div>
+            <div id="lyricsContent" class="h-[750px] overflow-y-auto pr-4 space-y-4 custom-scrollbar">
+                <div class="flex flex-col items-center justify-center h-full opacity-20 italic">
+                    <i class="fas fa-hand-pointer text-6xl mb-4"></i>
+                    <p>Click vào từng từ để đánh dấu từ khó</p>
                 </div>
             </div>
         </div>
@@ -79,61 +86,58 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        let player, isQuizMode = false;
+        let player;
 
-        function toggleQuizMode() {
-            isQuizMode = !isQuizMode;
-            document.querySelectorAll('.vietnamese').forEach(el => {
-                isQuizMode ? el.classList.add('quiz-hidden') : el.classList.remove('quiz-hidden');
-            });
-            alert(isQuizMode ? "Đã bật chế độ bài tập! Di chuột vào phần mờ để xem nghĩa." : "Đã tắt chế độ bài tập.");
-        }
-
-        async function generateLesson() {
+        async function createLesson() {
             const url = document.getElementById('videoUrl').value;
             const id = extractId(url);
             const text = document.getElementById('rawLyrics').value;
-            if (!id || !text) return alert("Vui lòng nhập đủ thông tin!");
+            
+            if (!id || !text) return alert("Vui lòng nhập Link và Lời!");
 
             const lines = text.split('\n').filter(l => l.trim());
-            const container = document.getElementById('lyricsContainer');
-            container.innerHTML = "<p class='text-center py-20'>Đang phân tích ngôn ngữ...</p>";
+            const container = document.getElementById('lyricsContent');
+            container.innerHTML = `<div class="p-10 text-center"><i class="fas fa-spinner fa-spin"></i> Đang phân tích dữ liệu...</div>`;
 
-            let htmlOutput = "";
+            let html = "";
             for (let line of lines) {
-                // Xử lý nhấn mạnh từ khó dùng regex [từ]
-                let processedLine = line.replace(/\[(.*?)\]/g, '<span class="vocab-focus" title="Từ vựng cần nhớ">$1</span>');
+                const romaji = convertRomaji(line);
+                const translation = await translate(line);
                 
-                // Loại bỏ ngoặc vuông để phiên âm và dịch không bị lỗi
-                let cleanLine = line.replace(/[\[\]]/g, '');
-                let romaji = convertToRomaji(cleanLine);
-                let vi = await translateText(cleanLine);
+                // Tách từng từ để click được
+                const words = line.split(' ');
+                const wordSpans = words.map(w => `<span class="word-span" onclick="event.stopPropagation(); this.classList.toggle('highlighted')">${w}</span>`).join(' ');
 
-                htmlOutput += `
-                    <div class="lyric-card p-6 rounded-2xl">
-                        <p class="text-xl font-bold text-slate-800 mb-1">${processedLine}</p>
-                        <p class="text-sm text-slate-400 font-medium italic mb-3">${romaji}</p>
-                        <div class="h-px bg-slate-100 mb-3"></div>
-                        <p class="vietnamese text-blue-600 font-semibold ${isQuizMode ? 'quiz-hidden' : ''}">${vi}</p>
+                html += `
+                    <div class="lyric-card p-6 rounded-2xl" onclick="this.classList.toggle('active')">
+                        <div class="text-xl font-bold text-slate-800 leading-relaxed">
+                            ${wordSpans}
+                        </div>
+                        <div class="romaji-box">
+                            <p class="text-xs text-slate-400 font-medium italic">${romaji}</p>
+                        </div>
+                        <p class="text-blue-600 text-sm font-semibold mt-3 pt-3 border-t border-slate-50">
+                            ${translation}
+                        </p>
                     </div>
                 `;
             }
-            container.innerHTML = htmlOutput;
+            container.innerHTML = html;
 
             if (player) player.destroy();
             player = new YT.Player('player', { videoId: id });
         }
 
-        function convertToRomaji(text) {
+        function convertRomaji(text) {
             try { return kroman.parse(text); } catch (e) { return ""; }
         }
 
-        async function translateText(text) {
+        async function translate(text) {
             try {
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURI(text)}`);
                 const data = await res.json();
                 return data[0][0][0];
-            } catch { return "Lỗi dịch"; }
+            } catch { return "..."; }
         }
 
         function extractId(url) {
