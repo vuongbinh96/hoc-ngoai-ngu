@@ -3,78 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - Smart Learning</title>
+    <title>LingoPro - Smart Context</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/korean-romanization@1.0.11/dist/korean-romanization.min.js"></script>
     <style>
         body { background: #f1f5f9; font-family: 'Inter', system-ui, sans-serif; }
-        /* Từng từ Hàn */
-        .ko-word { display: inline-flex; flex-direction: column; align-items: center; margin-right: 12px; margin-bottom: 10px; cursor: pointer; }
+        .ko-word { display: inline-flex; flex-direction: column; align-items: center; margin-right: 15px; margin-bottom: 12px; cursor: pointer; }
         .ko-text { font-size: 1.5rem; font-weight: 700; color: #1e293b; transition: 0.2s; }
-        .ko-romaji { font-size: 0.75rem; color: #94a3b8; font-weight: 400; }
+        .ko-romaji { font-size: 0.75rem; color: #94a3b8; }
         .highlight-red { color: #ef4444 !important; transform: scale(1.1); }
 
-        /* Viên thuốc tiếng Việt */
         .vi-pill { 
-            display: inline-block; padding: 6px 16px; margin: 4px; 
+            display: inline-block; padding: 8px 18px; margin: 4px; 
             background: #e2e8f0; color: #475569; border-radius: 999px; 
-            font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; 
+            font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; 
+            border: 1px solid transparent;
         }
         .vi-pill:hover { background: #cbd5e1; }
-        .vi-pill.active { background: #fee2e2; color: #ef4444; border: 1px solid #ef4444; }
+        .vi-pill.active { background: #fee2e2; color: #ef4444; border-color: #ef4444; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2); }
 
-        .card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-
-        /* Popup Quiz */
-        #quiz-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .quiz-box { background: white; width: 450px; padding: 2.5rem; border-radius: 2rem; text-align: center; }
-        .opt-btn { width: 100%; padding: 12px; margin-top: 10px; border: 2px solid #f1f5f9; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .opt-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+        .card { background: white; border-radius: 2rem; padding: 2rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        #quiz-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .quiz-box { background: white; width: 480px; padding: 3rem; border-radius: 3rem; text-align: center; }
+        .opt-btn { width: 100%; padding: 14px; margin-top: 12px; border: 2px solid #f1f5f9; border-radius: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
         .wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4 lg:p-10">
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm">
-            <h1 class="text-3xl font-black tracking-tighter text-slate-800">LINGO<span class="text-red-500">PRO</span></h1>
-            <div class="flex items-center gap-4">
-                <span class="text-slate-400 font-bold text-xs uppercase"><i class="fas fa-check-circle"></i> <span id="word-count">0</span> Từ đã lưu</span>
-                <button onclick="startQuiz()" class="bg-red-500 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-red-600">⚡ THI NGAY</button>
+        <header class="flex justify-between items-center mb-10 bg-white p-5 rounded-3xl shadow-sm">
+            <h1 class="text-3xl font-black italic tracking-tighter">LINGO<span class="text-red-500">PRO</span></h1>
+            <div class="flex items-center gap-5">
+                <span class="text-slate-400 font-bold text-xs uppercase tracking-widest">Đã lưu: <span id="word-count" class="text-red-500">0</span></span>
+                <button onclick="startQuiz()" class="bg-red-500 text-white px-8 py-3 rounded-full font-black shadow-xl hover:bg-red-600 active:scale-95 transition">⚡ THI NGAY</button>
             </div>
-        </div>
+        </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="space-y-4">
-                <div class="aspect-video bg-black rounded-3xl overflow-hidden shadow-xl" id="player"></div>
-                <div class="card space-y-3">
-                    <input type="text" id="yt-url" placeholder="Link YouTube..." class="w-full p-4 bg-slate-50 border-none rounded-2xl ring-1 ring-slate-200 outline-none focus:ring-red-400">
-                    <textarea id="lyrics-input" rows="5" placeholder="Dán lời tiếng Hàn..." class="w-full p-4 bg-slate-50 border-none rounded-2xl ring-1 ring-slate-200 outline-none focus:ring-red-400"></textarea>
-                    <button onclick="initApp()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-black">Nạp Bài Học</button>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div class="space-y-6">
+                <div class="aspect-video bg-black rounded-[2.5rem] overflow-hidden shadow-2xl" id="player"></div>
+                <div class="card space-y-4">
+                    <input type="text" id="yt-url" placeholder="Dán link YouTube tại đây..." class="w-full p-4 bg-slate-50 border-none rounded-2xl ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-red-400 transition">
+                    <textarea id="lyrics-input" rows="5" placeholder="Dán lời bài hát tiếng Hàn..." class="w-full p-4 bg-slate-50 border-none rounded-2xl ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-red-400 transition"></textarea>
+                    <button onclick="initApp()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black transition shadow-lg">Bắt đầu học</button>
                 </div>
             </div>
 
-            <div id="lyrics-container" class="h-[750px] overflow-y-auto pr-2 space-y-4">
-                <div class="text-center py-40 opacity-30 italic font-bold">Vui lòng nạp bài học để bắt đầu...</div>
+            <div id="lyrics-container" class="h-[750px] overflow-y-auto pr-3 space-y-5">
+                <div class="text-center py-40 opacity-20 italic font-black text-2xl uppercase tracking-tighter">Sẵn sàng học chưa?</div>
             </div>
         </div>
     </div>
 
     <div id="quiz-overlay">
-        <div class="quiz-box">
-            <div class="flex justify-between mb-6">
-                <span id="q-progress" class="font-bold text-slate-400">Câu 1/10</span>
-                <span id="q-timer" class="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-black">05:00</span>
+        <div class="quiz-box shadow-2xl">
+            <div class="flex justify-between mb-8 items-center">
+                <span id="q-progress" class="font-black text-slate-300 uppercase text-sm">Câu 1/10</span>
+                <span id="q-timer" class="bg-red-50 text-red-500 px-4 py-2 rounded-xl font-black text-xl tracking-tighter">05:00</span>
             </div>
             <div id="q-content">
-                <h2 id="q-word" class="text-5xl font-black text-slate-800 mb-8">...</h2>
-                <div id="q-options" class="space-y-2"></div>
+                <h2 id="q-word" class="text-6xl font-black text-slate-800 mb-10 tracking-tighter">...</h2>
+                <div id="q-options" class="space-y-3"></div>
             </div>
             <div id="q-result" class="hidden">
-                <h2 class="text-3xl font-bold mb-4">Kết quả</h2>
-                <div class="text-6xl font-black text-red-500 mb-6"><span id="final-score">0</span>/10</div>
-                <button onclick="closeQuiz()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold">TIẾP TỤC HỌC</button>
+                <div class="text-slate-400 font-bold uppercase mb-2">Kết quả bài thi</div>
+                <div class="text-8xl font-black text-red-500 mb-10"><span id="final-score">0</span><span class="text-3xl text-slate-300">/10</span></div>
+                <button onclick="closeQuiz()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest">Học tiếp</button>
             </div>
         </div>
     </div>
@@ -95,46 +91,53 @@
             const container = document.getElementById('lyrics-container');
             container.innerHTML = lines.map((line, i) => `
                 <div class="card">
-                    <div class="flex flex-wrap mb-4" id="ko-line-${i}">
+                    <div class="flex flex-wrap mb-5" id="ko-line-${i}">
                         ${line.split(/\s+/).map(w => `<div class="ko-word"><span class="ko-text">${w}</span><span class="ko-romaji">${typeof kroman !== 'undefined' ? kroman.parse(w) : ''}</span></div>`).join('')}
                     </div>
-                    <div class="pt-4 border-t flex flex-wrap" id="vi-line-${i}">
+                    <div class="pt-5 border-t border-slate-50 flex flex-wrap" id="vi-line-${i}">
                         <span class="text-slate-300 italic text-sm">Đang gom cụm từ thông minh...</span>
                     </div>
                 </div>`).join('');
 
-            lines.forEach((line, i) => smartTranslate(line, i));
+            lines.forEach((line, i) => smartContextTranslate(line, i));
         }
 
-        async function smartTranslate(text, idx) {
+        async function smartContextTranslate(text, idx) {
             const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=vi&dt=t&q=${encodeURI(text)}`);
             const data = await res.json();
             const fullVi = data[0][0][0];
 
-            // THUẬT TOÁN GOM CỤM THÔNG MINH (Điên cuồng, Chúc mừng, Thần kỳ...)
-            // Tìm các cụm 2-3 chữ phổ biến
-            const compoundWords = fullVi.match(/\b\w+\s+\w+\b/g) || [];
-            const resultWords = [];
-            let words = fullVi.split(/\s+/);
-            
-            for(let i=0; i<words.length; i++) {
-                let pair = words[i] + (words[i+1] ? " " + words[i+1] : "");
-                // Nếu là từ ghép phổ biến hoặc Google đã ghép sẵn
-                if (fullVi.includes(pair) && words[i+1]) {
-                    resultWords.push(pair);
-                    i++; 
-                } else {
-                    resultWords.push(words[i]);
+            let rawWords = fullVi.split(/\s+/);
+            let processedPills = [];
+
+            if (rawWords.length > 0) {
+                // 1. Từ đầu tiên luôn đứng riêng
+                processedPills.push(rawWords[0]);
+
+                // 2. Duyệt từ từ thứ hai trở đi
+                for (let i = 1; i < rawWords.length; i++) {
+                    let current = rawWords[i];
+                    let next = rawWords[i + 1];
+
+                    // LOGIC GOM CỤM: Nếu từ hiện tại là danh từ và từ sau là hành động/trạng thái (nở, hơn, đi, yêu...)
+                    // Hoặc đơn giản là các từ ngắn đi kèm nhau
+                    const actionWords = ["nở", "hơn", "là", "đã", "đang", "của", "và", "quá", "lắm"];
+                    
+                    if (next && actionWords.includes(next.toLowerCase())) {
+                        processedPills.push(current + " " + next);
+                        i++; // Nhảy qua từ tiếp theo vì đã gộp
+                    } else {
+                        processedPills.push(current);
+                    }
                 }
             }
 
-            document.getElementById(`vi-line-${idx}`).innerHTML = resultWords.map(w => `
+            document.getElementById(`vi-line-${idx}`).innerHTML = processedPills.map(w => `
                 <span class="vi-pill" onclick="syncWord('${w}', ${idx}, this)">${w}</span>
             `).join('');
         }
 
         async function syncWord(vi, lineIdx, el) {
-            // Highlight viên thuốc
             document.querySelectorAll('.vi-pill').forEach(p => p.classList.remove('active'));
             el.classList.add('active');
 
@@ -142,13 +145,11 @@
             const data = await res.json();
             const ko = data[0][0][0];
 
-            // Lưu Quiz
             if(!quizData.find(item => item.ko === ko)) {
                 quizData.push({ko: ko, vi: vi});
                 document.getElementById('word-count').innerText = quizData.length;
             }
 
-            // Highlight chữ Hàn
             document.querySelectorAll('.ko-text').forEach(t => t.classList.remove('highlight-red'));
             document.querySelectorAll(`#ko-line-${lineIdx} .ko-text`).forEach(t => {
                 if(ko.includes(t.innerText) || t.innerText.includes(ko)) t.classList.add('highlight-red');
@@ -156,8 +157,8 @@
         }
 
         function startQuiz() {
-            if (quizData.length < 5) return alert("Lưu ít nhất 5 từ để thi!");
-            currentQuiz = quizData.sort(() => 0.5 - Math.random()).slice(0, 10);
+            if (quizData.length < 5) return alert("Học thêm vài từ nữa để đủ bộ đề thi 10 câu nhé!");
+            currentQuiz = [...quizData].sort(() => 0.5 - Math.random()).slice(0, 10);
             score = 0; qIdx = 0;
             document.getElementById('quiz-overlay').style.display = 'flex';
             document.getElementById('q-content').classList.remove('hidden');
@@ -168,19 +169,17 @@
 
         function showNext() {
             if(qIdx >= currentQuiz.length) return finish();
-            document.getElementById('q-progress').innerText = `Câu ${qIdx+1}/10`;
+            document.getElementById('q-progress').innerText = `Câu ${qIdx+1}/${currentQuiz.length}`;
             const q = currentQuiz[qIdx];
             document.getElementById('q-word').innerText = q.ko;
             
             let opts = [q.vi];
-            while(opts.length < 4) {
+            while(opts.length < 4 && opts.length < quizData.length) {
                 let r = quizData[Math.floor(Math.random()*quizData.length)].vi;
                 if(!opts.includes(r)) opts.push(r);
             }
             opts.sort(() => 0.5 - Math.random());
-            document.getElementById('q-options').innerHTML = opts.map(o => `
-                <button class="opt-btn" onclick="check(this, '${o}', '${q.vi}')">${o}</button>
-            `).join('');
+            document.getElementById('q-options').innerHTML = opts.map(o => `<button class="opt-btn" onclick="check(this, '${o}', '${q.vi}')">${o}</button>`).join('');
         }
 
         function check(btn, sel, cor) {
