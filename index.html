@@ -3,234 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - Multi Language Edition</title>
+    <title>LingoPro - Pop-up Focus</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/korean-romanization@1.0.11/dist/korean-romanization.min.js"></script>
     <style>
-        body { background: #1e293b; font-family: 'Inter', sans-serif; padding: 20px; color: #f8fafc; }
-        .lyric-card { 
-            background: #ffffff; border-radius: 35px; padding: 35px; margin-bottom: 25px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid #334155;
-            color: #1e293b;
-        }
+        body { background: #f1f5f9; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         
-        .source-text { font-size: 2.5rem; font-weight: 900; line-height: 1.2; letter-spacing: -0.05em; transition: 0.3s; }
-        .sub-text { font-size: 1rem; color: #94a3b8; margin-bottom: 20px; font-weight: 500; }
-
-        /* Viên thuốc màu sắc rực rỡ */
-        .pill { 
-            display: inline-block; padding: 12px 24px; margin: 6px; 
-            border-radius: 999px; font-weight: 800; font-size: 1.1rem;
-            cursor: pointer; transition: 0.3s; background: #f1f5f9; color: #475569;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        /* Card chính chứa lời bài hát */
+        .lyric-card { 
+            background: white; border-radius: 40px; padding: 50px; 
+            max-width: 800px; width: 90%; margin: 40px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .active-pill { color: white !important; transform: scale(1.1); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2); }
 
-        #quiz-overlay { 
-            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.98); 
-            z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(20px); 
+        /* Chữ gốc: To, đậm, có thể nhấn */
+        .source-word { 
+            font-size: 3.5rem; font-weight: 900; color: #1e293b; 
+            cursor: pointer; transition: 0.2s; display: inline-block;
+            margin-right: 12px; letter-spacing: -0.05em;
         }
-        .quiz-box { background: white; width: 550px; padding: 50px; border-radius: 50px; text-align: center; color: #1e293b; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        .source-word:hover { color: #ef4444; transform: translateY(-3px); }
+
+        /* Pop-up hình chữ nhật ở dưới */
+        #translate-popup {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 500px; background: #1e293b; color: white;
+            padding: 20px 40px; border-radius: 25px; display: flex;
+            align-items: center; justify-content: center; gap: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        #translate-popup.active { bottom: 40px; }
+
+        .popup-original { font-weight: 900; font-size: 1.5rem; color: #f87171; }
+        .popup-divider { width: 2px; height: 25px; background: #475569; }
+        .popup-viet { font-weight: 700; font-size: 1.5rem; }
+
+        /* Nút nạp dữ liệu */
+        .input-box { max-width: 600px; margin: 20px auto; width: 90%; }
     </style>
 </head>
 <body>
 
-    <div class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-12">
-            <h1 class="text-4xl font-black italic tracking-tighter">LINGO<span class="text-red-500">PRO</span></h1>
-            <div class="flex gap-4">
-                <button onclick="startQuiz()" class="bg-red-500 text-white px-10 py-4 rounded-full font-black shadow-2xl hover:bg-red-600 transition active:scale-95">⚡ THI NGAY (10 CÂU)</button>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div class="space-y-8">
-                <div class="aspect-video bg-black rounded-[50px] overflow-hidden shadow-2xl border-4 border-slate-700" id="player"></div>
-                <div class="bg-slate-800 p-10 rounded-[50px] shadow-2xl space-y-5">
-                    <input type="text" id="yt-url" placeholder="Dán link Youtube (Hàn hoặc Anh)..." class="w-full p-5 bg-slate-900 border-none rounded-3xl outline-none ring-2 ring-slate-700 focus:ring-red-500 transition text-white">
-                    <textarea id="lyric-in" rows="5" placeholder="Dán lời bài hát vào đây..." class="w-full p-5 bg-slate-900 border-none rounded-3xl outline-none ring-2 ring-slate-700 focus:ring-red-500 transition text-white"></textarea>
-                    <button onclick="processLyrics()" class="w-full bg-white text-slate-900 py-5 rounded-3xl font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition shadow-xl">Bắt đầu phân tích</button>
-                </div>
-            </div>
-            <div id="lyric-display" class="h-[850px] overflow-y-auto pr-6 space-y-8">
-                <div class="text-center py-60 opacity-20 italic font-black text-3xl">Hệ thống đã sẵn sàng cho cả Anh và Hàn...</div>
-            </div>
-        </div>
+    <div class="text-center mt-10">
+        <h1 class="text-3xl font-black italic text-slate-800">LINGO<span class="text-red-500">PRO</span></h1>
     </div>
 
-    <div id="quiz-overlay">
-        <div class="quiz-box shadow-2xl">
-            <div class="flex justify-between mb-10 items-center">
-                <span id="q-prog" class="font-black text-slate-300 tracking-widest text-sm">CÂU 1/10</span>
-                <span id="q-timer" class="bg-red-50 text-red-500 px-6 py-2 rounded-2xl font-black text-2xl tracking-tighter">05:00</span>
-            </div>
-            <div id="q-main">
-                <h2 id="q-word" class="text-7xl font-black text-slate-800 mb-12 tracking-tighter">...</h2>
-                <div id="q-opts" class="space-y-4"></div>
-            </div>
-            <div id="q-res" class="hidden">
-                <div class="text-slate-400 font-bold mb-2">ĐIỂM SỐ CỦA BẠN</div>
-                <div class="text-[10rem] font-black text-red-500 leading-none mb-10"><span id="score">0</span></div>
-                <button onclick="location.reload()" class="w-full bg-slate-900 text-white py-6 rounded-3xl font-black text-xl">HỌC BÀI MỚI</button>
-            </div>
-        </div>
+    <div class="input-box bg-white p-6 rounded-[30px] shadow-sm">
+        <textarea id="lyric-input" rows="2" class="w-full p-4 rounded-2xl bg-slate-50 border-none outline-none text-lg" placeholder="Dán câu tiếng Anh hoặc tiếng Hàn vào đây..."></textarea>
+        <button onclick="renderLyrics()" class="w-full mt-3 bg-slate-900 text-white py-3 rounded-2xl font-bold uppercase tracking-widest hover:bg-red-500 transition">Học câu này</button>
     </div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <div id="display-area"></div>
+
+    <div id="translate-popup">
+        <span class="popup-original" id="pop-src">Word</span>
+        <div class="popup-divider"></div>
+        <span class="popup-viet" id="pop-vi">Nghĩa</span>
+    </div>
+
     <script>
-        let player, quizData = [], qIdx = 0, score = 0, timer, currentLang = 'ko';
-        const palette = ['#ff5f5f', '#4da3ff', '#32d993', '#ffbc3b', '#a385ff', '#ff6b9d', '#29e0ff', '#ff9f40'];
+        async function renderLyrics() {
+            const text = document.getElementById('lyric-input').value;
+            if(!text) return;
 
-        function processLyrics() {
-            const url = document.getElementById('yt-url').value;
-            const text = document.getElementById('lyric-in').value;
-            const id = extractId(url);
-            if(!id || !text) return;
-
-            if(player) player.loadVideoById(id); else player = new YT.Player('player', {videoId: id});
-
-            // Tự động nhận diện ngôn ngữ sơ bộ
-            currentLang = /[가-힣]/.test(text) ? 'ko' : 'en';
+            const displayArea = document.getElementById('display-area');
+            displayArea.innerHTML = "";
 
             const lines = text.split('\n').filter(l => l.trim());
-            const display = document.getElementById('lyric-display');
-            display.innerHTML = "";
-
+            
             lines.forEach((line, i) => {
                 const card = document.createElement('div');
                 card.className = 'lyric-card';
-                card.innerHTML = `<div id="source-${i}" class="mb-8 flex flex-wrap gap-x-4"></div><div id="vi-${i}" class="border-t border-slate-100 pt-8 flex flex-wrap"></div>`;
-                display.appendChild(card);
-                renderLine(line, i);
-            });
-        }
-
-        async function renderLine(line, idx) {
-            // Render bản gốc (Anh/Hàn)
-            const sourceDiv = document.getElementById(`source-${idx}`);
-            line.split(/\s+/).forEach((w, k) => {
-                let sub = "";
-                if(currentLang === 'ko') sub = typeof kroman !== 'undefined' ? kroman.parse(w) : '';
                 
-                sourceDiv.innerHTML += `
-                    <div class="mb-4">
-                        <span class="source-text block" id="src-${idx}-${k}">${w}</span>
-                        ${sub ? `<span class="sub-text">${sub}</span>` : ''}
-                    </div>`;
-            });
+                const words = line.split(/\s+/);
+                words.forEach(word => {
+                    const span = document.createElement('span');
+                    span.className = 'source-word';
+                    span.innerText = word;
+                    span.onclick = () => showPopup(word);
+                    card.appendChild(span);
+                });
 
-            // Dịch và gom cụm thông minh (Xử lý cho cả Anh và Hàn)
-            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${currentLang}&tl=vi&dt=t&q=${encodeURI(line)}`);
-            const data = await res.json();
-            const fullVi = data[0][0][0];
+                displayArea.appendChild(card);
+            });
+        }
+
+        async function showPopup(word) {
+            const popup = document.getElementById('translate-popup');
+            const popSrc = document.getElementById('pop-src');
+            const popVi = document.getElementById('pop-vi');
+
+            // Xử lý làm sạch từ trước khi dịch (bỏ dấu câu)
+            const cleanWord = word.replace(/[.,!?;]/g, "");
             
-            let words = fullVi.split(/\s+/);
-            let groupedVi = [];
-            // Danh sách trợ từ/từ bổ trợ tiếng Việt để gom cụm
-            const helpers = ["rồi", "ạ", "nhỉ", "đấy", "hơn", "nở", "mới", "thật", "lắm", "quá", "một", "là"];
-
-            if(words.length > 0) {
-                groupedVi.push(words[0]); 
-                for(let i = 1; i < words.length; i++) {
-                    if(words[i+1] && helpers.includes(words[i+1].toLowerCase())) {
-                        groupedVi.push(words[i] + " " + words[i+1]);
-                        i++;
-                    } else {
-                        groupedVi.push(words[i]);
-                    }
-                }
-            }
-
-            const viDiv = document.getElementById(`vi-${idx}`);
-            groupedVi.forEach((group, gIdx) => {
-                const color = palette[gIdx % palette.length];
-                viDiv.innerHTML += `<span class="pill" style="border: 3px solid ${color}" onclick="syncAndColor('${group}', ${idx}, '${color}', this)">${group}</span>`;
-            });
-        }
-
-        async function syncAndColor(vi, lineIdx, color, el) {
-            // Reset các viên thuốc trong card
-            document.querySelectorAll(`#vi-${lineIdx} .pill`).forEach(p => {
-                p.classList.remove('active-pill');
-                p.style.background = 'transparent';
-                p.style.color = '#475569';
-            });
-
-            // Active viên hiện tại
-            el.classList.add('active-pill');
-            el.style.background = color;
-            el.style.color = 'white';
-
-            // Tìm từ gốc tương ứng (Anh hoặc Hàn)
-            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=vi&tl=${currentLang}&dt=t&q=${encodeURI(vi)}`);
+            // Gọi API dịch
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURI(cleanWord)}`);
             const data = await res.json();
-            const originWord = data[0][0][0].toLowerCase();
+            const translated = data[0][0][0];
 
-            document.querySelectorAll(`#source-${lineIdx} .source-text`).forEach(txt => {
-                const cleanTxt = txt.innerText.toLowerCase().replace(/[.,!?;]/g, "");
-                if(originWord.includes(cleanTxt) || cleanTxt.includes(originWord)) {
-                    txt.style.color = color;
-                    txt.style.transform = "scale(1.1) translateY(-5px)";
-                } else {
-                    txt.style.color = "#1e293b";
-                    txt.style.transform = "scale(1)";
-                }
-            });
+            // Cập nhật nội dung Pop-up
+            popSrc.innerText = cleanWord;
+            popVi.innerText = translated;
 
-            if(!quizData.find(q => q.ko === originWord)) quizData.push({ko: originWord.toUpperCase(), vi: vi});
+            // Hiện Pop-up
+            popup.classList.add('active');
+
+            // Tự động đóng sau 3 giây nếu không làm gì
+            clearTimeout(window.popupTimer);
+            window.popupTimer = setTimeout(() => {
+                popup.classList.remove('active');
+            }, 3500);
         }
 
-        function startQuiz() {
-            if(quizData.length < 5) return alert("Nhấn vào các viên thuốc màu sắc để nạp từ vựng trước khi thi!");
-            currentQuiz = [...quizData].sort(() => 0.5 - Math.random()).slice(0, 10);
-            score = 0; qIdx = 0;
-            document.getElementById('quiz-overlay').style.display = 'flex';
-            runTimer(300); showQ();
-        }
-
-        function showQ() {
-            if(qIdx >= currentQuiz.length) return end();
-            document.getElementById('q-prog').innerText = `CÂU ${qIdx+1}/${currentQuiz.length}`;
-            const q = currentQuiz[qIdx];
-            document.getElementById('q-word').innerText = q.ko;
-            let opts = [q.vi];
-            while(opts.length < 4 && opts.length < quizData.length) {
-                let r = quizData[Math.floor(Math.random()*quizData.length)].vi;
-                if(!opts.includes(r)) opts.push(r);
+        // Đóng popup khi nhấn ra ngoài
+        document.addEventListener('click', (e) => {
+            if(!e.target.classList.contains('source-word') && !document.getElementById('translate-popup').contains(e.target)) {
+                document.getElementById('translate-popup').classList.remove('active');
             }
-            opts.sort(() => 0.5 - Math.random());
-            document.getElementById('q-opts').innerHTML = opts.map(o => `<button class="w-full p-5 border-2 border-slate-100 rounded-3xl font-black text-xl hover:bg-slate-50 transition" onclick="check(this,'${o}','${q.vi}')">${o}</button>`).join('');
-        }
-
-        function check(btn, s, c) {
-            const btns = document.querySelectorAll('.opt-btn');
-            if(s === c) { btn.classList.add('bg-green-500', 'text-white', 'border-green-500'); score++; }
-            else { btn.classList.add('bg-red-500', 'text-white', 'border-red-500'); }
-            setTimeout(() => { qIdx++; showQ(); }, 1000);
-        }
-
-        function runTimer(sec) {
-            clearInterval(timer);
-            timer = setInterval(() => {
-                let m = Math.floor(sec/60), s = sec%60;
-                document.getElementById('q-timer').innerText = `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
-                if(--sec < 0) end();
-            }, 1000);
-        }
-
-        function end() {
-            clearInterval(timer);
-            document.getElementById('q-main').classList.add('hidden');
-            document.getElementById('q-res').classList.remove('hidden');
-            document.getElementById('score').innerText = score;
-        }
-
-        function extractId(url) {
-            const m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
-            return (m && m[2].length == 11) ? m[2] : false;
-        }
+        });
     </script>
 </body>
 </html>
