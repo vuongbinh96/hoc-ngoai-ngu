@@ -3,57 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - Pop-up Focus</title>
+    <title>LingoPro - Compact & Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #f1f5f9; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+        body { background: #0f172a; font-family: 'Inter', sans-serif; color: white; }
         
-        /* Card chính chứa lời bài hát */
+        /* Video thu gọn */
+        #player-container {
+            width: 100%; max-width: 600px; margin: 0 auto 30px;
+            aspect-ratio: 16/9; background: black; border-radius: 30px;
+            overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Card lời nhạc với chữ nhỏ hơn */
         .lyric-card { 
-            background: white; border-radius: 40px; padding: 50px; 
-            max-width: 800px; width: 90%; margin: 40px auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            background: white; border-radius: 30px; padding: 30px; 
+            max-width: 700px; margin: 20px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* Chữ gốc: To, đậm, có thể nhấn */
         .source-word { 
-            font-size: 3.5rem; font-weight: 900; color: #1e293b; 
+            font-size: 1.8rem; font-weight: 700; color: #1e293b; 
             cursor: pointer; transition: 0.2s; display: inline-block;
-            margin-right: 12px; letter-spacing: -0.05em;
+            margin-right: 8px; letter-spacing: -0.02em;
         }
-        .source-word:hover { color: #ef4444; transform: translateY(-3px); }
+        .source-word:hover { color: #ef4444; }
 
-        /* Pop-up hình chữ nhật ở dưới */
+        /* Pop-up hình chữ nhật */
         #translate-popup {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 500px; background: #1e293b; color: white;
-            padding: 20px 40px; border-radius: 25px; display: flex;
-            align-items: center; justify-content: center; gap: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 1000;
+            width: auto; min-width: 300px; background: #ffffff; color: #1e293b;
+            padding: 15px 30px; border-radius: 20px; display: flex;
+            align-items: center; justify-content: center; gap: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 1000; border: 2px solid #ef4444;
         }
-        #translate-popup.active { bottom: 40px; }
+        #translate-popup.active { bottom: 30px; }
 
-        .popup-original { font-weight: 900; font-size: 1.5rem; color: #f87171; }
-        .popup-divider { width: 2px; height: 25px; background: #475569; }
-        .popup-viet { font-weight: 700; font-size: 1.5rem; }
+        .popup-original { font-weight: 800; font-size: 1.2rem; color: #ef4444; }
+        .popup-divider { width: 1px; height: 20px; background: #cbd5e1; }
+        .popup-viet { font-weight: 600; font-size: 1.2rem; }
 
-        /* Nút nạp dữ liệu */
-        .input-box { max-width: 600px; margin: 20px auto; width: 90%; }
+        input, textarea { background: #1e293b !important; color: white !important; border: 1px solid #334155 !important; }
     </style>
 </head>
-<body>
+<body class="p-6">
 
-    <div class="text-center mt-10">
-        <h1 class="text-3xl font-black italic text-slate-800">LINGO<span class="text-red-500">PRO</span></h1>
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-2xl font-black italic">LINGO<span class="text-red-500">PRO</span></h1>
+        </header>
+
+        <div id="player-container">
+            <div id="player"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+            <input type="text" id="yt-url" placeholder="Dán link YouTube vào đây..." class="p-4 rounded-2xl outline-none">
+            <textarea id="lyric-input" rows="1" class="p-4 rounded-2xl outline-none" placeholder="Dán lời Anh/Hàn..."></textarea>
+            <button onclick="startLesson()" class="md:col-span-2 bg-red-500 text-white py-4 rounded-2xl font-bold uppercase tracking-widest hover:bg-red-600 transition">Bắt đầu học</button>
+        </div>
+
+        <div id="lyric-display"></div>
     </div>
-
-    <div class="input-box bg-white p-6 rounded-[30px] shadow-sm">
-        <textarea id="lyric-input" rows="2" class="w-full p-4 rounded-2xl bg-slate-50 border-none outline-none text-lg" placeholder="Dán câu tiếng Anh hoặc tiếng Hàn vào đây..."></textarea>
-        <button onclick="renderLyrics()" class="w-full mt-3 bg-slate-900 text-white py-3 rounded-2xl font-bold uppercase tracking-widest hover:bg-red-500 transition">Học câu này</button>
-    </div>
-
-    <div id="display-area"></div>
 
     <div id="translate-popup">
         <span class="popup-original" id="pop-src">Word</span>
@@ -61,66 +74,61 @@
         <span class="popup-viet" id="pop-vi">Nghĩa</span>
     </div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        async function renderLyrics() {
+        let player;
+
+        function startLesson() {
+            const url = document.getElementById('yt-url').value;
             const text = document.getElementById('lyric-input').value;
-            if(!text) return;
+            const videoId = extractId(url);
 
-            const displayArea = document.getElementById('display-area');
-            displayArea.innerHTML = "";
+            if(videoId) {
+                if (player) player.loadVideoById(videoId);
+                else player = new YT.Player('player', { videoId: videoId, width: '100%', height: '100%' });
+            }
 
-            const lines = text.split('\n').filter(l => l.trim());
+            if(text) renderLyrics(text);
+        }
+
+        function renderLyrics(text) {
+            const display = document.getElementById('lyric-display');
+            display.innerHTML = "";
             
-            lines.forEach((line, i) => {
+            text.split('\n').filter(l => l.trim()).forEach(line => {
                 const card = document.createElement('div');
                 card.className = 'lyric-card';
                 
-                const words = line.split(/\s+/);
-                words.forEach(word => {
+                line.split(/\s+/).forEach(word => {
                     const span = document.createElement('span');
                     span.className = 'source-word';
                     span.innerText = word;
                     span.onclick = () => showPopup(word);
                     card.appendChild(span);
                 });
-
-                displayArea.appendChild(card);
+                display.appendChild(card);
             });
         }
 
         async function showPopup(word) {
             const popup = document.getElementById('translate-popup');
-            const popSrc = document.getElementById('pop-src');
-            const popVi = document.getElementById('pop-vi');
-
-            // Xử lý làm sạch từ trước khi dịch (bỏ dấu câu)
             const cleanWord = word.replace(/[.,!?;]/g, "");
             
-            // Gọi API dịch
             const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURI(cleanWord)}`);
             const data = await res.json();
-            const translated = data[0][0][0];
+            
+            document.getElementById('pop-src').innerText = cleanWord;
+            document.getElementById('pop-vi').innerText = data[0][0][0];
 
-            // Cập nhật nội dung Pop-up
-            popSrc.innerText = cleanWord;
-            popVi.innerText = translated;
-
-            // Hiện Pop-up
             popup.classList.add('active');
-
-            // Tự động đóng sau 3 giây nếu không làm gì
-            clearTimeout(window.popupTimer);
-            window.popupTimer = setTimeout(() => {
-                popup.classList.remove('active');
-            }, 3500);
+            clearTimeout(window.ptimer);
+            window.ptimer = setTimeout(() => popup.classList.remove('active'), 3000);
         }
 
-        // Đóng popup khi nhấn ra ngoài
-        document.addEventListener('click', (e) => {
-            if(!e.target.classList.contains('source-word') && !document.getElementById('translate-popup').contains(e.target)) {
-                document.getElementById('translate-popup').classList.remove('active');
-            }
-        });
+        function extractId(url) {
+            const m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+            return (m && m[2].length == 11) ? m[2] : false;
+        }
     </script>
 </body>
 </html>
