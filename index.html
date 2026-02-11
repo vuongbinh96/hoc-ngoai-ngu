@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - Member Focus Mode</title>
+    <title>LingoPro - Pronunciation Mode</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background: #0f172a; font-family: 'Inter', sans-serif; color: white; height: 100vh; overflow: hidden; }
         
@@ -32,20 +33,28 @@
 
         /* Popups */
         #translate-popup {
-            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
-            min-width: 250px; background: white; color: #1e293b; padding: 12px 25px;
-            border-radius: 15px; display: flex; align-items: center; justify-content: center;
-            gap: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.4); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            z-index: 1000; border: 2px solid #ef4444;
+            position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%);
+            min-width: 300px; background: white; color: #1e293b; padding: 15px 25px;
+            border-radius: 20px; display: flex; align-items: center; justify-content: space-between;
+            gap: 15px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 1000; border: 3px solid #ef4444;
         }
-        #translate-popup.active { bottom: 30px; }
+        #translate-popup.active { bottom: 40px; }
 
+        .speak-btn {
+            background: #ef4444; color: white; width: 40px; height: 40px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .speak-btn:hover { transform: scale(1.1); background: #dc2626; }
+
+        /* Quiz Overlay */
         #quiz-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.98); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .quiz-box { background: white; width: 90%; max-width: 450px; padding: 30px; border-radius: 25px; color: #1e293b; text-align: center; }
         
         input, textarea { background: #1e293b !important; color: white !important; border: 1px solid #334155 !important; }
         .opt-btn { width: 100%; padding: 12px; margin-top: 8px; border: 2px solid #f1f5f9; border-radius: 12px; font-weight: 700; transition: 0.2s; }
-        .opt-btn:hover { background: #f8fafc; border-color: #e2e8f0; }
+        .opt-btn:hover { background: #f8fafc; }
     </style>
 </head>
 <body class="p-6">
@@ -71,24 +80,31 @@
 
             <div class="space-y-1">
                 <label class="text-[10px] uppercase font-bold text-slate-500 ml-2">Lyrics (Dùng [Tên] để phân màu)</label>
-                <textarea id="lyric-input" rows="8" class="w-full p-3 rounded-xl outline-none text-sm leading-relaxed" placeholder="Ví dụ:&#10;[Leeseo] Blue hair...&#10;[Rei] Lala lalala..."></textarea>
+                <textarea id="lyric-input" rows="8" class="w-full p-3 rounded-xl outline-none text-sm leading-relaxed" placeholder="[Tên] Lời bài hát..."></textarea>
             </div>
         </div>
 
         <div class="md:col-span-8">
             <div id="lyric-display">
-                <div class="text-slate-500 text-center mt-20">
-                    <p class="text-xl font-medium">Chưa có bài học nào được nạp.</p>
-                    <p class="text-sm mt-2">Dán nội dung bên trái và nhấn nút "Nạp dữ liệu"!</p>
-                </div>
+                <div class="text-slate-500 text-center mt-20 italic text-xl">Dán nội dung để bắt đầu học!</div>
             </div>
         </div>
     </div>
 
     <div id="translate-popup">
-        <span class="font-bold" id="pop-src">Word</span>
-        <div style="width:1px; height:20px; background:#ddd"></div>
-        <span class="text-red-500 font-bold" id="pop-vi">Nghĩa</span>
+        <div class="flex flex-col">
+            <span class="text-xs uppercase font-bold text-slate-400 mb-1" id="pop-lang">Dịch thuật</span>
+            <div class="flex items-center gap-3">
+                <span class="text-xl font-black" id="pop-src">Word</span>
+                <span class="text-xl text-slate-300">/</span>
+                <span class="text-xl font-bold text-red-500" id="pop-vi">Nghĩa</span>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="speakCurrentWord()" class="speak-btn shadow-lg shadow-red-200" title="Nghe phát âm">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
     </div>
 
     <div id="quiz-overlay">
@@ -98,23 +114,20 @@
                     <span id="quiz-step">Câu 1/20</span>
                     <span id="quiz-time" class="text-red-500 text-lg">10:00</span>
                 </div>
-                <h2 id="quiz-q" class="text-3xl font-black mb-6 text-slate-800 tracking-tight">Word</h2>
+                <h2 id="quiz-q" class="text-3xl font-black mb-6 text-slate-800">Word</h2>
                 <div id="quiz-options" class="space-y-2"></div>
             </div>
             <div id="quiz-result" class="hidden">
                 <div class="text-6xl font-black text-red-500 mb-2" id="final-score">0/0</div>
-                <p class="text-slate-500 mb-8 font-medium">Kết quả học tập của bạn!</p>
-                <button onclick="closeQuiz()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-black transition">TIẾP TỤC HỌC</button>
+                <button onclick="closeQuiz()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold mt-4">TIẾP TỤC</button>
             </div>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        let player, clickedWords = [], allWordsInLesson = [], currentQuizSet = [], currentQ = 0, score = 0, timer;
-        
-        // BẢNG MÀU CỐ ĐỊNH CHO THÀNH VIÊN
-        const memberPalette = ["#E11D48", "#2563EB", "#059669", "#D97706", "#7C3AED", "#DB2777", "#0891B2", "#F59E0B", "#4338CA", "#BE185D"];
+        let player, clickedWords = [], allWordsInLesson = [], currentQuizSet = [], currentQ = 0, score = 0, timer, popupTimer;
+        const memberPalette = ["#E11D48", "#2563EB", "#059669", "#D97706", "#7C3AED", "#DB2777", "#0891B2", "#F59E0B"];
         let memberColorMap = {}; 
         let colorIndex = 0;
 
@@ -138,16 +151,12 @@
             const display = document.getElementById('lyric-display');
             display.innerHTML = "";
             allWordsInLesson = [];
-            
-            // Không xóa memberColorMap để giữ màu cố định dù nạp lại bài (miễn không F5 trang)
             const lines = text.split('\n').filter(l => l.trim());
 
             lines.forEach(line => {
                 const card = document.createElement('div');
                 card.className = 'lyric-card';
-                
                 const wordsDiv = document.createElement('div');
-                // Regex phân tách từ nhưng giữ nguyên khối [Tên]
                 const words = line.match(/\[.*?\]|\S+/g) || [];
 
                 words.forEach(word => {
@@ -155,7 +164,6 @@
                     span.className = 'source-word';
                     
                     if (word.startsWith('[') && word.endsWith(']')) {
-                        // LOGIC MÀU THÀNH VIÊN: Đồng nhất theo tên
                         const nameKey = word.toLowerCase();
                         if (!memberColorMap[nameKey]) {
                             memberColorMap[nameKey] = memberPalette[colorIndex % memberPalette.length];
@@ -164,62 +172,71 @@
                         span.style.color = memberColorMap[nameKey];
                         span.innerText = word;
                     } else {
-                        // LOGIC LỜI HÁT: Luôn màu đen
                         span.style.color = "#000000";
                         span.innerText = word;
-                        
-                        // Làm sạch từ để đưa vào kho Quiz (bỏ dấu câu)
                         const clean = word.replace(/[.,!?;'"“”‘’]/g, "");
                         if(clean && !allWordsInLesson.includes(clean)) allWordsInLesson.push(clean);
                     }
 
-                    span.onclick = () => {
-                        const cleanToTranslate = word.replace(/[.,!?;'"“”‘’\[\]]/g, "");
-                        handleWordClick(cleanToTranslate);
-                    };
+                    span.onclick = () => handleWordClick(word);
                     wordsDiv.appendChild(span);
                 });
                 
                 card.appendChild(wordsDiv);
-
-                // Dịch full câu
                 const transDiv = document.createElement('div');
                 transDiv.className = 'line-translation';
                 transDiv.innerText = "..."; 
                 card.appendChild(transDiv);
                 display.appendChild(card);
-
                 translateText(line).then(result => { transDiv.innerText = result; });
             });
         }
 
-        async function handleWordClick(cleanWord) {
+        async function handleWordClick(word) {
+            // LỌC DẤU CÂU KHI NHẤN
+            const cleanWord = word.replace(/[.,!?;'"“”‘’\[\]]/g, "").trim();
+            if (!cleanWord) return;
+
             const vi = await translateText(cleanWord);
+            
+            // Hiển thị Popup
+            const popup = document.getElementById('translate-popup');
             document.getElementById('pop-src').innerText = cleanWord;
             document.getElementById('pop-vi').innerText = vi;
-            document.getElementById('translate-popup').classList.add('active');
-            setTimeout(() => document.getElementById('translate-popup').classList.remove('active'), 2500);
+            popup.classList.add('active');
+
+            // Cố định tối thiểu 7 giây
+            if (popupTimer) clearTimeout(popupTimer);
+            popupTimer = setTimeout(() => {
+                popup.classList.remove('active');
+            }, 7000); 
 
             if(!clickedWords.find(item => item.q === cleanWord)) {
                 clickedWords.push({ q: cleanWord, a: vi });
             }
         }
 
+        function speakCurrentWord() {
+            const word = document.getElementById('pop-src').innerText;
+            const utterance = new SpeechSynthesisUtterance(word);
+            // Tự động nhận diện ngôn ngữ (mặc định ưu tiên tiếng Anh nếu là ký tự latin)
+            utterance.lang = 'en-US'; 
+            window.speechSynthesis.speak(utterance);
+        }
+
         // --- HÀM QUIZ ---
         async function openQuiz() {
-            if(allWordsInLesson.length < 4) return alert("Nạp bài học có ít nhất 4 từ trước nhé!");
+            if(allWordsInLesson.length < 4) return alert("Nạp bài học trước!");
             let prioritySet = [...clickedWords];
-            let remainingCount = 20 - prioritySet.length;
-            
-            if (remainingCount > 0) {
+            let remaining = 20 - prioritySet.length;
+            if (remaining > 0) {
                 let unclicked = allWordsInLesson.filter(w => !clickedWords.some(cw => cw.q === w));
                 unclicked.sort(() => Math.random() - 0.5);
-                for(let i = 0; i < Math.min(remainingCount, unclicked.length); i++) {
+                for(let i = 0; i < Math.min(remaining, unclicked.length); i++) {
                     const vi = await translateText(unclicked[i]);
                     prioritySet.push({ q: unclicked[i], a: vi });
                 }
             }
-
             currentQuizSet = prioritySet.slice(0, 20);
             score = 0; currentQ = 0;
             document.getElementById('quiz-overlay').style.display = 'flex';
@@ -234,33 +251,30 @@
             document.getElementById('quiz-step').innerText = `Câu ${currentQ + 1}/${currentQuizSet.length}`;
             const item = currentQuizSet[currentQ];
             document.getElementById('quiz-q').innerText = item.q;
-
-            let options = [item.a];
+            let opts = [item.a];
             let allAs = currentQuizSet.map(i => i.a);
-            while(options.length < 4) {
+            while(opts.length < 4) {
                 let r = allAs[Math.floor(Math.random()*allAs.length)];
-                if(!options.includes(r)) options.push(r);
+                if(!opts.includes(r)) opts.push(r);
             }
-            options.sort(() => Math.random() - 0.5);
-
+            opts.sort(() => Math.random() - 0.5);
             const container = document.getElementById('quiz-options');
             container.innerHTML = "";
-            options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'opt-btn';
-                btn.innerText = opt;
-                btn.onclick = () => {
-                    if(opt === item.a) { btn.style.background = '#dcfce7'; score++; }
-                    else { btn.style.background = '#fee2e2'; }
+            opts.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = 'opt-btn';
+                b.innerText = opt;
+                b.onclick = () => {
+                    if(opt === item.a) { b.style.background = '#dcfce7'; score++; }
+                    else b.style.background = '#fee2e2';
                     setTimeout(() => { currentQ++; nextQuestion(); }, 400);
                 };
-                container.appendChild(btn);
+                container.appendChild(b);
             });
         }
 
-        function startTimer(duration) {
-            let t = duration;
-            clearInterval(timer);
+        function startTimer(d) {
+            let t = d; clearInterval(timer);
             timer = setInterval(() => {
                 let m = Math.floor(t/60), s = t%60;
                 document.getElementById('quiz-time').innerText = `${m}:${s<10?'0':''}${s}`;
