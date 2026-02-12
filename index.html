@@ -3,80 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - No Stick Fix</title>
+    <title>LingoPro - No More Sticky Words</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background: #0f172a; font-family: 'Inter', sans-serif; color: white; height: 100vh; overflow: hidden; }
         #player-container { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; }
         #lyric-display { height: calc(100vh - 120px); overflow-y: auto; padding-right: 15px; }
+        #lyric-display::-webkit-scrollbar { width: 6px; }
+        #lyric-display::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         .lyric-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .source-word { font-size: 1.25rem; font-weight: 700; cursor: pointer; transition: 0.2s; display: inline-block; margin-right: 6px; color: #1e293b; }
+        
+        /* Cấu trúc từ quan trọng: Dùng inline thay vì inline-block để selection mượt hơn */
+        .source-word { font-size: 1.25rem; font-weight: 700; cursor: pointer; transition: 0.1s; color: #1e293b; white-space: pre; }
+        .source-word:hover { background: #f1f5f9; border-radius: 4px; }
         .source-word::selection { background: #fef08a; color: #000; }
-        .line-translation { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0; color: #64748b; font-style: italic; font-size: 0.9rem; }
+        
+        .line-translation { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; color: #64748b; font-style: italic; font-size: 0.95rem; line-height: 1.5; }
         
         /* Popup Fix */
         #translate-popup {
-            position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 400px; background: white; color: #1e293b; padding: 20px;
-            border-radius: 24px; display: flex; align-items: center; justify-content: space-between;
-            gap: 15px; box-shadow: 0 25px 50px rgba(0,0,0,0.6); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            z-index: 1000; border: 3px solid #ef4444;
+            position: fixed; bottom: -200px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 420px; background: white; color: #1e293b; padding: 22px;
+            border-radius: 28px; display: flex; align-items: center; justify-content: space-between;
+            gap: 15px; box-shadow: 0 30px 60px rgba(0,0,0,0.7); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 1000; border: 4px solid #ef4444;
         }
         #translate-popup.active { bottom: 30px; }
-        .speak-btn { background: #ef4444; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; }
-        
+        .speak-btn { background: #ef4444; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3); }
+
         /* Quiz */
         #quiz-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.98); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .quiz-box { background: white; width: 90%; max-width: 450px; padding: 30px; border-radius: 25px; color: #1e293b; text-align: center; }
-        .opt-btn { width: 100%; padding: 14px; margin-top: 8px; border: 2px solid #f1f5f9; border-radius: 12px; font-weight: 700; transition: 0.3s; }
+        .quiz-box { background: white; width: 90%; max-width: 480px; padding: 35px; border-radius: 30px; color: #1e293b; text-align: center; }
+        .opt-btn { width: 100%; padding: 16px; margin-top: 10px; border: 2px solid #f1f5f9; border-radius: 15px; font-weight: 700; transition: 0.2s; font-size: 1.05rem; }
     </style>
 </head>
 <body class="p-6">
 
     <header class="flex justify-between items-center mb-6 h-10">
         <h1 class="text-2xl font-black italic tracking-tighter">LINGO<span class="text-red-500">PRO</span></h1>
-        <button onclick="openQuiz()" class="bg-red-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg hover:scale-105 transition">⚡ THI 20 CÂU</button>
+        <button onclick="openQuiz()" class="bg-red-500 text-white px-8 py-2.5 rounded-full font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition">⚡ BẮT ĐẦU THI</button>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
         <div class="md:col-span-4 space-y-4">
             <div id="player-container"><div id="player"></div></div>
-            <button onclick="initApp()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-blue-500 transition-all">🚀 Nạp bài học</button>
-            <input type="text" id="yt-url" placeholder="Link YouTube..." class="w-full p-3 rounded-xl bg-slate-800 text-white outline-none border border-slate-700">
-            <textarea id="lyric-input" rows="8" class="w-full p-3 rounded-xl bg-slate-800 text-white outline-none border border-slate-700" placeholder="[Leeseo] Gimme gimme..."></textarea>
+            <button onclick="initApp()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">🚀 NẠP BÀI HỌC</button>
+            <input type="text" id="yt-url" placeholder="Link YouTube..." class="w-full p-4 rounded-xl bg-slate-800 text-white outline-none border border-slate-700 focus:border-blue-500 transition">
+            <textarea id="lyric-input" rows="7" class="w-full p-4 rounded-xl bg-slate-800 text-white outline-none border border-slate-700 focus:border-blue-500 transition text-sm" placeholder="[Tên Idol] Lời bài hát..."></textarea>
         </div>
+
         <div class="md:col-span-8">
             <div id="lyric-display" onmouseup="handleSelection()">
-                <div class="text-slate-500 text-center mt-20 italic">Bôi đen để dịch cụm từ không bị dính chữ!</div>
+                <div class="text-slate-500 text-center mt-32 italic text-lg">Dán lời nhạc vào bên trái để bắt đầu!</div>
             </div>
         </div>
     </div>
 
     <div id="translate-popup">
         <div class="flex flex-col min-w-0 flex-1">
-            <span class="text-[10px] uppercase font-bold text-slate-400 mb-1 tracking-widest">Nghĩa cụm từ</span>
-            <div class="flex flex-col gap-1">
-                <span class="text-lg font-black text-slate-800 leading-tight" id="pop-src">...</span>
-                <div class="h-[1px] bg-slate-100 my-1 w-full"></div>
-                <span class="text-xl font-bold text-red-500 leading-tight" id="pop-vi">...</span>
+            <span class="text-[10px] uppercase font-black text-slate-400 mb-1 tracking-[0.2em]">DỊCH THÔNG MINH</span>
+            <div class="flex flex-col">
+                <span class="text-xl font-black text-slate-800 break-words leading-tight" id="pop-src">...</span>
+                <div class="h-[2px] bg-slate-100 my-2 w-12"></div>
+                <span class="text-2xl font-bold text-red-500 break-words leading-tight" id="pop-vi">...</span>
             </div>
         </div>
-        <button onclick="speakCurrentWord()" class="speak-btn shadow-lg shadow-red-200">
-            <i class="fa-solid fa-volume-high text-lg"></i>
+        <button onclick="speakCurrentWord()" class="speak-btn hover:scale-110 active:scale-90 transition">
+            <i class="fa-solid fa-volume-high text-xl"></i>
         </button>
     </div>
 
     <div id="quiz-overlay">
-        <div class="quiz-box">
+        <div class="quiz-box shadow-2xl">
             <div id="quiz-content">
-                <div class="flex justify-between mb-4 text-slate-400 font-bold text-xs"><span id="quiz-step">Câu 1/20</span><span id="quiz-time" class="text-red-500 text-lg">10:00</span></div>
-                <h2 id="quiz-q" class="text-3xl font-black mb-8 text-slate-800">Word</h2>
+                <div class="flex justify-between items-center mb-6 text-slate-400 font-black text-xs tracking-widest">
+                    <span id="quiz-step">CÂU 1/20</span>
+                    <span id="quiz-time" class="bg-red-50 text-red-500 px-3 py-1 rounded-lg text-sm">10:00</span>
+                </div>
+                <h2 id="quiz-q" class="text-4xl font-black mb-10 text-slate-800 tracking-tight">Word</h2>
                 <div id="quiz-options" class="space-y-3"></div>
             </div>
             <div id="quiz-result" class="hidden">
-                <div class="text-6xl font-black text-red-500 mb-2" id="final-score">0/0</div>
-                <button onclick="closeQuiz()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold mt-4 shadow-lg">TIẾP TỤC</button>
+                <div class="text-7xl font-black text-red-500 mb-4" id="final-score">0/0</div>
+                <p class="text-slate-500 mb-8 font-medium">Kết quả học tập của bạn</p>
+                <button onclick="closeQuiz()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold shadow-lg">QUAY LẠI HỌC TIẾP</button>
             </div>
         </div>
     </div>
@@ -95,33 +106,25 @@
             if(text) renderLyrics(text);
         }
 
-        // HÀM QUAN TRỌNG: Tự thêm dấu cách nếu Google trả về dính chữ
-        function fixVietnameseSpacing(text) {
-            // Nếu text dính liền kiểu "ChoTôiMượn", thêm dấu cách dựa trên chữ hoa (nếu có)
-            // Hoặc đơn giản hơn: ép Google Translate trả về kết quả chuẩn bằng cách xử lý đầu vào
-            return text; 
-        }
-
         async function translateText(text) {
+            if (!text || text.trim().length === 0) return "...";
             try {
-                // Thêm các khoảng trắng giả vào đầu vào để máy dịch không dám gộp chữ
-                const spacedText = text.split('').join(' '); // Trick: dịch từng ký tự (không khuyến khích)
-                // Cách tốt nhất: Sử dụng URL chuẩn và kiểm tra kết quả
                 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURIComponent(text)}`);
                 const data = await res.json();
-                let result = data[0][0][0];
-                
-                // Nếu kết quả không có dấu cách trong khi bản gốc có dấu cách -> Force thêm dấu cách
-                if (text.includes(' ') && !result.includes(' ')) {
-                    return result.split('').join(' '); // Giải pháp tình thế cho từ dính
+                // Gộp tất cả các đoạn dịch nếu Google chia nhỏ câu
+                if (data && data[0]) {
+                    return data[0].map(item => item[0]).join("");
                 }
-                return result;
+                return "...";
             } catch (e) { return "..."; }
         }
 
         async function handleSelection() {
-            const sel = window.getSelection().toString().trim();
-            if (sel && sel.length >= 2) showTranslationPopup(sel);
+            const sel = window.getSelection().toString();
+            // Nếu bôi đen có dấu cách hoặc cụm từ, sel sẽ tự động chứa space nhờ textNode bên dưới
+            if (sel.trim().length >= 2) {
+                showTranslationPopup(sel.trim());
+            }
         }
 
         function renderLyrics(text) {
@@ -134,23 +137,38 @@
                 const wordsDiv = document.createElement('div');
                 const words = line.match(/\[.*?\]|\S+/g) || [];
 
-                words.forEach(word => {
-                    const span = document.createElement('span'); span.className = 'source-word';
+                words.forEach((word, index) => {
+                    const span = document.createElement('span'); 
+                    span.className = 'source-word';
                     const nameKey = word.toLowerCase();
+                    
                     if (word.startsWith('[') && word.endsWith(']')) {
-                        if (!memberColorMap[nameKey]) { memberColorMap[nameKey] = memberPalette[colorIndex % memberPalette.length]; colorIndex++; }
+                        if (!memberColorMap[nameKey]) { 
+                            memberColorMap[nameKey] = memberPalette[colorIndex % memberPalette.length]; 
+                            colorIndex++; 
+                        }
                         span.style.color = memberColorMap[nameKey];
                         span.innerText = word;
                     } else {
                         span.innerText = word;
-                        const clean = word.replace(/[.,!?;'"“”‘’]/g, "");
+                        const clean = word.replace(/[.,!?;'"“”Check‘’]/g, "");
                         if(clean && !allWordsInLesson.includes(clean)) allWordsInLesson.push(clean);
                     }
-                    span.onclick = () => { if (!window.getSelection().toString()) showTranslationPopup(word); };
+                    
+                    span.onclick = () => {
+                        const sel = window.getSelection().toString();
+                        if (!sel) showTranslationPopup(word);
+                    };
+                    
                     wordsDiv.appendChild(span);
+                    
+                    // CHỐNG DÍNH CHỮ: Chèn một khoảng trắng vật lý sau mỗi span từ
+                    // Việc này giúp window.getSelection() nhận diện được dấu cách khi bạn kéo chuột qua nhiều từ
+                    wordsDiv.appendChild(document.createTextNode(" "));
                 });
+
                 card.appendChild(wordsDiv);
-                const transDiv = document.createElement('div'); transDiv.className = 'line-translation'; transDiv.innerText = "...";
+                const transDiv = document.createElement('div'); transDiv.className = 'line-translation'; transDiv.innerText = "Đang dịch...";
                 card.appendChild(transDiv); display.appendChild(card);
                 translateText(line).then(res => transDiv.innerText = res);
             });
@@ -163,7 +181,6 @@
 
             const vi = await translateText(cleanText);
             
-            // Tách hiển thị Src và Vi ra hai dòng để không bao giờ bị dính vào nhau
             document.getElementById('pop-src').innerText = cleanText;
             document.getElementById('pop-vi').innerText = vi;
             document.getElementById('translate-popup').classList.add('active');
@@ -171,7 +188,9 @@
             if (popupTimer) clearTimeout(popupTimer);
             popupTimer = setTimeout(() => document.getElementById('translate-popup').classList.remove('active'), 10000);
 
-            if(!clickedWords.find(item => item.q === cleanText)) clickedWords.push({ q: cleanText, a: vi });
+            if(!clickedWords.find(item => item.q === cleanText)) {
+                clickedWords.push({ q: cleanText, a: vi });
+            }
         }
 
         function speakCurrentWord() {
@@ -183,7 +202,7 @@
         }
 
         async function openQuiz() {
-            if(allWordsInLesson.length < 4) return alert("Nạp bài học trước!");
+            if(allWordsInLesson.length < 4) return alert("Vui lòng nạp bài hát trước khi thi!");
             let set = [...clickedWords];
             let rem = 20 - set.length;
             if (rem > 0) {
@@ -202,7 +221,7 @@
 
         function nextQuestion() {
             if(currentQ >= currentQuizSet.length) return showResult();
-            document.getElementById('quiz-step').innerText = `Câu ${currentQ + 1}/${currentQuizSet.length}`;
+            document.getElementById('quiz-step').innerText = `CÂU ${currentQ + 1}/${currentQuizSet.length}`;
             const item = currentQuizSet[currentQ];
             document.getElementById('quiz-q').innerText = item.q;
             let opts = [item.a];
@@ -219,12 +238,12 @@
                     const btns = container.querySelectorAll('button');
                     btns.forEach(btn => btn.style.pointerEvents = 'none');
                     if(opt === item.a) {
-                        b.style.background = '#dcfce7'; b.style.borderColor = '#22c55e';
+                        b.style.background = '#dcfce7'; b.style.borderColor = '#22c55e'; b.style.color = '#15803d';
                         score++;
                         setTimeout(() => { currentQ++; nextQuestion(); }, 800);
                     } else {
-                        b.style.background = '#fee2e2'; b.style.borderColor = '#ef4444';
-                        btns.forEach(btn => { if(btn.innerText === item.a) { btn.style.background = '#dcfce7'; btn.style.borderColor = '#22c55e'; } });
+                        b.style.background = '#fee2e2'; b.style.borderColor = '#ef4444'; b.style.color = '#b91c1c';
+                        btns.forEach(btn => { if(btn.innerText === item.a) { btn.style.background = '#dcfce7'; btn.style.borderColor = '#22c55e'; btn.style.color = '#15803d'; } });
                         setTimeout(() => { currentQ++; nextQuestion(); }, 1500);
                     }
                 };
