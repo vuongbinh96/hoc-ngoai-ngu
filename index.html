@@ -3,91 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - Word focus</title>
+    <title>LingoPro Turbo - Instant Translation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { background: #0f172a; font-family: 'Inter', sans-serif; color: white; height: 100vh; overflow: hidden; }
         
-        /* Dropdown Ngôn ngữ - Màu đen bắt buộc */
+        /* Dropdown Ngôn ngữ - Chữ đen chuẩn 100% */
         #tts-lang {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            border: 2px solid #334155;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 12px;
-            outline: none;
+            background-color: white !important;
+            color: black !important;
+            border: none; padding: 5px 15px; border-radius: 10px; font-weight: bold; cursor: pointer;
         }
-        #tts-lang option { color: #000000; background: #ffffff; }
+        #tts-lang option { color: black; background: white; }
 
         .lyric-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        
-        /* Hiệu ứng khi nhấn vào từ */
         .source-word { 
-            font-size: 1.25rem; font-weight: 700; color: #1e293b; 
-            cursor: pointer; padding: 2px 4px; border-radius: 6px;
-            transition: all 0.1s; display: inline-block;
+            font-size: 1.3rem; font-weight: 700; color: #1e293b; 
+            cursor: pointer; padding: 2px 2px; border-radius: 4px; transition: 0.1s;
         }
         .source-word:hover { background: #fee2e2; color: #ef4444; }
-        .source-word:active { transform: scale(0.9); }
-
-        .line-translation { color: #94a3b8; font-size: 0.85rem; margin-top: 8px; font-style: italic; }
-
+        
+        /* Popup mượt mà */
         #translate-popup {
-            position: fixed; bottom: -250px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 400px; background: white; color: #1e293b; padding: 20px;
+            position: fixed; bottom: -200px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px; background: white; color: #1e293b; padding: 20px;
             border-radius: 25px; display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.5); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.4); transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
             z-index: 1000; border: 3px solid #ef4444;
         }
         #translate-popup.active { bottom: 20px; }
 
-        .btn-main { background: #2563eb; color: white; padding: 15px; border-radius: 15px; font-weight: 900; width: 100%; transition: 0.2s; }
-        .btn-main:hover { background: #1d4ed8; }
-        
-        #lyric-display { height: calc(100vh - 150px); overflow-y: auto; padding: 10px; }
+        /* Loading Bar cho việc dịch trước */
+        #pre-load-status { display: none; background: #ef4444; height: 4px; position: fixed; top: 0; left: 0; z-index: 9999; transition: width 0.3s; }
     </style>
 </head>
 <body class="p-4 md:p-6">
 
+    <div id="pre-load-status"></div>
+
     <header class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-black italic">LINGO<span class="text-red-500">PRO</span></h1>
+        <h1 class="text-2xl font-black italic tracking-tighter">LINGO<span class="text-red-500">PRO</span></h1>
         <div class="flex items-center gap-3">
-            <select id="tts-lang"></select>
-            <button onclick="openQuiz()" class="bg-red-500 text-white px-5 py-2 rounded-full font-black text-[10px] shadow-lg">THI</button>
+            <select id="tts-lang">
+                <option value="en-US">ENGLISH</option>
+                <option value="ko-KR">KOREAN</option>
+                <option value="ja-JP">JAPANESE</option>
+                <option value="fr-FR">FRENCH</option>
+            </select>
+            <button onclick="openQuiz()" class="bg-red-500 text-white px-5 py-2 rounded-full font-black text-xs">THI</button>
         </div>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div class="lg:col-span-4 space-y-4">
-            <div id="player-container" class="rounded-2xl overflow-hidden aspect-video bg-black shadow-2xl">
+            <div id="player-container" class="rounded-2xl overflow-hidden aspect-video bg-black">
                 <div id="player"></div>
             </div>
-            
-            <div class="space-y-2">
-                <input type="text" id="yt-url" placeholder="Dán link Youtube..." class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-sm">
-                <textarea id="lyric-input" rows="5" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-sm focus:border-red-500 outline-none" placeholder="[BẮT BUỘC] Dán lời bài hát vào đây..."></textarea>
-                <button onclick="initApp()" class="btn-main uppercase tracking-tighter">🚀 Nạp bài học ngay</button>
-            </div>
+            <textarea id="lyric-input" rows="6" class="w-full p-4 rounded-xl bg-slate-800 border border-slate-700 text-sm outline-none focus:border-red-500" placeholder="Dán Lyrics vào đây..."></textarea>
+            <button id="btn-nap" onclick="initApp()" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase hover:bg-blue-500 transition">🚀 Nạp & Dịch Siêu Tốc</button>
         </div>
 
         <div class="lg:col-span-8">
-            <div id="lyric-display" onmouseup="handleSelection()">
-                <div class="h-full flex flex-col items-center justify-center opacity-30">
-                    <i class="fa-solid fa-language text-6xl mb-2"></i>
-                    <p>Nhập Lyrics để bắt đầu dịch từng từ</p>
+            <div id="lyric-display" class="h-[70vh] overflow-y-auto pr-2">
+                <div class="h-full flex flex-col items-center justify-center opacity-20 text-center">
+                    <i class="fa-solid fa-bolt text-6xl mb-4"></i>
+                    <p class="font-bold">Hệ thống sẵn sàng!<br>Nạp lyrics để trải nghiệm dịch tức thì.</p>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="translate-popup">
-        <div class="min-w-0 flex-1">
-            <p id="pop-src" class="text-xs font-bold text-slate-400 uppercase mb-1">WORD</p>
-            <p id="pop-vi" class="text-2xl font-black text-red-500 leading-tight">Đang dịch...</p>
+        <div>
+            <p id="pop-src" class="text-[10px] font-black text-slate-400 uppercase tracking-widest">WORD</p>
+            <p id="pop-vi" class="text-2xl font-black text-red-600 leading-tight">...</p>
         </div>
         <button onclick="speakWord()" class="w-12 h-12 bg-red-500 text-white rounded-full shadow-lg active:scale-90 transition">
             <i class="fa-solid fa-volume-high"></i>
@@ -96,49 +87,64 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        const langs = {"en-US":"English","ko-KR":"Korean","ja-JP":"Japanese","vi-VN":"Vietnamese","zh-CN":"Chinese","fr-FR":"French"};
-        let player, clickedWords = [], allWords = [], popupTimer;
+        let dictionary = {}; // Nơi lưu trữ toàn bộ từ đã dịch sẵn
+        let player, popupTimer;
 
-        window.onload = () => {
-            const s = document.getElementById('tts-lang');
-            for(let k in langs) s.options[s.options.length] = new Option(langs[k], k);
-        };
+        // Hàm dịch hàng loạt (Batch Translation) - Đây là bí kíp tốc độ
+        async function preTranslateAll(words) {
+            const status = document.getElementById('pre-load-status');
+            status.style.display = 'block';
+            status.style.width = '10%';
 
-        function extractId(u) { const m = u.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/); return (m&&m[2].length==11)?m[2]:false; }
-
-        async function quickTranslate(t) {
-            try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURIComponent(t)}`);
-                const d = await res.json();
-                return d[0][0][0];
-            } catch(e) { return "Lỗi"; }
+            // Chia nhỏ danh sách từ để tránh quá tải (mỗi lần dịch 30 từ)
+            const batchSize = 30;
+            for (let i = 0; i < words.length; i += batchSize) {
+                const batch = words.slice(i, i + batchSize);
+                const query = batch.join(" | "); // Dùng ký tự đặc biệt để tách
+                
+                try {
+                    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    const translatedText = data[0][0][0];
+                    const translatedBatch = translatedText.split(" | ");
+                    
+                    batch.forEach((word, index) => {
+                        dictionary[word.toLowerCase()] = translatedBatch[index]?.trim() || "...";
+                    });
+                } catch (e) { console.error("Lỗi dịch mảng"); }
+                
+                status.style.width = `${((i + batchSize) / words.length) * 100}%`;
+            }
+            
+            setTimeout(() => status.style.display = 'none', 500);
         }
 
         function initApp() {
-            const txt = document.getElementById('lyric-input').value.trim();
-            if(!txt) return alert("Bạn chưa nhập lời bài hát!");
+            const text = document.getElementById('lyric-input').value.trim();
+            if(!text) return alert("Dán lời bài hát đã bạn ơi!");
+
+            // 1. Lấy tất cả từ duy nhất
+            const allWords = Array.from(new Set(text.match(/\b\w+\b/g))).filter(w => w.length > 1);
             
-            const vid = extractId(document.getElementById('yt-url').value);
-            if(vid) {
-                if(player) player.loadVideoById(vid);
-                else player = new YT.Player('player', {videoId:vid, width:'100%', height:'100%'});
-            }
-            render(txt);
+            // 2. Chạy dịch ngầm toàn bộ
+            dictionary = {};
+            preTranslateAll(allWords);
+
+            // 3. Hiển thị Lyrics
+            render(text);
         }
 
-        function render(txt) {
+        function render(text) {
             const container = document.getElementById('lyric-display');
-            container.innerHTML = ""; allWords = [];
+            container.innerHTML = "";
             
-            txt.split('\n').filter(l => l.trim()).forEach(line => {
+            text.split('\n').filter(l => l.trim()).forEach(line => {
                 const card = document.createElement('div');
                 card.className = 'lyric-card';
-                
                 const wordsWrap = document.createElement('div');
-                // Tách từ nhưng giữ lại khoảng trắng để không bị dính chữ
-                const tokens = line.split(/(\s+)/); 
-
-                tokens.forEach(token => {
+                
+                // Tách chữ và giữ nguyên định dạng
+                line.split(/(\s+)/).forEach(token => {
                     if(/\s+/.test(token)) {
                         wordsWrap.appendChild(document.createTextNode(token));
                     } else {
@@ -146,42 +152,29 @@
                         span.className = 'source-word';
                         span.innerText = token;
                         
-                        const clean = token.replace(/[.,!?;:'"“”]/g, "");
-                        if(clean && !allWords.includes(clean)) allWords.push(clean);
-
-                        span.onclick = (e) => {
-                            e.stopPropagation();
-                            showPop(clean);
+                        const cleanWord = token.replace(/[.,!?;:'"“”]/g, "").toLowerCase();
+                        
+                        // KHI BẤM: Lấy ngay trong dictionary, không đợi API nữa
+                        span.onclick = () => {
+                            const result = dictionary[cleanWord] || "Đang xử lý...";
+                            showPop(token, result);
                         };
                         wordsWrap.appendChild(span);
                     }
                 });
-
-                const sub = document.createElement('div');
-                sub.className = 'line-translation';
-                sub.innerText = "Dịch nhanh câu này...";
-                
                 card.appendChild(wordsWrap);
-                card.appendChild(sub);
                 container.appendChild(card);
-                
-                quickTranslate(line).then(r => sub.innerText = r);
             });
         }
 
-        async function showPop(t) {
+        function showPop(src, vi) {
             const pop = document.getElementById('translate-popup');
-            document.getElementById('pop-src').innerText = t;
-            document.getElementById('pop-vi').innerText = "Tra từ...";
+            document.getElementById('pop-src').innerText = src;
+            document.getElementById('pop-vi').innerText = vi;
             pop.classList.add('active');
-
-            const res = await quickTranslate(t);
-            document.getElementById('pop-vi').innerText = res;
-
-            if(!clickedWords.find(i => i.q === t)) clickedWords.push({q:t, a:res});
             
             if(popupTimer) clearTimeout(popupTimer);
-            popupTimer = setTimeout(() => pop.classList.remove('active'), 6000);
+            popupTimer = setTimeout(() => pop.classList.remove('active'), 5000);
         }
 
         function speakWord() {
@@ -191,16 +184,7 @@
             window.speechSynthesis.speak(u);
         }
 
-        function handleSelection() {
-            const s = window.getSelection().toString().trim();
-            if(s.length > 1) showPop(s);
-        }
-
-        function openQuiz() {
-            if(allWords.length < 2) return alert("Nạp bài học trước!");
-            alert("Tính năng thi đang được tối ưu cho từ vựng bạn vừa tra!");
-            // Giữ nguyên logic quiz cũ của bạn tại đây
-        }
+        function openQuiz() { alert("Tính năng thi sẽ dựa trên " + Object.keys(dictionary).length + " từ bạn vừa nạp!"); }
     </script>
 </body>
 </html>
