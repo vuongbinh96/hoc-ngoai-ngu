@@ -3,530 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro Ultra - High Performance Edition</title>
+    <title>LingoPro Ultra - Secure Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --primary: #6366f1;
-            --secondary: #ec4899;
-            --bg-dark: #0f172a;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-dark);
-            color: #f8fafc;
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        /* Scrollbar Optimization */
+        :root { --primary: #6366f1; --secondary: #ec4899; --bg-dark: #0f172a; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-dark); color: #f8fafc; overflow: hidden; height: 100vh; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; }
+        .source-word { display: inline-block; cursor: pointer; padding: 0 4px; border-radius: 6px; transition: all 0.15s ease; font-weight: 500; }
+        .source-word:hover { background: var(--primary); color: white; transform: translateY(-2px); }
+        .lyric-line { padding: 10px 16px; border-radius: 12px; border-left: 4px solid transparent; transition: all 0.2s; }
+        .lyric-line:hover { background: rgba(255, 255, 255, 0.05); border-left-color: var(--primary); }
+        #translation-popup { position: fixed; bottom: -300px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; z-index: 1000; }
+        .auth-overlay { position: fixed; inset: 0; background: rgba(7, 10, 19, 0.95); backdrop-filter: blur(12px); z-index: 3000; display: none; align-items: center; justify-content: center; }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-        }
-
-        .source-word {
-            display: inline-block;
-            cursor: pointer;
-            padding: 0 4px;
-            border-radius: 6px;
-            transition: all 0.15s ease;
-        }
-
-        .source-word:hover {
-            background: var(--primary);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .lyric-line {
-            padding: 10px 16px;
-            border-radius: 12px;
-            border-left: 4px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .lyric-line:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-left-color: var(--primary);
-        }
-
-        #translation-popup {
-            position: fixed;
-            bottom: -300px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 450px;
-            z-index: 1000;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .translating-pulse {
-            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
-        }
-
-        .auth-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(7, 10, 19, 0.95);
-            backdrop-filter: blur(12px);
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
     </style>
 </head>
 <body class="antialiased">
 
     <div id="loader" class="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center">
         <div class="text-center">
-            <div class="w-20 h-20 border-w-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-            <p class="text-indigo-400 font-black tracking-[0.2em] animate-pulse uppercase">Engine Loading...</p>
+            <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-indigo-400 font-black tracking-widest animate-pulse">LINGOPRO SECURE BOOTING...</p>
         </div>
     </div>
 
     <nav class="h-20 border-b border-slate-800/60 px-8 flex items-center justify-between bg-slate-950/50 backdrop-blur-xl sticky top-0 z-50">
-        <div class="flex items-center gap-3 w-1/4">
-            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <i class="fa-solid fa-bolt-lightning text-white text-xl"></i>
-            </div>
-            <span class="text-2xl font-black tracking-tighter uppercase">Lingo<span class="text-indigo-500">Pro</span></span>
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg"><i class="fa-solid fa-shield-halved text-white"></i></div>
+            <span class="text-xl font-black tracking-tighter uppercase">Lingo<span class="text-indigo-500">Pro</span></span>
         </div>
 
-        <div class="flex items-center gap-4 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800">
-            <div id="guest-tools" class="flex gap-2">
-                <button onclick="toggleAuth('login')" class="px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition">Đăng nhập</button>
-                <button onclick="toggleAuth('signup')" class="px-6 py-2.5 bg-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 transition">Đăng ký</button>
+        <div class="flex items-center gap-4 bg-slate-900/80 p-1 rounded-2xl border border-slate-800">
+            <div id="auth-controls" class="flex gap-2">
+                <button onclick="toggleAuth('login')" class="px-5 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition">Đăng nhập</button>
+                <button onclick="toggleAuth('signup')" class="px-5 py-2 bg-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-500 transition">Khởi tạo ID</button>
             </div>
-            <div id="user-profile" class="hidden flex items-center gap-4 px-4 py-1">
-                <div class="flex flex-col items-end">
-                    <span id="display-username" class="text-sm font-black text-indigo-400 leading-none">Username</span>
-                    <button onclick="logout()" class="text-[10px] font-bold text-red-400 hover:text-red-300 uppercase tracking-tighter">Đăng xuất</button>
-                </div>
-                <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700">
-                    <i class="fa-solid fa-user-astronaut text-indigo-400"></i>
-                </div>
+            <div id="user-display" class="hidden flex items-center gap-3 px-4">
+                <span id="username-tag" class="text-sm font-black text-indigo-400"></span>
+                <button onclick="logout()" class="text-xs text-red-400 font-bold border-l border-slate-700 pl-3">THOÁT</button>
             </div>
         </div>
         
-        <div class="flex items-center gap-5 w-1/4 justify-end">
-            <select id="target-lang" class="bg-slate-800 border-none text-xs font-black rounded-full px-4 py-2 focus:ring-2 ring-indigo-500 transition cursor-pointer">
-                <option value="vi">VIETNAMESE</option>
-                <option value="en">ENGLISH</option>
-                <option value="ja">JAPANESE</option>
-                <option value="ko">KOREAN</option>
-            </select>
-            <button onclick="toggleDashboard()" class="w-10 h-10 hover:bg-slate-800 rounded-full transition flex items-center justify-center text-indigo-400">
-                <i class="fa-solid fa-chart-pie text-xl"></i>
-            </button>
-            <button onclick="openQuiz()" class="bg-gradient-to-r from-pink-600 to-rose-600 text-white px-6 py-2.5 rounded-full font-black text-xs shadow-lg shadow-pink-600/20 hover:scale-105 transition active:scale-95">QUIZ</button>
+        <div class="flex gap-3">
+            <button onclick="toggleDashboard()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:text-indigo-400 transition"><i class="fa-solid fa-chart-simple"></i></button>
+            <button onclick="openQuiz()" class="bg-indigo-600 px-6 py-2 rounded-full font-black text-xs hover:scale-105 transition">TEST SKILLS</button>
         </div>
     </nav>
 
     <div id="auth-overlay" class="auth-overlay">
-        <div id="auth-box" class="glass-card p-10 w-full max-w-md border-t-8 border-indigo-600">
-            <div id="login-form">
-                <h2 class="text-4xl font-black mb-8 italic tracking-tighter">WELCOME BACK</h2>
-                <input type="text" id="login-user" placeholder="Username" class="w-full px-5 py-4 rounded-2xl mb-4 bg-slate-900 border border-slate-800 outline-none focus:border-indigo-500 transition">
-                <input type="password" id="login-pass" placeholder="Password" class="w-full px-5 py-4 rounded-2xl mb-6 bg-slate-900 border border-slate-800 outline-none focus:border-indigo-500 transition">
-                <button onclick="handleLogin()" class="w-full bg-indigo-600 py-5 rounded-2xl font-black text-lg hover:bg-indigo-500 transition shadow-xl">ACCESS ACCOUNT</button>
-                <p class="text-center text-xs mt-6 text-slate-500 uppercase font-bold">New pilot? <button onclick="toggleAuth('signup')" class="text-indigo-400 underline">Register here</button></p>
+        <div class="glass-card p-10 w-full max-w-md border-t-8 border-indigo-500 shadow-2xl">
+            <div id="login-section">
+                <h2 class="text-3xl font-black mb-2 italic">HỆ THỐNG AN NINH</h2>
+                <p class="text-xs text-slate-500 mb-8 font-bold uppercase tracking-widest">Vui lòng xác thực danh tính</p>
+                <input type="text" id="l-user" placeholder="Username" class="w-full px-5 py-4 rounded-2xl mb-4 bg-slate-900 border border-slate-800 focus:border-indigo-500 outline-none transition">
+                <input type="password" id="l-pass" placeholder="Password" class="w-full px-5 py-4 rounded-2xl mb-6 bg-slate-900 border border-slate-800 focus:border-indigo-500 outline-none transition">
+                <button onclick="handleLogin()" class="w-full bg-indigo-600 py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-500 transition">ĐĂNG NHẬP</button>
+                <p class="text-center text-xs mt-6">Chưa có ID? <button onclick="toggleAuth('signup')" class="text-indigo-400 font-bold underline">Đăng ký mới</button></p>
             </div>
-            <div id="signup-form" class="hidden">
-                <h2 class="text-4xl font-black mb-8 italic tracking-tighter text-pink-500">JOIN SYSTEM</h2>
-                <input type="text" id="reg-user" placeholder="Create Username" class="w-full px-5 py-4 rounded-2xl mb-4 bg-slate-900 border border-slate-800 outline-none focus:border-pink-500 transition">
-                <input type="password" id="reg-pass" placeholder="Set Password" class="w-full px-5 py-4 rounded-2xl mb-6 bg-slate-900 border border-slate-800 outline-none focus:border-pink-500 transition">
-                <button onclick="handleSignup()" class="w-full bg-pink-600 py-5 rounded-2xl font-black text-lg hover:bg-pink-500 transition shadow-xl">CREATE IDENTITY</button>
-                <p class="text-center text-xs mt-6 text-slate-500 uppercase font-bold">Already member? <button onclick="toggleAuth('login')" class="text-pink-400 underline">Log in</button></p>
+            <div id="signup-section" class="hidden">
+                <h2 class="text-3xl font-black mb-2 italic text-pink-500">TẠO TÀI KHOẢN</h2>
+                <p class="text-xs text-slate-500 mb-8 font-bold uppercase tracking-widest">Mật khẩu sẽ được mã hóa SHA-256</p>
+                <input type="text" id="s-user" placeholder="Username" class="w-full px-5 py-4 rounded-2xl mb-4 bg-slate-900 border border-slate-800 focus:border-pink-500 outline-none transition">
+                <input type="password" id="s-pass" placeholder="Password" class="w-full px-5 py-4 rounded-2xl mb-6 bg-slate-900 border border-slate-800 focus:border-pink-500 outline-none transition">
+                <button onclick="handleSignup()" class="w-full bg-pink-600 py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-pink-500 transition">XÁC NHẬN ĐĂNG KÝ</button>
+                <p class="text-center text-xs mt-6">Đã có ID? <button onclick="toggleAuth('login')" class="text-pink-400 font-bold underline">Quay lại</button></p>
             </div>
-            <button onclick="closeAuth()" class="w-full text-[10px] font-black text-slate-600 mt-8 tracking-[0.3em] hover:text-white transition">CLOSE WINDOW</button>
+            <button onclick="closeAuth()" class="w-full text-[10px] font-black text-slate-600 mt-8 tracking-widest hover:text-white transition">HỦY BỎ</button>
         </div>
     </div>
 
-    <main class="flex h-[calc(100vh-80px)] overflow-hidden">
-        <aside class="w-[420px] border-r border-slate-800/60 overflow-y-auto p-8 space-y-8 bg-slate-950/20">
-            <div>
-                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">01. Media Stream</h3>
-                <div class="glass-card p-5 space-y-4">
-                    <div id="player" class="aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl"></div>
-                    <div class="relative">
-                        <i class="fa-brands fa-youtube absolute left-4 top-1/2 -translate-y-1/2 text-red-500"></i>
-                        <input type="text" id="yt-url" placeholder="YouTube Link..." class="w-full pl-12 pr-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm focus:border-indigo-500 outline-none transition">
-                    </div>
+    <main class="flex h-[calc(100vh-80px)]">
+        <aside class="w-[400px] border-r border-slate-800/60 p-8 space-y-8 bg-slate-950/20 overflow-y-auto">
+            <section>
+                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Media Source</h3>
+                <div class="glass-card p-4 space-y-3">
+                    <div id="player" class="aspect-video bg-black rounded-xl overflow-hidden shadow-inner"></div>
+                    <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
                 </div>
-            </div>
-
-            <div>
-                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">02. Input Protocol</h3>
-                <div class="glass-card p-5 space-y-4">
-                    <textarea id="lyric-input" rows="12" placeholder="Dán lời bài hát hoặc đoạn văn bản vào đây..." class="w-full p-4 bg-slate-900 border border-slate-800 rounded-2xl text-sm outline-none resize-none focus:border-indigo-500 transition leading-relaxed"></textarea>
-                    <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-5 rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl hover:scale-[1.02] transition active:scale-95">
-                        Initialize Session
-                    </button>
+            </section>
+            <section>
+                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Input Data</h3>
+                <div class="glass-card p-4 space-y-3">
+                    <textarea id="lyric-input" rows="10" placeholder="Nhập lời bài hát..." class="w-full p-4 bg-slate-900 border border-slate-800 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
+                    <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 py-4 rounded-xl font-black uppercase text-xs shadow-lg hover:scale-[1.02] transition">Compile Study Session</button>
                 </div>
-            </div>
+            </section>
         </aside>
 
-        <section class="flex-1 relative flex flex-col bg-slate-950/40">
-            <div id="reader-nav" class="px-10 py-5 bg-slate-900/40 border-b border-slate-800/60 flex justify-between items-center backdrop-blur-md">
-                <div>
-                    <h2 id="session-title" class="font-black text-xl tracking-tight">Interactive Reader</h2>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase">Click words for instant translation</p>
-                </div>
-                <div class="bg-indigo-500/10 text-indigo-400 px-4 py-1.5 rounded-full border border-indigo-500/20 text-xs font-black" id="word-count">0 WORDS</div>
+        <section class="flex-1 flex flex-col bg-slate-950/40">
+            <div class="px-10 py-5 border-b border-slate-800/60 flex justify-between items-center">
+                <h2 class="font-black text-xl uppercase tracking-tighter">Interactive Classroom</h2>
+                <select id="target-lang" class="bg-slate-800 border-none rounded-full px-4 py-1.5 text-xs font-black">
+                    <option value="vi">TIẾNG VIỆT</option>
+                    <option value="en">ENGLISH</option>
+                    <option value="ko">KOREAN</option>
+                </select>
             </div>
-
-            <div id="lyric-display" class="flex-1 overflow-y-auto px-16 py-12 space-y-3">
-                <div class="h-full flex flex-col items-center justify-center opacity-10 text-center">
-                    <i class="fa-solid fa-microchip text-[120px] mb-8"></i>
-                    <p class="text-3xl font-black uppercase tracking-[0.2em]">Idle Mode</p>
-                    <p class="mt-4 font-bold max-w-sm">Dán văn bản vào sidebar bên trái để bắt đầu phiên học tương tác.</p>
+            <div id="lyric-display" class="flex-1 overflow-y-auto px-16 py-12 space-y-3 text-lg">
+                <div class="text-center opacity-20 mt-20">
+                    <i class="fa-solid fa-brain text-8xl mb-6"></i>
+                    <p class="font-black uppercase">Chưa có dữ liệu phiên học</p>
                 </div>
             </div>
         </section>
 
-        <aside class="w-[380px] border-l border-slate-800/60 p-8 hidden xl:block bg-slate-950/20">
-            <div class="flex items-center justify-between mb-8">
-                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Core Vocabulary</h3>
-                <button onclick="clearNotebook()" class="text-[10px] font-black text-red-500 hover:text-red-400">FLUSH ALL</button>
-            </div>
-            <div id="notebook-list" class="space-y-4 overflow-y-auto max-h-[85%] pr-2"></div>
+        <aside class="w-[350px] border-l border-slate-800/60 p-6 hidden xl:block overflow-y-auto">
+            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Saved Vocabulary</h3>
+            <div id="notebook-list" class="space-y-3"></div>
         </aside>
     </main>
 
-    <div id="translation-popup" class="glass-card p-8 border-t-8 border-indigo-500">
+    <div id="translation-popup" class="glass-card p-8 border-t-8 border-indigo-500 shadow-2xl">
         <div class="flex justify-between items-start">
-            <div class="flex-1 pr-6">
+            <div>
                 <p id="pop-src" class="text-sm font-black text-indigo-400 uppercase tracking-widest mb-2"></p>
-                <h2 id="pop-vi" class="text-4xl font-black text-white leading-none"></h2>
+                <h2 id="pop-vi" class="text-4xl font-black"></h2>
             </div>
-            <div class="flex flex-col gap-3">
-                <button onclick="speakText()" class="w-14 h-14 rounded-2xl bg-slate-800 hover:bg-indigo-600 transition flex items-center justify-center shadow-lg"><i class="fa-solid fa-volume-high text-xl"></i></button>
-                <button onclick="saveToNotebook()" class="w-14 h-14 rounded-2xl bg-slate-800 hover:bg-pink-600 transition flex items-center justify-center shadow-lg"><i class="fa-solid fa-bookmark text-xl"></i></button>
-            </div>
-        </div>
-        <div class="mt-8 pt-6 border-t border-slate-800 flex items-center justify-between">
-            <div class="flex gap-2">
-                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-ping"></span>
-                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Neural Link Active</span>
-            </div>
-            <button onclick="closePopup()" class="text-xs font-black text-slate-400 hover:text-white uppercase tracking-tighter">Dismiss</button>
-        </div>
-    </div>
-
-    <div id="dashboard-overlay" class="fixed inset-0 z-[2500] bg-slate-950/95 hidden flex items-center justify-center p-8">
-        <div class="max-w-5xl w-full glass-card p-12 border-t-8 border-indigo-500 relative">
-            <button onclick="toggleDashboard()" class="absolute top-8 right-8 text-slate-500 hover:text-white"><i class="fa-solid fa-circle-xmark text-3xl"></i></button>
-            <h2 class="text-5xl font-black italic tracking-tighter mb-12">SYSTEM <span class="text-indigo-500">ANALYTICS</span></h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                <div class="bg-slate-900/80 p-8 rounded-[32px] border border-slate-800 text-center">
-                    <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest">Knowledge Base</p>
-                    <span id="stat-vocab" class="text-6xl font-black text-indigo-500">0</span>
-                    <p class="text-[10px] font-bold mt-2 text-indigo-300">Words Mastered</p>
-                </div>
-                <div class="bg-slate-900/80 p-8 rounded-[32px] border border-slate-800 text-center">
-                    <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest">Neural Load</p>
-                    <span class="text-6xl font-black text-pink-500">FAST</span>
-                    <p class="text-[10px] font-bold mt-2 text-pink-300">Engine Status</p>
-                </div>
-                <div class="bg-slate-900/80 p-8 rounded-[32px] border border-slate-800 text-center">
-                    <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest">Session ID</p>
-                    <span id="user-status-text" class="text-4xl font-black text-amber-500">GUEST</span>
-                </div>
-            </div>
-            <div class="h-[300px]">
-                <canvas id="learningChart"></canvas>
+            <div class="flex flex-col gap-2">
+                <button onclick="speak()" class="w-12 h-12 rounded-xl bg-slate-800 hover:bg-indigo-600 transition flex items-center justify-center"><i class="fa-solid fa-volume-high"></i></button>
+                <button onclick="saveVocab()" class="w-12 h-12 rounded-xl bg-slate-800 hover:bg-pink-600 transition flex items-center justify-center"><i class="fa-solid fa-bookmark"></i></button>
             </div>
         </div>
+        <button onclick="closePopup()" class="mt-6 text-[10px] font-black text-slate-500 uppercase hover:text-white transition">Đóng cửa sổ</button>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        // HIGH-PERFORMANCE CORE STATE
-        const App = {
-            state: {
-                user: JSON.parse(localStorage.getItem('lingopro_user')) || null,
-                notebook: [],
-                translateCache: new Map(), // Cực quan trọng để dịch tức thì
-                player: null,
-                currentTranslation: { src: '', vi: '' },
-                chart: null
-            },
-
-            init() {
-                this.loadUserData();
-                this.bindEvents();
-                setTimeout(() => {
-                    gsap.to('#loader', { opacity: 0, pointerEvents: 'none', duration: 0.8 });
-                }, 1200);
-            },
-
-            bindEvents() {
-                document.getElementById('process-btn').onclick = () => this.processInput();
-                // Close popup on click outside
-                window.onclick = (e) => {
-                    if (!e.target.closest('#translation-popup') && !e.target.closest('.source-word')) {
-                        this.closePopup();
-                    }
-                }
-            },
-
-            loadUserData() {
-                if (this.state.user) {
-                    const db = JSON.parse(localStorage.getItem('lingopro_db') || '[]');
-                    const found = db.find(u => u.username === this.state.user.username);
-                    this.state.notebook = found ? found.vocab : [];
-                    
-                    document.getElementById('guest-tools').classList.add('hidden');
-                    document.getElementById('user-profile').classList.remove('hidden');
-                    document.getElementById('display-username').innerText = this.state.user.username;
-                    document.getElementById('user-status-text').innerText = "V.I.P";
-                    this.renderNotebook();
-                }
-            },
-
-            async translate(text) {
-                const target = document.getElementById('target-lang').value;
-                const cleanText = text.trim();
-                if (!cleanText) return;
-
-                // 1. Kiểm tra cache (Tốc độ 0ms)
-                if (this.state.translateCache.has(cleanText)) {
-                    this.showPopup(cleanText, this.state.translateCache.get(cleanText));
-                    return;
-                }
-
-                // 2. Hiện trạng thái chờ
-                const popVi = document.getElementById('pop-vi');
-                document.getElementById('pop-src').innerText = cleanText;
-                popVi.innerText = "Processing...";
-                popVi.classList.add('translating-pulse');
-                gsap.to('#translation-popup', { bottom: 40, duration: 0.5, ease: "back.out(1.7)" });
-
-                try {
-                    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(cleanText)}`);
-                    const data = await res.json();
-                    const result = data[0][0][0];
-
-                    // Lưu vào cache để lần sau nhấn lại là hiện ngay
-                    this.state.translateCache.set(cleanText, result);
-                    this.showPopup(cleanText, result);
-                } catch (e) {
-                    popVi.innerText = "Error Link";
-                } finally {
-                    popVi.classList.remove('translating-pulse');
-                }
-            },
-
-            showPopup(src, vi) {
-                document.getElementById('pop-src').innerText = src;
-                document.getElementById('pop-vi').innerText = vi;
-                this.state.currentTranslation = { src, vi };
-                gsap.to('#translation-popup', { bottom: 40, duration: 0.5, ease: "back.out(1.7)" });
-            },
-
-            closePopup() {
-                gsap.to('#translation-popup', { bottom: -400, duration: 0.3 });
-            },
-
-            processInput() {
-                const text = document.getElementById('lyric-input').value.trim();
-                const ytUrl = document.getElementById('yt-url').value;
-                if (!text) return;
-
-                // Xử lý YouTube
-                const vid = ytUrl.match(/(?:https?:\/\/)?(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]+)/);
-                if (vid) {
-                    if (this.state.player) this.state.player.loadVideoById(vid[1]);
-                    else this.state.player = new YT.Player('player', { videoId: vid[1], width: '100%', height: '100%' });
-                }
-
-                this.renderLyrics(text);
-            },
-
-            // Tối ưu hóa hiệu suất Render bằng DocumentFragment
-            renderLyrics(text) {
-                const container = document.getElementById('lyric-display');
-                container.innerHTML = "";
-                const fragment = document.createDocumentFragment();
-                let wordsTotal = 0;
-
-                text.split('\n').forEach(line => {
-                    if (!line.trim()) return;
-                    const div = document.createElement('div');
-                    div.className = 'lyric-line';
-                    
-                    line.split(/(\s+)/).forEach(token => {
-                        if (/\s+/.test(token)) {
-                            div.appendChild(document.createTextNode(token));
-                        } else {
-                            const span = document.createElement('span');
-                            span.className = 'source-word';
-                            span.innerText = token;
-                            span.onclick = (e) => {
-                                e.stopPropagation();
-                                this.translate(token.replace(/[.,!?;:]/g, ""));
-                            };
-                            div.appendChild(span);
-                            wordsTotal++;
-                        }
-                    });
-                    fragment.appendChild(div);
-                });
-
-                container.appendChild(fragment);
-                document.getElementById('word-count').innerText = `${wordsTotal} WORDS`;
-                gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.4 });
-            },
-
-            saveToNotebook() {
-                if (!this.state.user) return this.toggleAuth('login');
-                const { src, vi } = this.state.currentTranslation;
-                if (!src || this.state.notebook.some(x => x.src === src)) return;
-
-                this.state.notebook.unshift({ src, vi, date: new Date().toISOString() });
-                this.updateDatabase();
-                this.renderNotebook();
-                
-                // Hiệu ứng lưu thành công
-                gsap.from('#notebook-list div:first-child', { scale: 0.8, opacity: 0, duration: 0.3 });
-            },
-
-            renderNotebook() {
-                const list = document.getElementById('notebook-list');
-                list.innerHTML = "";
-                this.state.notebook.forEach((item, i) => {
-                    const div = document.createElement('div');
-                    div.className = 'glass-card p-4 flex justify-between items-center group hover:border-indigo-500/50 transition-colors';
-                    div.innerHTML = `
-                        <div>
-                            <p class="text-indigo-400 font-black text-sm uppercase">${item.src}</p>
-                            <p class="text-xs text-slate-400 font-bold">${item.vi}</p>
-                        </div>
-                        <button onclick="App.removeVocab(${i})" class="w-8 h-8 rounded-full hover:bg-red-500/10 text-slate-600 hover:text-red-500 transition opacity-0 group-hover:opacity-100">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    `;
-                    list.appendChild(div);
-                });
-            },
-
-            removeVocab(i) {
-                this.state.notebook.splice(i, 1);
-                this.updateDatabase();
-                this.renderNotebook();
-            },
-
-            updateDatabase() {
-                const db = JSON.parse(localStorage.getItem('lingopro_db') || '[]');
-                const idx = db.findIndex(u => u.username === this.state.user.username);
-                if (idx !== -1) {
-                    db[idx].vocab = this.state.notebook;
-                    localStorage.setItem('lingopro_db', JSON.stringify(db));
-                }
-            }
+        const state = {
+            user: JSON.parse(localStorage.getItem('lingopro_active')) || null,
+            notebook: [],
+            current: { src: '', vi: '' }
         };
 
-        // UI WRAPPERS
+        // --- HỆ THỐNG MÃ HÓA & AUTH ---
         function toggleAuth(type) {
             document.getElementById('auth-overlay').style.display = 'flex';
-            document.getElementById('login-form').classList.toggle('hidden', type !== 'login');
-            document.getElementById('signup-form').classList.toggle('hidden', type !== 'signup');
+            document.getElementById('login-section').classList.toggle('hidden', type !== 'login');
+            document.getElementById('signup-section').classList.toggle('hidden', type !== 'signup');
         }
+
         function closeAuth() { document.getElementById('auth-overlay').style.display = 'none'; }
 
+        // Đăng ký với mã hóa SHA-256
         function handleSignup() {
-            const u = document.getElementById('reg-user').value, p = document.getElementById('reg-pass').value;
-            if(!u || !p) return alert("Vui lòng nhập đủ!");
-            const db = JSON.parse(localStorage.getItem('lingopro_db') || '[]');
-            if(db.some(x => x.username === u)) return alert("User đã tồn tại!");
-            db.push({username: u, password: p, vocab: []});
-            localStorage.setItem('lingopro_db', JSON.stringify(db));
-            alert("Đã khởi tạo ID. Hãy đăng nhập!");
+            const u = document.getElementById('s-user').value, p = document.getElementById('s-pass').value;
+            if(!u || p.length < 6) return alert("Username không được để trống và Pass >= 6 ký tự!");
+
+            const db = JSON.parse(localStorage.getItem('lingopro_users_db') || '[]');
+            if(db.some(x => x.username === u)) return alert("Tên tài khoản này đã có người sử dụng!");
+
+            // MÃ HÓA MẬT KHẨU TRƯỚC KHI LƯU
+            const hashedPassword = CryptoJS.SHA256(p).toString();
+            
+            db.push({ username: u, password: hashedPassword, vocab: [] });
+            localStorage.setItem('lingopro_users_db', JSON.stringify(db));
+            
+            alert("Đăng ký thành công! Mật khẩu của bạn đã được mã hóa an toàn.");
             toggleAuth('login');
         }
 
+        // Đăng nhập với so khớp mã hóa
         function handleLogin() {
-            const u = document.getElementById('login-user').value, p = document.getElementById('login-pass').value;
-            const db = JSON.parse(localStorage.getItem('lingopro_db') || '[]');
-            const user = db.find(x => x.username === u && x.password === p);
+            const u = document.getElementById('l-user').value, p = document.getElementById('l-pass').value;
+            const db = JSON.parse(localStorage.getItem('lingopro_users_db') || '[]');
+            
+            // Mã hóa mật khẩu vừa nhập để so sánh với bản lưu trong DB
+            const hashedInput = CryptoJS.SHA256(p).toString();
+            const user = db.find(x => x.username === u && x.password === hashedInput);
+
             if(user) {
-                localStorage.setItem('lingopro_user', JSON.stringify(user));
+                state.user = { username: user.username };
+                localStorage.setItem('lingopro_active', JSON.stringify(state.user));
                 location.reload();
-            } else alert("Sai thông tin!");
-        }
-
-        function logout() { localStorage.removeItem('lingopro_user'); location.reload(); }
-
-        function speakText() {
-            const msg = new SpeechSynthesisUtterance(App.state.currentTranslation.src);
-            msg.lang = 'en-US';
-            window.speechSynthesis.speak(msg);
-        }
-
-        function toggleDashboard() {
-            const d = document.getElementById('dashboard-overlay');
-            d.classList.toggle('hidden');
-            if(!d.classList.contains('hidden')) {
-                document.getElementById('stat-vocab').innerText = App.state.notebook.length;
-                initChart();
+            } else {
+                alert("Sai thông tin đăng nhập! Hệ thống từ chối truy cập.");
             }
         }
 
-        function initChart() {
-            const ctx = document.getElementById('learningChart').getContext('2d');
-            if (App.state.chart) App.state.chart.destroy();
-            App.state.chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Mastery Level',
-                        data: [5, 12, 18, 14, 25, App.state.notebook.length, 0],
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 4,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { display: false },
-                        x: { grid: { display: false }, border: { display: false } }
-                    }
-                }
-            });
+        function logout() {
+            localStorage.removeItem('lingopro_active');
+            location.reload();
         }
 
-        // START ENGINE
-        App.init();
-        window.App = App; // Export for inline onclicks
+        // --- CORE LOGIC ---
+        function initApp() {
+            if(state.user) {
+                document.getElementById('auth-controls').classList.add('hidden');
+                document.getElementById('user-display').classList.remove('hidden');
+                document.getElementById('username-tag').innerText = state.user.username;
+                
+                const db = JSON.parse(localStorage.getItem('lingopro_users_db') || '[]');
+                const found = db.find(x => x.username === state.user.username);
+                state.notebook = found ? found.vocab : [];
+                renderNotebook();
+            }
+            setTimeout(() => gsap.to('#loader', { opacity: 0, pointerEvents: 'none' }), 1000);
+        }
+
+        document.getElementById('process-btn').onclick = () => {
+            const text = document.getElementById('lyric-input').value.trim();
+            const yt = document.getElementById('yt-url').value;
+            if(!text) return;
+
+            const vid = yt.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+            if(vid) {
+                if(window.ytPlayer) window.ytPlayer.loadVideoById(vid[1]);
+                else window.ytPlayer = new YT.Player('player', { videoId: vid[1] });
+            }
+            renderLyrics(text);
+        };
+
+        function renderLyrics(text) {
+            const container = document.getElementById('lyric-display');
+            container.innerHTML = "";
+            text.split('\n').forEach(line => {
+                if(!line.trim()) return;
+                const div = document.createElement('div');
+                div.className = "lyric-line";
+                line.split(/\s+/).forEach(word => {
+                    const span = document.createElement('span');
+                    span.className = "source-word";
+                    span.innerText = word + " ";
+                    span.onclick = () => translate(word.replace(/[.,!?;:]/g, ""));
+                    div.appendChild(span);
+                });
+                container.appendChild(div);
+            });
+            gsap.from('.lyric-line', { opacity: 0, y: 10, stagger: 0.05 });
+        }
+
+        async function translate(word) {
+            const target = document.getElementById('target-lang').value;
+            document.getElementById('pop-src').innerText = word;
+            document.getElementById('pop-vi').innerText = "...";
+            gsap.to('#translation-popup', { bottom: 30, duration: 0.5, ease: "back.out" });
+
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${word}`);
+                const data = await res.json();
+                state.current = { src: word, vi: data[0][0][0] };
+                document.getElementById('pop-vi').innerText = state.current.vi;
+            } catch { document.getElementById('pop-vi').innerText = "Lỗi kết nối"; }
+        }
+
+        function saveVocab() {
+            if(!state.user) return toggleAuth('login');
+            if(state.notebook.some(x => x.src === state.current.src)) return;
+
+            state.notebook.unshift({...state.current});
+            const db = JSON.parse(localStorage.getItem('lingopro_users_db') || '[]');
+            const idx = db.findIndex(x => x.username === state.user.username);
+            db[idx].vocab = state.notebook;
+            localStorage.setItem('lingopro_users_db', JSON.stringify(db));
+            renderNotebook();
+        }
+
+        function renderNotebook() {
+            const list = document.getElementById('notebook-list');
+            list.innerHTML = state.notebook.map((item, i) => `
+                <div class="glass-card p-4 flex justify-between items-center group">
+                    <div>
+                        <p class="text-indigo-400 font-black text-xs uppercase">${item.src}</p>
+                        <p class="text-sm font-bold">${item.vi}</p>
+                    </div>
+                    <button onclick="removeVocab(${i})" class="text-slate-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function removeVocab(i) {
+            state.notebook.splice(i, 1);
+            const db = JSON.parse(localStorage.getItem('lingopro_users_db') || '[]');
+            const idx = db.findIndex(x => x.username === state.user.username);
+            db[idx].vocab = state.notebook;
+            localStorage.setItem('lingopro_users_db', JSON.stringify(db));
+            renderNotebook();
+        }
+
+        function closePopup() { gsap.to('#translation-popup', { bottom: -400 }); }
+        function speak() { window.speechSynthesis.speak(new SpeechSynthesisUtterance(state.current.src)); }
+
+        initApp();
     </script>
 </body>
 </html>
