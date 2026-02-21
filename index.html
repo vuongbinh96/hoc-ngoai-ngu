@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro Enterprise - Professional Language Learning Platform</title>
+    <title>LingoPro Enterprise v6.0 - Ultimate Learning OS</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -13,325 +13,369 @@
 
     <style>
         :root {
-            --primary: #6366f1;
-            --secondary: #ec4899;
-            --accent: #f59e0b;
-            --bg-dark: #0f172a;
-            --card-dark: #1e293b;
+            --primary: #6366f1; --secondary: #ec4899; --accent: #f59e0b;
+            --bg-dark: #070b14; --card-dark: #111827;
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-dark);
-            color: #f8fafc;
-            overflow: hidden;
+            color: #f1f5f9;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        /* UI ENHANCEMENTS */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+        }
 
-        /* Glassmorphism */
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+        .gradient-border {
+            position: relative;
+            border-radius: 28px;
+            background: linear-gradient(to right, #6366f1, #ec4899);
+            padding: 2px;
+        }
+
+        .gradient-border > div {
+            background: var(--bg-dark);
+            border-radius: 26px;
+            height: 100%;
         }
 
         .source-word {
             display: inline-block;
             cursor: pointer;
-            padding: 0 2px;
-            border-radius: 4px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
+            padding: 2px 4px;
+            border-radius: 6px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .source-word:hover {
             background: var(--primary);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            transform: scale(1.15) rotate(-1deg);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
         }
 
         .lyric-line {
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            border-radius: 12px;
-            transition: background 0.3s;
-            border-left: 3px solid transparent;
+            padding: 16px 24px;
+            margin-bottom: 12px;
+            border-radius: 20px;
+            transition: all 0.4s ease;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 5px solid transparent;
         }
 
         .lyric-line:hover {
-            background: rgba(255, 255, 255, 0.03);
-            border-left-color: var(--primary);
+            background: rgba(255, 255, 255, 0.07);
+            border-left-color: var(--secondary);
+            transform: translateX(10px);
         }
 
-        /* Popup Logic */
+        /* QUIZ ANIMATIONS */
+        .option-btn {
+            background: #1f2937;
+            border: 1px solid #374151;
+            padding: 18px;
+            border-radius: 16px;
+            font-weight: 700;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #374151;
+            border-color: #6366f1;
+            transform: translateY(-2px);
+        }
+
+        .option-correct { background: #10b981 !important; border-color: #059669 !important; color: white; }
+        .option-wrong { background: #ef4444 !important; border-color: #b91c1c !important; color: white; }
+
+        /* AUTH & POPUP */
         #translation-popup {
             position: fixed;
-            bottom: -300px;
+            bottom: -500px;
             left: 50%;
             transform: translateX(-50%);
-            width: 95%;
-            max-width: 500px;
+            width: 90%;
+            max-width: 650px;
             z-index: 1000;
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            transition: all 0.7s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        #translation-popup.active {
-            bottom: 40px;
-        }
+        #translation-popup.active { bottom: 40px; }
 
-        .stat-card {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .quiz-option {
-            background: #334155;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .quiz-option.correct { background: #10b981 !important; border-color: #059669; color: white; }
-        .quiz-option.wrong { background: #ef4444 !important; border-color: #dc2626; color: white; }
-
-        select, input, textarea {
-            background: #1e293b !important;
-            border: 1px solid #334155 !important;
-            color: white !important;
-        }
-
-        /* Auth UI */
         .auth-input {
             width: 100%;
-            padding: 12px 16px;
-            border-radius: 12px;
+            padding: 18px;
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 18px;
+            color: white;
             outline: none;
-            transition: border-color 0.3s;
+            transition: 0.3s;
         }
-        .auth-input:focus {
-            border-color: var(--primary) !important;
+
+        .auth-input:focus { border-color: var(--primary); ring: 4px rgba(99, 102, 241, 0.2); }
+
+        .toast-msg {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 20px 30px;
+            border-radius: 20px;
+            background: #1e293b;
+            color: white;
+            z-index: 9999;
+            box-shadow: 0 30px 60px -12px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transform: translateX(150%);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
+
+        .toast-msg.show { transform: translateX(0); }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="antialiased">
+<body>
 
-    <div id="loader" class="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center">
-        <div class="text-center">
-            <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-indigo-400 font-bold animate-pulse">LINGOPRO SYSTEM INITIALIZING...</p>
+    <div id="toast-box"></div>
+
+    <div id="loader" class="fixed inset-0 z-[9999] bg-[#070b14] flex flex-col items-center justify-center">
+        <div class="relative w-32 h-32 mb-8">
+            <div class="absolute inset-0 border-8 border-indigo-500/10 rounded-full"></div>
+            <div class="absolute inset-0 border-8 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <i class="fa-solid fa-bolt absolute inset-0 flex items-center justify-center text-3xl text-indigo-400 animate-pulse"></i>
         </div>
+        <h2 class="text-3xl font-black tracking-widest text-white italic">LINGOPRO <span class="text-indigo-500">SYSTEM</span></h2>
+        <p class="text-slate-500 font-bold mt-2 tracking-[0.3em] uppercase text-[10px]">Loading Enterprise Assets...</p>
     </div>
 
-    <nav class="h-16 border-b border-slate-800 px-6 flex items-center justify-between bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-        <div class="flex items-center gap-2">
-            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <i class="fa-solid fa-bolt text-white"></i>
+    <nav class="h-24 border-b border-white/5 px-10 flex items-center justify-between bg-slate-950/90 backdrop-blur-3xl sticky top-0 z-[100]">
+        <div class="flex items-center gap-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-500/30 group cursor-pointer">
+                <i class="fa-solid fa-brain text-white text-2xl group-hover:rotate-12 transition-transform"></i>
             </div>
-            <span class="text-xl font-black tracking-tighter">LINGO<span class="text-indigo-500">PRO</span></span>
+            <div>
+                <h1 class="text-2xl font-black tracking-tighter uppercase leading-none">Lingo<span class="text-indigo-500">Pro</span></h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Server: Vietnam South-1</span>
+                </div>
+            </div>
         </div>
-        
-        <div class="flex items-center gap-4">
-            <div id="user-display" class="hidden md:flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-full border border-slate-700">
-                <div class="w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center text-[10px] font-bold" id="user-avatar">?</div>
-                <span class="text-xs font-bold" id="user-name">Guest</span>
+
+        <div class="flex items-center gap-8">
+            <div id="user-badge" class="hidden lg:flex items-center gap-4 px-5 py-2.5 bg-white/5 rounded-2xl border border-white/10">
+                <div class="flex flex-col items-end">
+                    <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Active Operative</p>
+                    <p class="text-sm font-black" id="badge-name">Unknown</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-indigo-500 flex items-center justify-center font-black text-lg" id="badge-icon">?</div>
             </div>
-            <div class="hidden md:flex bg-slate-800 rounded-full px-4 py-1.5 items-center gap-3 border border-slate-700">
-                <i class="fa-solid fa-earth-americas text-slate-400 text-sm"></i>
-                <select id="target-lang" class="bg-transparent border-none text-xs font-bold focus:ring-0 cursor-pointer">
-                    <option value="vi">Tiếng Việt</option>
-                    <option value="en">English</option>
-                    <option value="ko">Korean</option>
-                    <option value="ja">Japanese</option>
-                </select>
+
+            <div class="flex gap-2">
+                <button onclick="toggleAchievements()" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 hover:bg-indigo-600 transition-all">
+                    <i class="fa-solid fa-trophy text-slate-400 hover:text-white"></i>
+                </button>
+                <button onclick="toggleDashboard()" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/10 hover:bg-pink-600 transition-all">
+                    <i class="fa-solid fa-chart-line text-slate-400 hover:text-white"></i>
+                </button>
             </div>
-            <button onclick="toggleDashboard()" class="p-2 hover:bg-slate-800 rounded-full transition"><i class="fa-solid fa-chart-simple text-indigo-400"></i></button>
-            <button id="main-auth-btn" onclick="handleAuthAction()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-indigo-600/20 uppercase">Login</button>
+
+            <button id="main-auth-btn" onclick="openAuthModal()" class="px-10 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] transition-all shadow-2xl shadow-indigo-600/30 active:scale-95">
+                Connect ID
+            </button>
         </div>
     </nav>
 
-    <main class="flex h-[calc(100vh-64px)] overflow-hidden">
-        <aside class="w-full md:w-[400px] border-r border-slate-800 overflow-y-auto p-6 space-y-6 hidden md:block">
-            <section class="space-y-4">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-video text-indigo-500"></i> Media Source
-                </h3>
-                <div class="glass-card p-4 space-y-3">
-                    <div id="player-container" class="aspect-video bg-black rounded-xl overflow-hidden shadow-inner">
-                        <div id="player"></div>
+    <main class="flex h-[calc(100vh-96px)]">
+        <aside class="w-[480px] border-r border-white/5 p-8 overflow-y-auto bg-slate-950/50">
+            <div class="space-y-10">
+                <section>
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-circle-play text-indigo-500"></i> Multimedia Source
+                        </h3>
                     </div>
-                    <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none">
-                </div>
-            </section>
+                    <div class="glass-panel p-6 border border-white/5 shadow-inner">
+                        <div id="player-container" class="aspect-video bg-black rounded-2xl overflow-hidden mb-6 border border-white/10 relative">
+                            <div id="player"></div>
+                            <div id="player-empty" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
+                                <i class="fa-brands fa-youtube text-5xl text-white/10 mb-4"></i>
+                                <p class="text-[10px] font-bold text-slate-600 tracking-widest uppercase">Stream Offline</p>
+                            </div>
+                        </div>
+                        <div class="relative group">
+                            <input type="text" id="input-yt" placeholder="Paste YouTube URL here..." class="w-full p-5 bg-slate-950 rounded-2xl border border-white/10 outline-none focus:border-indigo-500 transition-all pl-14 text-sm font-medium">
+                            <i class="fa-solid fa-paperclip absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors"></i>
+                        </div>
+                    </div>
+                </section>
 
-            <section class="space-y-4">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-file-lines text-pink-500"></i> Lyrics / Text
-                </h3>
-                <div class="glass-card p-4 space-y-3">
-                    <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here..." class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"></textarea>
-                    <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition active:scale-95 shadow-xl">
-                        Compile Study Session
-                    </button>
-                </div>
-            </section>
-
-            <section class="space-y-4">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-gear text-amber-500"></i> Settings
-                </h3>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="p-3 bg-slate-800/50 rounded-xl text-center">
-                        <p class="text-[10px] text-slate-400 mb-1">SPEED</p>
-                        <select id="playback-speed" class="w-full text-xs font-bold bg-transparent">
-                            <option value="1">1.0x</option>
-                            <option value="0.75">0.75x</option>
-                            <option value="0.5">0.5x</option>
-                        </select>
+                <section>
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-file-code text-pink-500"></i> Session Script
+                        </h3>
                     </div>
-                    <div class="p-3 bg-slate-800/50 rounded-xl text-center">
-                        <p class="text-[10px] text-slate-400 mb-1">AUTO-SCROLL</p>
-                        <input type="checkbox" id="auto-scroll" checked class="accent-indigo-500">
+                    <div class="glass-panel p-6 border border-white/5">
+                        <textarea id="input-lyrics" rows="10" placeholder="Insert text to analyze..." class="w-full p-5 bg-slate-950 rounded-2xl border border-white/10 outline-none focus:border-pink-500 transition-all text-sm font-medium resize-none leading-relaxed"></textarea>
+                        <button id="btn-run" class="w-full mt-6 bg-gradient-to-r from-indigo-600 to-pink-600 py-6 rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-2xl active:scale-[0.98]">
+                            Compile & Initialize
+                        </button>
                     </div>
-                </div>
-            </section>
+                </section>
+            </div>
         </aside>
 
-        <section class="flex-1 relative flex flex-col overflow-hidden bg-slate-950/30">
-            <div id="reader-header" class="px-8 py-4 bg-slate-900/30 backdrop-blur-sm border-b border-slate-800 flex justify-between items-center">
+        <section class="flex-1 flex flex-col bg-slate-950/30 overflow-hidden">
+            <div class="p-8 border-b border-white/5 flex justify-between items-center bg-slate-900/40 backdrop-blur-xl">
                 <div>
-                    <h2 id="song-title" class="font-bold text-lg">Interactive Classroom</h2>
-                    <p class="text-xs text-slate-500">Select text to translate via Google Engine.</p>
+                    <h2 class="text-2xl font-black tracking-tighter uppercase italic" id="session-title">Laboratory Mode</h2>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">Real-time word parsing active</p>
                 </div>
-                <div class="flex gap-2">
-                    <span id="word-count-badge" class="bg-indigo-500/20 text-indigo-400 text-[10px] font-bold px-3 py-1 rounded-full border border-indigo-500/30">0 WORDS</span>
+                <div class="flex gap-4">
+                    <div class="px-4 py-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20 flex items-center gap-3">
+                        <span class="text-[9px] font-black text-indigo-400 uppercase">Engine</span>
+                        <select id="lang-target" class="bg-transparent text-xs font-black outline-none cursor-pointer">
+                            <option value="vi">VIETNAMESE</option>
+                            <option value="en">ENGLISH</option>
+                            <option value="ko">KOREAN</option>
+                            <option value="ja">JAPANESE</option>
+                        </select>
+                    </div>
+                    <button onclick="startQuizSession()" class="px-6 py-2 bg-pink-600/10 text-pink-500 border border-pink-500/20 rounded-xl text-xs font-black hover:bg-pink-600 hover:text-white transition-all">
+                        ENTER QUIZ
+                    </button>
                 </div>
             </div>
 
-            <div id="lyric-display" class="flex-1 overflow-y-auto px-8 py-10 space-y-4" onmouseup="handleSelection()">
-                <div class="flex flex-col items-center justify-center h-full opacity-20 text-center">
-                    <i class="fa-solid fa-book-open text-8xl mb-6"></i>
-                    <p class="text-2xl font-bold">Your Interactive Classroom</p>
-                    <p class="max-w-md mt-2">Paste lyrics on the left to begin.</p>
+            <div id="reader-output" class="flex-1 overflow-y-auto p-12 space-y-4" onmouseup="onSelection()">
+                <div class="h-full flex flex-col items-center justify-center opacity-10 select-none">
+                    <i class="fa-solid fa-terminal text-9xl mb-10 animate-pulse"></i>
+                    <p class="text-3xl font-black uppercase tracking-[0.5em]">System Idle</p>
                 </div>
             </div>
         </section>
 
-        <aside id="notebook-sidebar" class="w-[350px] border-l border-slate-800 overflow-y-auto p-6 hidden xl:block bg-slate-900/20">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Saved Vocab</h3>
-                <button onclick="clearNotebook()" class="text-[10px] text-red-400 hover:underline">Clear All</button>
+        <aside class="w-[400px] border-l border-white/5 bg-slate-950/80 flex flex-col">
+            <div class="p-8 border-b border-white/5 flex justify-between items-center">
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Local Database</p>
+                    <h3 class="text-3xl font-black italic tracking-tighter mt-1"><span id="count-vocab">0</span> <span class="text-indigo-500 text-sm">KEYS</span></h3>
+                </div>
+                <button onclick="wipeDatabase()" class="p-3 text-red-500/50 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
             </div>
-            <div id="notebook-list" class="space-y-3"></div>
+            
+            <div id="vocab-list" class="flex-1 overflow-y-auto p-6 space-y-4">
+                </div>
+            
+            <div class="p-6 bg-indigo-600/5 border-t border-white/5">
+                <button onclick="exportData()" class="w-full py-4 rounded-xl border border-indigo-500/30 text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">
+                    Backup Cloud Data (JSON)
+                </button>
+            </div>
         </aside>
     </main>
 
-    <div id="translation-popup" class="glass-card shadow-2xl p-6 border-t-4 border-indigo-500">
-        <div class="flex justify-between items-start mb-4">
-            <div class="space-y-1 pr-4">
-                <p id="pop-src" class="text-sm font-bold text-indigo-400 break-words leading-tight"></p>
-                <h2 id="pop-vi" class="text-3xl font-black text-white leading-tight"></h2>
-            </div>
-            <div class="flex flex-col gap-2">
-                <button onclick="speakText()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-indigo-600 text-white flex items-center justify-center transition shadow-lg">
-                    <i class="fa-solid fa-volume-high"></i>
-                </button>
-                <button onclick="saveToNotebook()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-pink-600 text-white flex items-center justify-center transition shadow-lg">
-                    <i class="fa-solid fa-bookmark"></i>
-                </button>
-            </div>
-        </div>
-        <div class="flex items-center gap-2 pt-4 border-t border-slate-700">
-            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Context Engine AI</span>
-            <div class="flex-1 h-[1px] bg-slate-700"></div>
-            <button onclick="closePopup()" class="text-xs text-slate-400 hover:text-white">Close</button>
-        </div>
-    </div>
-
-    <div id="auth-overlay" class="fixed inset-0 z-[3000] bg-slate-950/90 backdrop-blur-xl hidden flex items-center justify-center p-4">
-        <div class="max-w-md w-full glass-card p-8 border-t-4 border-indigo-500">
-            <div id="auth-login">
-                <h2 class="text-3xl font-black mb-6 italic tracking-tighter">MEMBER LOGIN</h2>
+    <div id="modal-auth" class="fixed inset-0 z-[1000] bg-slate-950/95 backdrop-blur-3xl flex items-center justify-center p-6 hidden">
+        <div class="max-w-md w-full glass-panel p-10 border-t-8 border-indigo-600 shadow-2xl">
+            <div id="view-login">
+                <h2 class="text-4xl font-black italic tracking-tighter mb-2 uppercase">Core Access</h2>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-10">Verification required to sync nodes.</p>
+                
                 <div class="space-y-4">
-                    <input type="text" id="login-user" placeholder="Username" class="auth-input">
-                    <input type="password" id="login-pass" placeholder="Password" class="auth-input">
-                    <button onclick="handleLogin()" class="w-full bg-indigo-600 py-4 rounded-xl font-bold hover:bg-indigo-500 transition shadow-lg">ENTER SYSTEM</button>
-                    <p class="text-center text-sm text-slate-400">New student? <a href="#" onclick="switchAuth(false)" class="text-indigo-400 font-bold hover:underline">Create Account</a></p>
+                    <div class="relative group">
+                        <i class="fa-solid fa-fingerprint absolute left-5 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-indigo-500 transition-colors"></i>
+                        <input type="text" id="auth-user" placeholder="Username" class="auth-input pl-14">
+                    </div>
+                    <div class="relative group">
+                        <i class="fa-solid fa-shield-halved absolute left-5 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-indigo-500 transition-colors"></i>
+                        <input type="password" id="auth-pass" placeholder="Password" class="auth-input pl-14">
+                    </div>
+                    <button onclick="handleLogin()" class="w-full py-5 bg-indigo-600 rounded-2xl font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-indigo-500 transition-all mt-4">Initialize Login</button>
+                    <p class="text-center text-xs text-slate-600 font-bold mt-8">New operative? <a href="#" onclick="switchAuthTab(false)" class="text-indigo-400 hover:underline">Create ID Profile</a></p>
                 </div>
             </div>
-            <div id="auth-signup" class="hidden">
-                <h2 class="text-3xl font-black mb-6 italic tracking-tighter text-pink-500">NEW REGISTRATION</h2>
+
+            <div id="view-signup" class="hidden">
+                <h2 class="text-4xl font-black italic tracking-tighter mb-2 uppercase text-pink-500">New Protocol</h2>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-10">Creating personal data partitions.</p>
+                
                 <div class="space-y-4">
                     <input type="text" id="reg-user" placeholder="Choose Username" class="auth-input">
-                    <input type="password" id="reg-pass" placeholder="Create Password" class="auth-input">
-                    <button onclick="handleSignup()" class="w-full bg-pink-600 py-4 rounded-xl font-bold hover:bg-pink-500 transition shadow-lg">REGISTER NOW</button>
-                    <p class="text-center text-sm text-slate-400">Already member? <a href="#" onclick="switchAuth(true)" class="text-indigo-400 font-bold hover:underline">Login here</a></p>
+                    <input type="password" id="reg-pass" placeholder="Create Access Key" class="auth-input">
+                    <button onclick="handleSignup()" class="w-full py-5 bg-pink-600 rounded-2xl font-black uppercase tracking-[0.2em] shadow-2xl hover:bg-pink-500 transition-all mt-4">Create Operative</button>
+                    <p class="text-center text-xs text-slate-600 font-bold mt-8">Back to base? <a href="#" onclick="switchAuthTab(true)" class="text-indigo-400 hover:underline">Return to Login</a></p>
                 </div>
             </div>
-            <button onclick="toggleAuthModal()" class="mt-4 w-full text-xs text-slate-500 hover:text-white transition">Cancel</button>
+            <button onclick="closeAuthModal()" class="w-full text-slate-700 hover:text-white transition-colors text-[10px] font-black uppercase mt-10 tracking-widest">Abort Verification</button>
         </div>
     </div>
 
-    <div id="dashboard-overlay" class="fixed inset-0 z-[2500] bg-slate-950/90 backdrop-blur-xl hidden flex items-center justify-center p-4">
-        <div class="max-w-4xl w-full glass-card p-8 border-t-4 border-indigo-500">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-black italic tracking-tighter"><i class="fa-solid fa-chart-line text-indigo-500 mr-2"></i> LEARNING ANALYTICS</h2>
-                <button onclick="toggleDashboard()" class="w-10 h-10 bg-slate-800 rounded-full transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="stat-card p-6 rounded-3xl text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total Vocabulary</p>
-                    <h3 id="stat-vocab" class="text-5xl font-black text-indigo-500">0</h3>
+    <div id="translation-popup" class="glass-panel p-8 shadow-[0_-30px_100px_rgba(0,0,0,0.6)] border-t-4 border-indigo-500">
+        <div class="flex justify-between items-start gap-10">
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="text-[9px] font-black bg-indigo-500 px-2 py-0.5 rounded text-white uppercase">Source</span>
+                    <p id="pop-raw" class="text-xs font-bold text-slate-400 italic"></p>
                 </div>
-                <div class="stat-card p-6 rounded-3xl text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Quiz Accuracy</p>
-                    <h3 id="stat-accuracy" class="text-5xl font-black text-pink-500">0%</h3>
-                </div>
-                <div class="stat-card p-6 rounded-3xl text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">User Status</p>
-                    <h3 class="text-2xl font-black text-amber-500" id="stat-status">VERIFIED</h3>
-                </div>
+                <h2 id="pop-trans" class="text-5xl font-black leading-tight tracking-tighter uppercase italic">...</h2>
             </div>
-            <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
-                <canvas id="learningChart" height="150"></canvas>
+            <div class="flex flex-col gap-3">
+                <button onclick="playAudio()" class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-xl group">
+                    <i class="fa-solid fa-volume-high text-xl text-slate-400 group-hover:text-white"></i>
+                </button>
+                <button onclick="saveToLexicon()" class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all shadow-xl group">
+                    <i class="fa-solid fa-plus text-xl text-slate-400 group-hover:text-white"></i>
+                </button>
             </div>
+        </div>
+        <div class="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+            <p class="text-[9px] font-bold text-slate-600 tracking-[0.3em] uppercase">Neural Engine Sync Active</p>
+            <button onclick="hidePopup()" class="text-xs font-black text-slate-400 hover:text-white transition-colors">DISMISS</button>
         </div>
     </div>
 
-    <div id="quiz-overlay" class="fixed inset-0 z-[2000] bg-slate-950/95 backdrop-blur-xl hidden flex items-center justify-center p-4">
-        <div class="max-w-2xl w-full">
-            <div id="quiz-container" class="glass-card p-10 relative overflow-hidden">
-                <div id="quiz-loading" class="text-center py-20">
-                    <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p class="font-bold text-slate-400">Generating dynamic exam...</p>
-                </div>
-                <div id="quiz-main" class="hidden">
-                    <div class="flex justify-between items-center mb-10">
-                        <span id="quiz-step" class="text-xs font-black bg-indigo-500 px-3 py-1 rounded-full uppercase">Question 1/10</span>
-                        <div class="flex items-center gap-2 text-pink-500">
-                            <i class="fa-solid fa-heart"></i>
-                            <span id="quiz-lives" class="font-bold">3</span>
+    <div id="quiz-overlay" class="fixed inset-0 z-[2000] bg-slate-950 flex items-center justify-center p-6 hidden">
+        <div class="max-w-3xl w-full">
+            <div class="glass-panel p-12 relative overflow-hidden">
+                <div id="quiz-game">
+                    <div class="flex justify-between items-center mb-12">
+                        <div class="flex items-center gap-4">
+                            <span class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center font-black" id="q-step">1</span>
+                            <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Question Analysis</h4>
+                        </div>
+                        <div class="flex gap-2" id="quiz-lives">
+                            <i class="fa-solid fa-heart text-pink-600"></i>
+                            <i class="fa-solid fa-heart text-pink-600"></i>
+                            <i class="fa-solid fa-heart text-pink-600"></i>
                         </div>
                     </div>
-                    <h2 id="quiz-question" class="text-4xl font-black mb-10 text-center">Word</h2>
-                    <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+                    <h2 id="q-text" class="text-6xl font-black text-center mb-16 italic tracking-tighter">WORD</h2>
+                    
+                    <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        </div>
                 </div>
-                <div id="quiz-finish" class="hidden text-center">
-                    <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                        <i class="fa-solid fa-trophy text-4xl"></i>
+
+                <div id="quiz-result" class="hidden text-center py-10">
+                    <div class="w-24 h-24 bg-gradient-to-tr from-yellow-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+                        <i class="fa-solid fa-trophy text-4xl text-white"></i>
                     </div>
-                    <h2 class="text-4xl font-black mb-2">Session Complete!</h2>
-                    <p id="quiz-final-score" class="text-xl text-slate-400 mb-8">Score: 0/10</p>
-                    <div class="flex gap-4">
-                        <button onclick="startQuiz()" class="flex-1 bg-indigo-600 py-4 rounded-xl font-bold">Try Again</button>
-                        <button onclick="closeQuiz()" class="flex-1 bg-slate-800 py-4 rounded-xl font-bold">Close</button>
-                    </div>
+                    <h2 class="text-5xl font-black mb-2 uppercase italic tracking-tighter">Session Over</h2>
+                    <p class="text-slate-500 font-bold mb-10" id="res-score">Performance: 0%</p>
+                    <button onclick="closeQuiz()" class="px-12 py-5 bg-indigo-600 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-500 transition-all">Close Console</button>
                 </div>
             </div>
         </div>
@@ -340,362 +384,346 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         /**
-         * LINGOPRO ENTERPRISE - VERSION 4.0
-         * SECURE AUTHENTICATION SYSTEM
+         * LINGOPRO ENTERPRISE OS v6.0
+         * INTERNAL DATA ENGINE
          */
 
-        const state = {
-            currentUser: null,
+        const SYSTEM = {
+            user: null,
+            db: JSON.parse(localStorage.getItem('lingopro_enterprise_db')) || {},
             notebook: [],
             player: null,
-            currentTranslation: { src: '', vi: '' },
-            myChart: null,
-            quiz: { currentStep: 0, score: 0, lives: 3, data: [] }
+            current: { raw: '', trans: '' },
+            quiz: { active: false, data: [], step: 0, score: 0, lives: 3 }
         };
 
-        // --- AUTH & SECURITY LOGIC ---
+        // --- BOOTSTRAP ---
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                gsap.to('#loader', { opacity: 0, pointerEvents: 'none', duration: 1.2, ease: "power4.inOut" });
+                checkAutoLogin();
+            }, 2000);
+        });
 
-        // Secure Password Hashing (SHA-256)
-        async function hashPassword(password) {
-            const msgBuffer = new TextEncoder().encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        function toggleAuthModal() {
-            const modal = document.getElementById('auth-overlay');
-            modal.classList.toggle('hidden');
-        }
-
-        function switchAuth(isLogin) {
-            document.getElementById('auth-login').classList.toggle('hidden', !isLogin);
-            document.getElementById('auth-signup').classList.toggle('hidden', isLogin);
-        }
-
-        function handleAuthAction() {
-            if (state.currentUser) {
-                if (confirm("Logout from LingoPro?")) handleLogout();
-            } else {
-                toggleAuthModal();
+        function checkAutoLogin() {
+            const sid = localStorage.getItem('lingopro_active_sid');
+            if (sid && SYSTEM.db[sid]) {
+                loginSuccess(sid);
             }
+        }
+
+        // --- NOTIFICATION ENGINE ---
+        function notify(msg, type = 'success') {
+            const box = document.getElementById('toast-box');
+            const t = document.createElement('div');
+            t.className = `toast-msg show`;
+            if(type === 'error') t.style.borderLeft = '6px solid #ef4444';
+            else t.style.borderLeft = '6px solid #6366f1';
+            
+            t.innerHTML = `
+                <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center">
+                    <i class="fa-solid ${type === 'error' ? 'fa-triangle-exclamation text-red-500' : 'fa-check text-indigo-500'}"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase">System Notification</p>
+                    <p class="text-sm font-bold">${msg}</p>
+                </div>
+            `;
+            box.appendChild(t);
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 600); }, 4000);
+        }
+
+        // --- AUTH LOGIC (STRICT) ---
+        async function hash(str) {
+            const buf = new TextEncoder().encode(str);
+            const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function openAuthModal() { 
+            if(SYSTEM.user) {
+                if(confirm("Terminate session?")) {
+                    localStorage.removeItem('lingopro_active_sid');
+                    location.reload();
+                }
+            } else {
+                document.getElementById('modal-auth').classList.remove('hidden'); 
+            }
+        }
+
+        function closeAuthModal() { document.getElementById('modal-auth').classList.add('hidden'); }
+        
+        function switchAuthTab(toLogin) {
+            document.getElementById('view-login').classList.toggle('hidden', !toLogin);
+            document.getElementById('view-signup').classList.toggle('hidden', toLogin);
         }
 
         async function handleSignup() {
-            const user = document.getElementById('reg-user').value.trim();
-            const pass = document.getElementById('reg-pass').value.trim();
-            
-            if (user.length < 3 || pass.length < 5) {
-                return alert("Username > 3, Password > 5 characters!");
-            }
+            const u = document.getElementById('reg-user').value.trim().toLowerCase();
+            const p = document.getElementById('reg-pass').value.trim();
 
-            let users = JSON.parse(localStorage.getItem('lingopro_db')) || {};
-            if (users[user]) return alert("Username already exists!");
+            if(u.length < 3) return notify("Username too short!", "error");
+            if(p.length < 5) return notify("Access key too weak!", "error");
+            if(SYSTEM.db[u]) return notify("Identity already exists!", "error");
 
-            const hashedPass = await hashPassword(pass);
-            users[user] = {
-                password: hashedPass,
+            SYSTEM.db[u] = {
+                key: await hash(p),
                 notebook: [],
-                stats: { totalQuizzes: 0, avgScore: 0 }
+                stats: { xp: 0, level: 1 }
             };
-
-            localStorage.setItem('lingopro_db', JSON.stringify(users));
-            alert("Registration successful! Please login.");
-            switchAuth(true);
+            
+            saveDB();
+            notify("Identity Created. Ready for deployment.");
+            switchAuthTab(true);
         }
 
         async function handleLogin() {
-            const user = document.getElementById('login-user').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            const users = JSON.parse(localStorage.getItem('lingopro_db')) || {};
+            const u = document.getElementById('auth-user').value.trim().toLowerCase();
+            const p = document.getElementById('auth-pass').value.trim();
 
-            if (!users[user]) return alert("User not found!");
-
-            const hashedInput = await hashPassword(pass);
-            if (users[user].password === hashedInput) {
-                loginUser(user, users[user]);
+            if(!SYSTEM.db[u]) return notify("Identity not found in node!", "error");
+            
+            const hashed = await hash(p);
+            if(SYSTEM.db[u].key === hashed) {
+                loginSuccess(u);
             } else {
-                alert("Incorrect password!");
+                notify("Verification failed!", "error");
             }
         }
 
-        function loginUser(username, data) {
-            state.currentUser = username;
-            state.notebook = data.notebook || [];
+        function loginSuccess(u) {
+            SYSTEM.user = u;
+            SYSTEM.notebook = SYSTEM.db[u].notebook || [];
+            localStorage.setItem('lingopro_active_sid', u);
+
+            document.getElementById('user-badge').classList.remove('hidden');
+            document.getElementById('badge-name').innerText = u;
+            document.getElementById('badge-icon').innerText = u[0].toUpperCase();
+            document.getElementById('main-auth-btn').innerText = "DISCONNECT";
             
-            // Sync UI
-            localStorage.setItem('lingopro_session', username);
-            document.getElementById('user-name').innerText = username;
-            document.getElementById('user-avatar').innerText = username[0].toUpperCase();
-            document.getElementById('user-display').classList.remove('hidden');
-            document.getElementById('main-auth-btn').innerText = "Test Skills";
-            document.getElementById('main-auth-btn').setAttribute("onclick", "openQuiz()");
-            
-            updateNotebookUI();
-            toggleAuthModal();
-            alert(`Welcome back, ${username}!`);
+            renderNotebook();
+            closeAuthModal();
+            notify(`Welcome back, Operative ${u.toUpperCase()}`);
         }
 
-        function handleLogout() {
-            localStorage.removeItem('lingopro_session');
-            location.reload();
+        function saveDB() {
+            localStorage.setItem('lingopro_enterprise_db', JSON.stringify(SYSTEM.db));
         }
 
-        // --- CORE FUNCTIONALITY ---
+        // --- CORE FEATURES ---
+        document.getElementById('btn-run').onclick = function() {
+            const txt = document.getElementById('input-lyrics').value.trim();
+            const yt = document.getElementById('input-yt').value.trim();
 
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                gsap.to('#loader', { opacity: 0, pointerEvents: 'none', duration: 1 });
-                
-                // Check Auto-login
-                const session = localStorage.getItem('lingopro_session');
-                if (session) {
-                    const users = JSON.parse(localStorage.getItem('lingopro_db'));
-                    if (users && users[session]) loginUser(session, users[session]);
-                }
-            }, 1000);
-        });
+            if(!txt) return notify("No source material!", "error");
 
-        // Translation Engine
-        async function triggerTranslation(text) {
-            if (!text) return;
-            const pop = document.getElementById('translation-popup');
-            const popVi = document.getElementById('pop-vi');
-            const target = document.getElementById('target-lang').value;
-
-            document.getElementById('pop-src').innerText = text;
-            popVi.innerText = "Thinking...";
-            pop.classList.add('active');
-
-            try {
-                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(text)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                const result = data[0][0][0];
-                
-                popVi.innerText = result;
-                state.currentTranslation = { src: text, vi: result };
-            } catch (e) {
-                popVi.innerText = "Connection Error";
-            }
-        }
-
-        function handleSelection() {
-            const sel = window.getSelection().toString().trim();
-            if (sel.length > 1 && sel.length < 500) triggerTranslation(sel);
-        }
-
-        // Notebook Management
-        function saveToNotebook() {
-            if (!state.currentUser) {
-                alert("Login required to save words!");
-                return toggleAuthModal();
-            }
-
-            const { src, vi } = state.currentTranslation;
-            if (!src || learnedBefore(src)) return;
-
-            state.notebook.unshift({ src, vi, date: new Date().toLocaleDateString() });
-            syncUserDB();
-            updateNotebookUI();
-            
-            gsap.from('#notebook-sidebar', { borderColor: '#ec4899', borderWidth: 4, duration: 0.5 });
-        }
-
-        function syncUserDB() {
-            let users = JSON.parse(localStorage.getItem('lingopro_db'));
-            users[state.currentUser].notebook = state.notebook;
-            localStorage.setItem('lingopro_db', JSON.stringify(users));
-        }
-
-        function learnedBefore(word) {
-            return state.notebook.some(item => item.src.toLowerCase() === word.toLowerCase());
-        }
-
-        function updateNotebookUI() {
-            const list = document.getElementById('notebook-list');
-            list.innerHTML = state.notebook.length === 0 ? '<p class="text-xs text-slate-600 italic">Notebook empty.</p>' : '';
-
-            state.notebook.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'glass-card p-4 hover:border-indigo-500/50 transition cursor-pointer relative group mb-2';
-                div.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-xs font-bold text-indigo-400 mb-1">${item.src}</p>
-                            <p class="text-sm font-black text-white">${item.vi}</p>
-                        </div>
-                        <button onclick="removeVocab(event, ${index})" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition">
-                            <i class="fa-solid fa-trash-can text-[10px]"></i>
-                        </button>
-                    </div>
-                `;
-                div.onclick = () => speakText(item.src);
-                list.appendChild(div);
-            });
-        }
-
-        function removeVocab(e, index) {
-            e.stopPropagation();
-            state.notebook.splice(index, 1);
-            syncUserDB();
-            updateNotebookUI();
-        }
-
-        function clearNotebook() {
-            if (confirm("Clear all data?")) {
-                state.notebook = [];
-                syncUserDB();
-                updateNotebookUI();
-            }
-        }
-
-        // UI Interactions
-        function closePopup() { document.getElementById('translation-popup').classList.remove('active'); }
-
-        function toggleDashboard() {
-            const dash = document.getElementById('dashboard-overlay');
-            dash.classList.toggle('hidden');
-            if (!dash.classList.contains('hidden')) updateDashboardData();
-        }
-
-        // Process Content
-        document.getElementById('process-btn').addEventListener('click', function() {
-            const text = document.getElementById('lyric-input').value.trim();
-            const yt = document.getElementById('yt-url').value.trim();
-            if (!text) return alert("Enter content first!");
-
-            this.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> Processing...';
-            
-            // Video Init
-            const vId = extractVideoID(yt);
-            if (vId) {
-                if (state.player) state.player.loadVideoById(vId);
+            // YT Loader
+            if(yt.includes('v=')) {
+                const vid = yt.split('v=')[1].split('&')[0];
+                document.getElementById('player-empty').classList.add('hidden');
+                if(SYSTEM.player) SYSTEM.player.loadVideoById(vid);
                 else {
-                    state.player = new YT.Player('player', {
-                        videoId: vId, width: '100%', height: '100%',
-                        playerVars: { 'autoplay': 1, 'playsinline': 1 }
+                    SYSTEM.player = new YT.Player('player', {
+                        videoId: vid, width: '100%', height: '100%',
+                        playerVars: { 'autoplay': 1, 'modestbranding': 1 }
                     });
                 }
             }
 
-            setTimeout(() => {
-                renderLyrics(text);
-                this.innerHTML = 'Compile Study Session';
-            }, 800);
-        });
-
-        function extractVideoID(url) {
-            const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const m = url.match(reg);
-            return (m && m[2].length === 11) ? m[2] : null;
-        }
-
-        function renderLyrics(text) {
-            const container = document.getElementById('lyric-display');
-            container.innerHTML = "";
-            let count = 0;
-
-            text.split('\n').forEach(line => {
-                if (!line.trim()) return;
+            const out = document.getElementById('reader-output');
+            out.innerHTML = "";
+            txt.split('\n').forEach(line => {
+                if(!line.trim()) return;
                 const div = document.createElement('div');
                 div.className = 'lyric-line';
-                line.split(/(\s+)/).forEach(token => {
-                    if (/\s+/.test(token)) div.appendChild(document.createTextNode(token));
-                    else {
-                        const span = document.createElement('span');
-                        span.className = 'source-word';
-                        span.innerText = token;
-                        span.onclick = (e) => {
-                            e.stopPropagation();
-                            triggerTranslation(token.replace(/[.,!?;:]/g, ""));
-                        };
-                        div.appendChild(span);
-                        count++;
-                    }
+                line.split(/\s+/).forEach(w => {
+                    const span = document.createElement('span');
+                    span.className = 'source-word';
+                    span.innerText = w + ' ';
+                    span.onclick = (e) => { e.stopPropagation(); translateWord(w.replace(/[.,!?;:]/g, "")); };
+                    div.appendChild(span);
                 });
-                container.appendChild(div);
+                out.appendChild(div);
             });
-            document.getElementById('word-count-badge').innerText = `${count} WORDS`;
+            notify("Neural Sync Complete!");
+        };
+
+        async function translateWord(w) {
+            if(!w) return;
+            const target = document.getElementById('lang-target').value;
+            const pop = document.getElementById('translation-popup');
+            
+            document.getElementById('pop-raw').innerText = w;
+            document.getElementById('pop-trans').innerText = "ANALYZING...";
+            pop.classList.add('active');
+
+            try {
+                const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(w)}`);
+                const d = await r.json();
+                const res = d[0][0][0];
+                document.getElementById('pop-trans').innerText = res;
+                SYSTEM.current = { raw: w, trans: res };
+            } catch (e) {
+                notify("Translation node failure!", "error");
+            }
         }
 
-        function speakText(custom) {
-            const t = custom || state.currentTranslation.src;
-            if (!t) return;
-            const u = new SpeechSynthesisUtterance(t);
-            u.lang = 'en-US';
-            u.rate = document.getElementById('playback-speed').value;
-            window.speechSynthesis.speak(u);
+        function onSelection() {
+            const s = window.getSelection().toString().trim();
+            if(s.length > 1) translateWord(s);
         }
 
-        // Quiz System (Sơ lược)
-        function openQuiz() {
-            if (state.notebook.length < 4) return alert("Need 4+ words in Notebook!");
-            document.getElementById('quiz-overlay').style.display = 'flex';
-            startQuiz();
+        function hidePopup() { document.getElementById('translation-popup').classList.remove('active'); }
+
+        function saveToLexicon() {
+            if(!SYSTEM.user) return notify("Identification required!", "error");
+            if(SYSTEM.notebook.some(x => x.raw === SYSTEM.current.raw)) return notify("Key already exists.");
+
+            SYSTEM.notebook.unshift({ ...SYSTEM.current, id: Date.now() });
+            SYSTEM.db[SYSTEM.user].notebook = SYSTEM.notebook;
+            saveDB();
+            renderNotebook();
+            notify("Data Saved to Partition.");
+            hidePopup();
         }
 
-        function startQuiz() {
-            state.quiz = { currentStep: 0, score: 0, lives: 3, data: [] };
-            const pool = [...state.notebook].sort(() => Math.random() - 0.5).slice(0, 10);
-            state.quiz.data = pool.map(item => ({
-                q: item.src, a: item.vi,
-                options: [item.vi, ...state.notebook.filter(x=>x.vi!==item.vi).slice(0,3).map(x=>x.vi)].sort(()=>Math.random()-0.5)
-            }));
-            document.getElementById('quiz-loading').style.display = 'none';
-            document.getElementById('quiz-main').style.display = 'block';
-            document.getElementById('quiz-finish').style.display = 'none';
+        function renderNotebook() {
+            const list = document.getElementById('vocab-list');
+            document.getElementById('count-vocab').innerText = SYSTEM.notebook.length;
+            list.innerHTML = "";
+
+            SYSTEM.notebook.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'glass-panel p-5 border-l-4 border-indigo-600 hover:bg-white/5 transition-all group cursor-pointer';
+                el.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[9px] font-black text-indigo-400 uppercase tracking-tighter">${item.raw}</p>
+                            <p class="text-xl font-black italic tracking-tighter">${item.trans}</p>
+                        </div>
+                        <button onclick="delVocab(event, ${item.id})" class="opacity-0 group-hover:opacity-100 text-slate-700 hover:text-red-500 transition-all">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
+                    </div>
+                `;
+                el.onclick = () => {
+                    const m = new SpeechSynthesisUtterance(item.raw);
+                    window.speechSynthesis.speak(m);
+                };
+                list.appendChild(el);
+            });
+        }
+
+        function delVocab(e, id) {
+            e.stopPropagation();
+            SYSTEM.notebook = SYSTEM.notebook.filter(x => x.id !== id);
+            SYSTEM.db[SYSTEM.user].notebook = SYSTEM.notebook;
+            saveDB();
+            renderNotebook();
+        }
+
+        function playAudio() {
+            const m = new SpeechSynthesisUtterance(SYSTEM.current.raw);
+            window.speechSynthesis.speak(m);
+        }
+
+        // --- QUIZ ENGINE ---
+        function startQuizSession() {
+            if(SYSTEM.notebook.length < 4) return notify("Need 4+ keys to generate quiz!", "error");
+            
+            SYSTEM.quiz = { active: true, step: 0, score: 0, lives: 3, data: [] };
+            
+            // Generate Random Data
+            const pool = [...SYSTEM.notebook].sort(() => Math.random() - 0.5).slice(0, 10);
+            SYSTEM.quiz.data = pool.map(item => {
+                const others = SYSTEM.notebook.filter(x => x.raw !== item.raw).sort(() => Math.random() - 0.5).slice(0, 3);
+                const opts = [item.trans, ...others.map(o => o.trans)].sort(() => Math.random() - 0.5);
+                return { q: item.raw, a: item.trans, opts };
+            });
+
+            document.getElementById('quiz-overlay').classList.remove('hidden');
+            document.getElementById('quiz-game').classList.remove('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
             renderQuestion();
         }
 
         function renderQuestion() {
-            const q = state.quiz.data[state.quiz.currentStep];
-            document.getElementById('quiz-question').innerText = q.q;
-            document.getElementById('quiz-step').innerText = `Question ${state.quiz.currentStep+1}/10`;
-            document.getElementById('quiz-lives').innerText = state.quiz.lives;
-            const opts = document.getElementById('quiz-options');
-            opts.innerHTML = "";
-            q.options.forEach(o => {
+            const q = SYSTEM.quiz.data[SYSTEM.quiz.step];
+            document.getElementById('q-step').innerText = SYSTEM.quiz.step + 1;
+            document.getElementById('q-text').innerText = q.q;
+            
+            const optBox = document.getElementById('q-options');
+            optBox.innerHTML = "";
+            
+            q.opts.forEach(o => {
                 const b = document.createElement('button');
-                b.className = 'quiz-option w-full py-4 rounded-xl font-bold';
+                b.className = 'option-btn';
                 b.innerText = o;
-                b.onclick = () => {
-                    if (o === q.a) {
-                        b.classList.add('correct');
-                        state.quiz.score++;
-                    } else {
-                        b.classList.add('wrong');
-                        state.quiz.lives--;
-                    }
-                    setTimeout(() => {
-                        state.quiz.currentStep++;
-                        if (state.quiz.lives > 0 && state.quiz.currentStep < state.quiz.data.length) renderQuestion();
-                        else finishQuiz();
-                    }, 1000);
-                };
-                opts.appendChild(b);
+                b.onclick = () => checkAnswer(o, q.a, b);
+                optBox.appendChild(b);
             });
+
+            // Render Lives
+            const hearts = document.getElementById('quiz-lives');
+            hearts.innerHTML = "";
+            for(let i=0; i<3; i++) {
+                hearts.innerHTML += `<i class="fa-solid fa-heart ${i < SYSTEM.quiz.lives ? 'text-pink-600' : 'text-slate-800'}"></i>`;
+            }
         }
 
-        function finishQuiz() {
-            document.getElementById('quiz-main').style.display = 'none';
-            document.getElementById('quiz-finish').style.display = 'block';
-            document.getElementById('quiz-final-score').innerText = `Score: ${state.quiz.score}/10`;
-        }
-        function closeQuiz() { document.getElementById('quiz-overlay').style.display = 'none'; }
+        function checkAnswer(chosen, correct, btn) {
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
 
-        function updateDashboardData() {
-            document.getElementById('stat-vocab').innerText = state.notebook.length;
-            const ctx = document.getElementById('learningChart').getContext('2d');
-            if (state.myChart) state.myChart.destroy();
-            state.myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
-                    datasets: [{ label: 'Words', data: [12, 19, 3, 5, 2, 3, state.notebook.length], borderColor: '#6366f1', tension: 0.4 }]
+            if(chosen === correct) {
+                btn.classList.add('option-correct');
+                SYSTEM.quiz.score++;
+                notify("Precision Match!");
+            } else {
+                btn.classList.add('option-wrong');
+                SYSTEM.quiz.lives--;
+                notify("Desync Error!", "error");
+            }
+
+            setTimeout(() => {
+                SYSTEM.quiz.step++;
+                if(SYSTEM.quiz.lives > 0 && SYSTEM.quiz.step < SYSTEM.quiz.data.length) {
+                    renderQuestion();
+                } else {
+                    showQuizResult();
                 }
-            });
+            }, 1200);
         }
+
+        function showQuizResult() {
+            document.getElementById('quiz-game').classList.add('hidden');
+            document.getElementById('quiz-result').classList.remove('hidden');
+            document.getElementById('res-score').innerText = `Sync Accuracy: ${(SYSTEM.quiz.score / SYSTEM.quiz.data.length * 100).toFixed(0)}%`;
+        }
+
+        function closeQuiz() { document.getElementById('quiz-overlay').classList.add('hidden'); }
+
+        function wipeDatabase() {
+            if(confirm("DANGER: This will delete all user partitions. Continue?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function exportData() {
+            const data = JSON.stringify(SYSTEM.db);
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lingopro_backup_${Date.now()}.json`;
+            a.click();
+        }
+
+        // Placeholder for future updates
+        function toggleAchievements() { notify("Achievement System initializing in v6.1..."); }
+        function toggleDashboard() { notify("Analytics Node connecting..."); }
+
     </script>
 </body>
 </html>
