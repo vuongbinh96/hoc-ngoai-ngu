@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - Ultimate Multi-Lang Edition</title>
+    <title>LingoPro - Global Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -23,7 +23,7 @@
         .source-word::selection { background: #fef08a; color: #000; }
         .line-translation { margin-top: 12px; padding-top: 10px; border-top: 1px dashed #e2e8f0; color: #64748b; font-style: italic; font-size: 0.95rem; }
 
-        /* Popup Biến hình */
+        /* Popup */
         #translate-popup {
             position: fixed; bottom: -250px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 450px; background: white; color: #1e293b; padding: 25px;
@@ -32,13 +32,21 @@
             z-index: 1000; border: 4px solid #ef4444;
         }
         #translate-popup.active { bottom: 30px; }
-        .speak-btn { background: #ef4444; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4); transition: 0.2s; }
-        .speak-btn:active { scale: 0.9; }
+        .speak-btn { background: #ef4444; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; flex-shrink: 0; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4); }
 
         /* Quiz Overlay */
         #quiz-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.98); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(15px); }
         .quiz-box { background: white; width: 95%; max-width: 500px; padding: 40px; border-radius: 35px; color: #1e293b; text-align: center; }
         .opt-btn { width: 100%; padding: 18px; margin-top: 12px; border: 2px solid #f1f5f9; border-radius: 18px; font-weight: 700; transition: 0.2s; font-size: 1.1rem; }
+
+        /* Shake animation for validation */
+        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; border-color: #ef4444 !important; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -47,13 +55,8 @@
         <h1 class="text-3xl font-black italic tracking-tighter">LINGO<span class="text-red-500">PRO</span></h1>
         <div class="flex items-center gap-4">
             <div class="hidden md:flex items-center gap-2 bg-slate-800 p-2 rounded-xl border border-slate-700">
-                <i class="fa-solid fa-language text-slate-400 ml-2"></i>
-                <select id="tts-lang" class="bg-transparent text-white text-xs font-bold outline-none cursor-pointer">
-                    <option value="en-US">ENGLISH (US)</option>
-                    <option value="ko-KR">KOREAN</option>
-                    <option value="ja-JP">JAPANESE</option>
-                    <option value="vi-VN">TIẾNG VIỆT</option>
-                    <option value="fr-FR">FRENCH</option>
+                <i class="fa-solid fa-earth-americas text-slate-400 ml-2"></i>
+                <select id="tts-lang" class="bg-transparent text-white text-xs font-bold outline-none cursor-pointer max-w-[150px]">
                 </select>
             </div>
             <button onclick="openQuiz()" class="bg-red-500 text-white px-8 py-3 rounded-full font-black text-xs shadow-xl hover:bg-red-400 transition">⚡ THI 20 CÂU</button>
@@ -63,10 +66,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-4 space-y-5">
             <div id="player-container"><div id="player"></div></div>
-            <button onclick="initApp()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-500 shadow-2xl transition-all">🚀 NẠP BÀI HỌC</button>
+            <button id="btn-nap" onclick="initApp()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-500 shadow-2xl transition-all">🚀 NẠP BÀI HỌC</button>
             <div class="space-y-3">
-                <input type="text" id="yt-url" placeholder="Dán link Youtube tại đây..." class="w-full p-4 rounded-xl bg-slate-800 text-white border border-slate-700 focus:border-blue-500 transition outline-none">
-                <textarea id="lyric-input" rows="6" class="w-full p-4 rounded-xl bg-slate-800 text-white border border-slate-700 focus:border-blue-500 transition outline-none text-sm" placeholder="[Tên Idol] Lời bài hát..."></textarea>
+                <input type="text" id="yt-url" placeholder="Link Youtube (Không bắt buộc)..." class="w-full p-4 rounded-xl bg-slate-800 text-white border border-slate-700 focus:border-blue-500 transition outline-none">
+                <textarea id="lyric-input" rows="6" class="w-full p-4 rounded-xl bg-slate-800 text-white border border-slate-700 focus:border-blue-500 transition outline-none text-sm" placeholder="[BẮT BUỘC] Dán lời bài hát vào đây..."></textarea>
             </div>
             <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest text-center">Mẹo: Bôi đen một cụm từ để dịch phrasal verbs</p>
         </div>
@@ -75,7 +78,7 @@
             <div id="lyric-display" onmouseup="handleSelection()">
                 <div class="flex flex-col items-center justify-center h-full text-slate-600">
                     <i class="fa-solid fa-music text-6xl mb-4 opacity-20"></i>
-                    <p class="italic text-lg">Chưa có dữ liệu bài hát...</p>
+                    <p class="italic text-lg">Vui lòng nạp Lyrics để bắt đầu!</p>
                 </div>
             </div>
         </div>
@@ -115,16 +118,50 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+        // DANH SÁCH NGÔN NGỮ TOÀN CẦU
+        const globalLangs = {
+            "en-US": "English (US)", "en-GB": "English (UK)", "vi-VN": "Tiếng Việt", "ko-KR": "Korean", "ja-JP": "Japanese",
+            "zh-CN": "Chinese (S)", "fr-FR": "French", "de-DE": "German", "es-ES": "Spanish", "it-IT": "Italian",
+            "ru-RU": "Russian", "pt-BR": "Portuguese", "ar-SA": "Arabic", "hi-IN": "Hindi", "th-TH": "Thai",
+            "tr-TR": "Turkish", "nl-NL": "Dutch", "sv-SE": "Swedish", "pl-PL": "Polish", "id-ID": "Indonesian",
+            "ms-MY": "Malay", "da-DK": "Danish", "fi-FI": "Finnish", "no-NO": "Norwegian", "el-GR": "Greek",
+            "he-IL": "Hebrew", "ro-RO": "Romanian", "hu-HU": "Hungarian", "cs-CZ": "Czech", "sk-SK": "Slovak"
+        };
+
         let player, clickedWords = [], allWordsInLesson = [], currentQuizSet = [], currentQ = 0, score = 0, timer, popupTimer;
         const memberPalette = ["#E11D48", "#2563EB", "#059669", "#D97706", "#7C3AED", "#DB2777", "#0891B2", "#F59E0B"];
         let memberColorMap = {}; let colorIndex = 0;
 
+        // Tự động đổ danh sách ngôn ngữ khi tải trang
+        window.onload = () => {
+            const select = document.getElementById('tts-lang');
+            for (let code in globalLangs) {
+                let opt = document.createElement('option');
+                opt.value = code;
+                opt.innerText = globalLangs[code].toUpperCase();
+                select.appendChild(opt);
+            }
+        };
+
         function initApp() {
-            const url = document.getElementById('yt-url').value;
-            const text = document.getElementById('lyric-input').value;
-            const vid = extractId(url);
-            if(vid) { if(player) player.loadVideoById(vid); else player = new YT.Player('player', { videoId: vid, width: '100%', height: '100%' }); }
-            if(text) renderLyrics(text);
+            const urlInput = document.getElementById('yt-url');
+            const lyricInput = document.getElementById('lyric-input');
+            const text = lyricInput.value.trim();
+            
+            // CHỨC NĂNG BẮT BUỘC NHẬP LYRICS
+            if (!text) {
+                lyricInput.classList.add('shake');
+                setTimeout(() => lyricInput.classList.remove('shake'), 500);
+                alert("⚠️ Bạn ơi! Phải nhập lời bài hát (Lyrics) thì LingoPro mới có chữ để dạy bạn học chứ!");
+                return;
+            }
+
+            const vid = extractId(urlInput.value);
+            if(vid) { 
+                if(player) player.loadVideoById(vid); 
+                else player = new YT.Player('player', { videoId: vid, width: '100%', height: '100%' }); 
+            }
+            renderLyrics(text);
         }
 
         async function translateText(text) {
@@ -136,10 +173,8 @@
             } catch (e) { return "..."; }
         }
 
-        // FIX DÍNH CHỮ: Xử lý Selection thông minh
         async function handleSelection() {
             const selection = window.getSelection().toString();
-            // Nếu bôi đen (có dấu cách thực sự giữa các thẻ span)
             if (selection && selection.trim().length >= 2) {
                 showTranslationPopup(selection.trim());
             }
@@ -179,12 +214,11 @@
                     };
                     
                     wordsDiv.appendChild(span);
-                    // CHÈN DẤU CÁCH VẬT LÝ: Để khi bôi đen không bị dính chữ "giveme"
                     wordsDiv.appendChild(document.createTextNode(" "));
                 });
 
                 card.appendChild(wordsDiv);
-                const transDiv = document.createElement('div'); transDiv.className = 'line-translation'; transDiv.innerText = "Đang dịch dòng này...";
+                const transDiv = document.createElement('div'); transDiv.className = 'line-translation'; transDiv.innerText = "Đang dịch...";
                 card.appendChild(transDiv); display.appendChild(card);
                 translateText(line).then(res => transDiv.innerText = res);
             });
@@ -208,13 +242,12 @@
             }
         }
 
-        // NÂNG CẤP ĐA NGÔN NGỮ TTS
         function speakCurrentWord() {
             const word = document.getElementById('pop-src').innerText;
             const selectedLang = document.getElementById('tts-lang').value;
             const utter = new SpeechSynthesisUtterance(word);
             
-            // Ưu tiên tự động nhận diện tiếng Hàn (vì Idol K-pop)
+            // Thông minh: Nếu là chữ Hàn tự động đọc giọng Hàn, còn lại theo menu chọn
             const isKorean = /[\uAC00-\uD7A3]/.test(word);
             utter.lang = isKorean ? 'ko-KR' : selectedLang;
             
@@ -223,7 +256,7 @@
         }
 
         async function openQuiz() {
-            if(allWordsInLesson.length < 4) return alert("Bạn cần nạp bài hát trước khi thi!");
+            if(allWordsInLesson.length < 4) return alert("Bạn cần nạp Lyrics trước khi thi!");
             let set = [...clickedWords];
             let rem = 20 - set.length;
             if (rem > 0) {
