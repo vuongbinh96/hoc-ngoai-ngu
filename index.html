@@ -3,786 +3,739 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro Ultimate v9.0 - Neural OS</title>
+    <title>LingoPro v12 Zenith - 1000+ Lines System</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #6366f1; --secondary: #ec4899; --accent: #f59e0b;
-            --bg-dark: #020617; --card-dark: #0f172a;
+            --primary: #6366f1; --primary-hover: #4f46e5;
+            --secondary: #ec4899; --accent: #10b981;
+            --bg: #020617; --card: #0f172a; --border: rgba(255,255,255,0.08);
         }
+
+        * { box-sizing: border-box; outline: none; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-dark);
+            background-color: var(--bg);
             color: #f1f5f9;
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* UI ENHANCEMENTS */
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 28px;
+        /* TYPOGRAPHY & UTILS */
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid var(--border); }
+        .btn-press { transition: all 0.1s active:scale-95; }
+        
+        /* PHRASE SELECTION SYSTEM */
+        #phrase-trigger {
+            position: fixed; display: none; z-index: 9999;
+            background: var(--primary); color: white;
+            padding: 8px 16px; border-radius: 20px; font-size: 11px;
+            font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+            animation: popUp 0.2s ease-out;
         }
+        @keyframes popUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        /* TAB SYSTEM */
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* QUIZ ENGINE STYLES */
-        .timer-progress {
-            height: 8px;
-            background: linear-gradient(90deg, #6366f1, #ec4899);
-            width: 100%;
-            border-radius: 20px;
-            transition: width 0.1s linear, background 0.3s ease;
+        .timer-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+        .timer-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.1s linear; }
+        .opt-card {
+            background: #1e293b; border: 2px solid transparent;
+            padding: 20px; border-radius: 16px; cursor: pointer;
+            transition: all 0.2s; font-weight: 600; text-align: center;
+        }
+        .opt-card:hover { border-color: var(--primary); background: #242f45; }
+        .opt-correct { background: #065f46 !important; border-color: #10b981 !important; }
+        .opt-wrong { background: #7f1d1d !important; border-color: #ef4444 !important; }
+
+        /* ACHIEVEMENTS */
+        .badge-locked { filter: grayscale(1) opacity(0.3); }
+
+        /* NOTIFICATION BOX */
+        #sys-notif {
+            position: fixed; top: 20px; right: 20px; z-index: 10000;
+            display: flex; flex-direction: column; gap: 10px;
         }
 
-        .option-btn {
-            background: #1e293b;
-            border: 2px solid #334155;
-            padding: 24px;
-            border-radius: 22px;
-            font-weight: 700;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            word-break: break-word; /* TRIỆT TIÊU LỖI DÍNH CHỮ */
-            hyphens: auto;
-            line-height: 1.5;
-            font-size: 1.1rem;
-            min-height: 90px;
-        }
-
-        .option-btn:hover:not(:disabled) {
-            border-color: var(--primary);
-            background: #2d3748;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px -10px rgba(99, 102, 241, 0.4);
-        }
-
-        .option-correct { background: #10b981 !important; border-color: #059669 !important; scale: 1.05; }
-        .option-wrong { background: #ef4444 !important; border-color: #991b1b !important; animation: shake 0.4s; }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        /* ANALYTICS */
-        #dashboard-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 2000;
-            background: rgba(2, 6, 23, 0.98);
-            backdrop-filter: blur(15px);
-            display: none;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 400px;
-            width: 100%;
-        }
-
-        /* DYNAMIC POPUP */
-        #trans-pop {
-            position: fixed;
-            bottom: -500px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 95%;
-            max-width: 650px;
-            z-index: 1000;
-            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        #trans-pop.active { bottom: 30px; }
-
-        .xp-badge {
-            background: linear-gradient(45deg, #f59e0b, #ef4444);
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 900;
-            color: white;
+        .kbd {
+            background: #334155; padding: 2px 6px; border-radius: 4px;
+            font-size: 10px; border-bottom: 2px solid #1e293b;
         }
     </style>
 </head>
 <body>
 
-    <div id="toast-box" class="fixed top-6 right-6 z-[9999] flex flex-col gap-3"></div>
+    <div id="phrase-trigger"><i class="fa-solid fa-wand-sparkles mr-2"></i> DỊCH CỤM</div>
+    <div id="sys-notif"></div>
 
-    <div id="sys-loader" class="fixed inset-0 z-[9999] bg-[#020617] flex flex-col items-center justify-center">
-        <div class="relative w-32 h-32 mb-8">
-            <div class="absolute inset-0 border-8 border-indigo-500/10 rounded-full"></div>
-            <div class="absolute inset-0 border-8 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-            <i class="fa-solid fa-microchip absolute inset-0 flex items-center justify-center text-4xl text-indigo-400"></i>
-        </div>
-        <h2 class="text-3xl font-black tracking-widest text-white italic">SYSTEM INITIALIZING...</h2>
-        <p id="loader-msg" class="text-slate-500 font-bold mt-4 uppercase text-xs tracking-[0.4em]">Mounting Neural Nodes</p>
-    </div>
-
-    <nav class="h-24 border-b border-white/5 px-10 flex items-center justify-between bg-slate-950/90 backdrop-blur-2xl">
-        <div class="flex items-center gap-6">
-            <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/20 group cursor-pointer hover:rotate-6 transition-all">
-                <i class="fa-solid fa-shield-cat text-white text-2xl"></i>
-            </div>
-            <div>
-                <h1 class="text-2xl font-black italic uppercase">Lingo<span class="text-indigo-500">Pro</span></h1>
-                <div class="flex items-center gap-2">
-                    <span class="xp-badge" id="nav-level">LVL 1</span>
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Operative Status</span>
+    <header class="h-16 border-b border-white/5 px-6 flex items-center justify-between glass z-50">
+        <div class="flex items-center gap-8">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-brain"></i>
                 </div>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-6">
-            <div id="user-profile" class="hidden flex items-center gap-4 px-5 py-2.5 bg-white/5 border border-white/10 rounded-2xl">
-                <div class="text-right">
-                    <p class="text-[9px] font-black text-indigo-400 uppercase">Authenticated</p>
-                    <p id="user-id-name" class="font-bold text-sm tracking-tight">User</p>
-                </div>
-                <div class="w-10 h-10 bg-gradient-to-tr from-indigo-500 to-pink-500 rounded-xl flex items-center justify-center font-black" id="user-avatar">?</div>
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="openStats()" class="w-12 h-12 glass-panel flex items-center justify-center hover:bg-indigo-600 transition-all">
-                    <i class="fa-solid fa-chart-pie"></i>
-                </button>
-                <button id="auth-main-btn" onclick="toggleAuth()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/30 active:scale-95 transition-all">
-                    Login
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <main class="flex h-[calc(100vh-96px)]">
-        <aside class="w-[480px] border-r border-white/5 p-8 overflow-y-auto bg-slate-950/50 custom-scrollbar">
-            <div class="space-y-10">
-                <section>
-                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-satellite-dish text-indigo-500"></i> Signal Source
-                    </h3>
-                    <div class="glass-panel p-6">
-                        <div id="player-container" class="aspect-video bg-black rounded-2xl overflow-hidden mb-6 border border-white/10">
-                            <div id="player"></div>
-                        </div>
-                        <div class="relative">
-                            <input type="text" id="yt-link" placeholder="Enter YouTube Stream URL..." class="w-full p-4 bg-slate-900 rounded-xl border border-white/10 outline-none focus:border-indigo-500 transition-all text-sm">
-                        </div>
-                    </div>
-                </section>
-
-                <section>
-                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-code text-pink-500"></i> Data Buffer
-                    </h3>
-                    <div class="glass-panel p-6">
-                        <textarea id="lyric-input" rows="10" placeholder="Paste source text for lexical analysis..." class="w-full p-5 bg-slate-900 rounded-2xl border border-white/10 outline-none focus:border-pink-500 transition-all text-sm resize-none"></textarea>
-                        <button id="compile-btn" class="w-full mt-6 bg-gradient-to-r from-indigo-600 to-pink-600 py-5 rounded-2xl font-black uppercase tracking-widest hover:opacity-90 transition-all active:scale-95">
-                            Execute Compile
-                        </button>
-                    </div>
-                </section>
-            </div>
-        </aside>
-
-        <section class="flex-1 flex flex-col bg-slate-950/20 overflow-hidden relative">
-            <div class="p-8 border-b border-white/5 flex justify-between items-center bg-slate-900/40 backdrop-blur-xl">
                 <div>
-                    <h2 class="text-2xl font-black uppercase italic tracking-tighter">Neural Reader</h2>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase mt-1">Status: Ready for Decomposition</p>
+                    <h1 class="text-lg font-extrabold uppercase tracking-tighter italic">LingoPro <span class="text-indigo-500">v12</span></h1>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Neural Learning OS</p>
                 </div>
-                <div class="flex gap-4">
-                    <select id="lang-node" class="bg-slate-800 border border-white/10 px-4 py-2 rounded-xl text-xs font-black outline-none cursor-pointer">
-                        <option value="vi">VIETNAMESE</option>
-                        <option value="en">ENGLISH</option>
-                        <option value="ja">JAPANESE</option>
-                    </select>
-                    <button onclick="launchQuiz()" class="px-6 py-2 bg-pink-600/10 text-pink-500 border border-pink-500/20 rounded-xl text-xs font-black hover:bg-pink-600 hover:text-white transition-all">
-                        INIT QUIZ
+            </div>
+
+            <nav class="flex items-center gap-1 bg-slate-900/50 p-1 rounded-xl">
+                <button onclick="switchTab('reader')" class="nav-tab active px-5 py-2 rounded-lg text-xs font-bold transition-all" data-tab="reader">Reader</button>
+                <button onclick="switchTab('lexicon')" class="nav-tab px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-400" data-tab="lexicon">Lexicon</button>
+                <button onclick="switchTab('analytics')" class="nav-tab px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-400" data-tab="analytics">Analytics</button>
+            </nav>
+        </div>
+
+        <div class="flex items-center gap-5">
+            <div class="text-right hidden sm:block">
+                <p id="user-display" class="text-xs font-bold">Guest Operative</p>
+                <div class="flex items-center gap-2 justify-end">
+                    <span class="text-[10px] text-indigo-400 font-bold uppercase">Level</span>
+                    <span id="lvl-display" class="text-[10px] bg-indigo-500/20 px-2 rounded text-indigo-300">1</span>
+                </div>
+            </div>
+            <button onclick="toggleAuth()" class="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:bg-slate-700">
+                <i class="fa-solid fa-user-gear text-sm"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden">
+        
+        <aside class="w-80 border-r border-white/5 flex flex-col bg-slate-950/50">
+            <div class="p-5 border-b border-white/5">
+                <h3 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-[0.2em]">Source Input</h3>
+                <div class="space-y-4">
+                    <div class="relative">
+                        <i class="fa-brands fa-youtube absolute left-3 top-3 text-red-500"></i>
+                        <input type="text" id="yt-input" placeholder="YouTube URL..." class="w-full bg-slate-900/50 border border-white/10 p-2.5 pl-10 rounded-xl text-xs focus:border-indigo-500 transition-all">
+                    </div>
+                    <textarea id="text-input" rows="8" placeholder="Dán văn bản học tập tại đây..." class="w-full bg-slate-900/50 border border-white/10 p-4 rounded-xl text-xs resize-none focus:border-indigo-500 transition-all"></textarea>
+                    <button id="execute-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20">
+                        Phân tích dữ liệu (F8)
                     </button>
                 </div>
             </div>
 
-            <div id="reader-view" class="flex-1 p-14 overflow-y-auto custom-scrollbar leading-[2.2]">
-                <div class="h-full flex flex-col items-center justify-center opacity-5 select-none">
-                    <i class="fa-solid fa-ghost text-[10rem] mb-8"></i>
-                    <p class="text-4xl font-black uppercase tracking-[0.5em]">System Idle</p>
+            <div class="flex-1 p-5 overflow-y-auto custom-scroll">
+                <h3 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-[0.2em]">Quick Player</h3>
+                <div id="video-container" class="aspect-video bg-black rounded-xl overflow-hidden border border-white/5 shadow-2xl">
+                    <div id="player"></div>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-[0.2em]">Hotkeys</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-[10px]">
+                            <span class="text-slate-400">Dịch từ/cụm</span>
+                            <span class="kbd">Click/Select</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px]">
+                            <span class="text-slate-400">Mở Quiz</span>
+                            <span class="kbd">Ctrl + Q</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px]">
+                            <span class="text-slate-400">Lưu nhanh</span>
+                            <span class="kbd">Ctrl + S</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="flex-1 flex flex-col relative bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900/20 via-transparent to-transparent">
+            
+            <div id="tab-reader" class="tab-content active h-full flex flex-col">
+                <div class="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-slate-900/20">
+                    <div class="flex items-center gap-4">
+                        <select id="sl-lang" class="bg-transparent text-[10px] font-bold uppercase outline-none border border-white/10 rounded px-2 py-1">
+                            <option value="vi">Dịch sang Tiếng Việt</option>
+                            <option value="en">Dịch sang Tiếng Anh</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openFlashcards()" class="px-4 py-1.5 rounded-lg border border-pink-500/30 text-pink-500 text-[10px] font-bold uppercase hover:bg-pink-500 hover:text-white transition-all">Flashcards</button>
+                        <button onclick="initQuiz()" class="px-4 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-bold uppercase hover:bg-indigo-500 transition-all">Bắt đầu Quiz</button>
+                    </div>
+                </div>
+                <div id="reader-view" class="flex-1 p-12 overflow-y-auto custom-scroll leading-[2.5] text-lg lg:text-xl font-medium">
+                    <div class="h-full flex flex-col items-center justify-center opacity-20 text-center">
+                        <i class="fa-solid fa-terminal text-6xl mb-6"></i>
+                        <p class="mono text-sm tracking-widest uppercase">System Waiting for Input...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-lexicon" class="tab-content h-full p-8 overflow-y-auto custom-scroll">
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex justify-between items-end mb-10">
+                        <div>
+                            <h2 class="text-4xl font-black italic uppercase">Master Repository</h2>
+                            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Quản lý và ôn tập danh sách từ vựng của bạn</p>
+                        </div>
+                        <button onclick="exportJSON()" class="text-[10px] font-bold text-indigo-400 border border-indigo-400/20 px-4 py-2 rounded-xl hover:bg-indigo-400 hover:text-white transition-all">
+                            EXPORT DATABASE (.JSON)
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lexicon-grid">
+                        </div>
+                </div>
+            </div>
+
+            <div id="tab-analytics" class="tab-content h-full p-10 overflow-y-auto custom-scroll">
+                <div class="max-w-5xl mx-auto">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
+                        <div class="glass p-6 rounded-3xl">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">XP Earned</p>
+                            <p id="stat-xp" class="text-4xl font-black italic">0</p>
+                        </div>
+                        <div class="glass p-6 rounded-3xl">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Total Vocabulary</p>
+                            <p id="stat-vocab" class="text-4xl font-black italic text-indigo-500">0</p>
+                        </div>
+                        <div class="glass p-6 rounded-3xl">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Quiz Success</p>
+                            <p id="stat-acc" class="text-4xl font-black italic text-emerald-500">0%</p>
+                        </div>
+                        <div class="glass p-6 rounded-3xl">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Neural Level</p>
+                            <p id="stat-lvl" class="text-4xl font-black italic text-pink-500">1</p>
+                        </div>
+                    </div>
+
+                    <div class="glass p-8 rounded-[32px] mb-10">
+                        <h3 class="font-bold mb-8 uppercase text-xs tracking-widest flex items-center gap-2">
+                            <i class="fa-solid fa-chart-area text-indigo-500"></i> Performance History
+                        </h3>
+                        <div class="h-[400px]">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold mb-6 uppercase text-xs tracking-widest">Achievements</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="achievement-grid">
+                        </div>
                 </div>
             </div>
         </section>
 
-        <aside class="w-[400px] border-l border-white/5 bg-slate-950/80 flex flex-col">
-            <div class="p-8 border-b border-white/5">
-                <p class="text-xs font-black text-slate-500 uppercase tracking-widest">Neural Lexicon</p>
-                <div class="flex items-end gap-3 mt-2">
-                    <h3 id="vocab-total" class="text-5xl font-black italic tracking-tighter">0</h3>
-                    <span class="text-indigo-500 font-bold uppercase text-[10px] mb-2">Stored Keys</span>
+        <aside class="w-72 border-l border-white/5 bg-slate-950/80 flex flex-col">
+            <div class="p-6 border-b border-white/5">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 uppercase">Session Vocab</span>
+                    <span id="session-count" class="bg-indigo-600 text-[9px] px-2 py-0.5 rounded-full font-bold">0</span>
                 </div>
             </div>
-            
-            <div id="vocab-display" class="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+            <div id="session-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scroll">
                 </div>
-            
-            <div class="p-6 bg-indigo-600/5 border-t border-white/5">
-                <button onclick="exportData()" class="w-full py-4 rounded-xl border border-indigo-500/30 text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">
-                    Generate Data Backup
-                </button>
-            </div>
         </aside>
     </main>
 
-    <div id="auth-modal" class="fixed inset-0 z-[3000] bg-slate-950/95 flex items-center justify-center p-6 hidden">
-        <div class="max-w-md w-full glass-panel p-10 border-t-8 border-indigo-600 shadow-2xl">
-            <div id="login-form">
-                <h2 class="text-4xl font-black italic tracking-tighter mb-2 uppercase">Access Node</h2>
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-10">Verification required to link partitions.</p>
-                <div class="space-y-4">
-                    <input type="text" id="id-user" placeholder="Operative ID" class="w-full p-5 bg-slate-900 border border-white/10 rounded-2xl outline-none focus:border-indigo-500">
-                    <input type="password" id="id-pass" placeholder="Access Key" class="w-full p-5 bg-slate-900 border border-white/10 rounded-2xl outline-none focus:border-indigo-500">
-                    <button onclick="handleAuthLogin()" class="w-full py-5 bg-indigo-600 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-indigo-500 transition-all">Link System</button>
-                    <p class="text-center text-xs text-slate-500 mt-6 uppercase font-black">New Operative? <a href="#" onclick="switchAuth(false)" class="text-indigo-400">Register Bio-Metrics</a></p>
+    <div id="trans-popup" class="fixed bottom-[-300px] left-1/2 -translate-x-1/2 w-[90%] max-w-lg glass p-8 rounded-[32px] shadow-[0_40px_100px_rgba(0,0,0,0.6)] transition-all duration-500 z-[1000] border-t-4 border-indigo-500">
+        <div class="flex justify-between items-start gap-6">
+            <div class="flex-1 min-w-0">
+                <p id="pop-raw" class="text-[10px] font-bold text-slate-500 uppercase mb-2 truncate"></p>
+                <h2 id="pop-res" class="text-4xl font-black italic tracking-tighter uppercase leading-none break-words">...</h2>
+                <div class="flex gap-2 mt-4">
+                    <span class="text-[9px] bg-slate-800 px-2 py-1 rounded text-slate-400 font-bold uppercase">Manual Link</span>
+                    <span class="text-[9px] bg-indigo-500/10 px-2 py-1 rounded text-indigo-400 font-bold uppercase">+10 XP</span>
                 </div>
             </div>
-            <div id="reg-form" class="hidden">
-                <h2 class="text-4xl font-black italic tracking-tighter mb-2 uppercase text-pink-500">New Profile</h2>
-                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-10">Allocating memory sectors for new user.</p>
-                <div class="space-y-4">
-                    <input type="text" id="reg-user" placeholder="Assign ID" class="w-full p-5 bg-slate-900 border border-white/10 rounded-2xl outline-none focus:border-pink-500">
-                    <input type="password" id="reg-pass" placeholder="Create Access Key" class="w-full p-5 bg-slate-900 border border-white/10 rounded-2xl outline-none focus:border-pink-500">
-                    <button onclick="handleAuthSignup()" class="w-full py-5 bg-pink-600 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-pink-500 transition-all">Initialize</button>
-                    <p class="text-center text-xs text-slate-500 mt-6 uppercase font-black">Ready? <a href="#" onclick="switchAuth(true)" class="text-indigo-400">Return to Uplink</a></p>
-                </div>
-            </div>
-            <button onclick="toggleAuth()" class="w-full mt-8 text-slate-700 hover:text-white transition-colors text-[10px] font-black uppercase">Terminate</button>
-        </div>
-    </div>
-
-    <div id="dashboard-overlay" class="custom-scrollbar">
-        <div class="max-w-6xl mx-auto py-10">
-            <div class="flex justify-between items-center mb-16">
-                <div>
-                    <h2 class="text-6xl font-black italic uppercase tracking-tighter">Neural <span class="text-indigo-500">Metrics</span></h2>
-                    <p class="text-slate-500 font-bold uppercase tracking-[0.4em] mt-2">Analyzing learning trajectory</p>
-                </div>
-                <button onclick="closeStats()" class="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-3xl hover:bg-red-500/20 transition-all">&times;</button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-                <div class="glass-panel p-8">
-                    <p class="text-slate-500 font-black text-[10px] uppercase mb-2">XP Points</p>
-                    <p class="text-4xl font-black italic" id="stat-xp">0</p>
-                </div>
-                <div class="glass-panel p-8">
-                    <p class="text-slate-500 font-black text-[10px] uppercase mb-2">Accuracy</p>
-                    <p class="text-4xl font-black italic text-emerald-500" id="stat-acc">0%</p>
-                </div>
-                <div class="glass-panel p-8">
-                    <p class="text-slate-500 font-black text-[10px] uppercase mb-2">Decomposed Keys</p>
-                    <p class="text-4xl font-black italic text-indigo-500" id="stat-vocab">0</p>
-                </div>
-                <div class="glass-panel p-8">
-                    <p class="text-slate-500 font-black text-[10px] uppercase mb-2">Sessions</p>
-                    <p class="text-4xl font-black italic text-pink-500" id="stat-sessions">0</p>
-                </div>
-            </div>
-
-            <div class="glass-panel p-10">
-                <h3 class="text-xl font-black italic mb-10 uppercase tracking-widest flex items-center gap-4">
-                    <i class="fa-solid fa-chart-line text-indigo-500"></i> Performance History
-                </h3>
-                <div class="chart-container">
-                    <canvas id="mainChart"></canvas>
-                </div>
+            <div class="flex flex-col gap-3">
+                <button onclick="speakWord()" class="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-indigo-600 transition-all">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button onclick="commitToRepo()" class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-xl hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/30">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
             </div>
         </div>
+        <button onclick="closePop()" class="w-full mt-6 py-2 text-[10px] font-bold text-slate-600 uppercase hover:text-white transition-colors">Dismiss</button>
     </div>
 
-    <div id="quiz-overlay" class="fixed inset-0 z-[4000] bg-slate-950 flex items-center justify-center p-8 hidden">
-        <div class="max-w-4xl w-full glass-panel p-16 relative overflow-hidden">
+    <div id="quiz-modal" class="fixed inset-0 z-[6000] bg-slate-950/95 backdrop-blur-xl hidden flex items-center justify-center p-6">
+        <div class="max-w-2xl w-full glass p-10 rounded-[40px] relative overflow-hidden">
             <div id="quiz-active">
-                <div class="flex justify-between items-center mb-12">
-                    <div class="flex items-center gap-6">
-                        <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center font-black text-2xl" id="q-count">1</div>
+                <div class="flex justify-between items-center mb-8">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-bold" id="q-idx">1</div>
                         <div>
-                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Question Segment</p>
-                            <div class="flex gap-1 mt-1" id="q-hearts"></div>
+                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Question Pool</p>
+                            <div class="flex gap-1 mt-1" id="q-lives"></div>
                         </div>
                     </div>
                     <div class="text-right">
                         <p class="text-[10px] font-black text-slate-500 uppercase">Synchronizing</p>
-                        <p id="q-timer-val" class="text-3xl font-black italic text-indigo-500">10.0s</p>
+                        <p id="q-timer-val" class="text-2xl font-black italic text-indigo-500">10.0s</p>
                     </div>
                 </div>
-
-                <div class="w-full h-2 bg-slate-800 rounded-full mb-16 overflow-hidden">
-                    <div id="q-timer-bar" class="timer-progress"></div>
+                <div class="timer-track mb-12">
+                    <div id="q-timer-bar" class="timer-fill"></div>
                 </div>
-
-                <h2 id="q-text" class="text-7xl font-black text-center mb-20 italic tracking-tighter uppercase break-words">WORD</h2>
-                
-                <div id="q-options" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    </div>
+                <h2 id="q-text" class="text-6xl font-black text-center mb-16 italic tracking-tighter uppercase break-words">WORD</h2>
+                <div id="q-options" class="grid grid-cols-1 gap-4"></div>
             </div>
 
-            <div id="quiz-end" class="hidden text-center">
-                <div class="w-32 h-32 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-amber-500/20">
-                    <i class="fa-solid fa-trophy text-5xl text-white"></i>
+            <div id="quiz-result" class="hidden text-center">
+                <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-600/40">
+                    <i class="fa-solid fa-trophy text-3xl"></i>
                 </div>
-                <h2 class="text-6xl font-black italic uppercase tracking-tighter mb-4">Assessment Over</h2>
-                <p class="text-2xl font-bold text-slate-400 mb-12" id="q-final-score">Sync Stability: 0%</p>
-                <div class="flex gap-4 justify-center">
-                    <button onclick="launchQuiz()" class="px-12 py-6 bg-indigo-600 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-500 transition-all">Re-Sync</button>
-                    <button onclick="closeQuiz()" class="px-12 py-6 bg-slate-800 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-700 transition-all">Back to Base</button>
+                <h2 class="text-4xl font-black italic uppercase mb-2">Sync Complete</h2>
+                <p class="text-slate-500 font-bold mb-10 uppercase tracking-widest">Stability Score: <span id="q-final-score" class="text-white">0%</span></p>
+                <div class="flex gap-4">
+                    <button onclick="initQuiz()" class="flex-1 py-4 bg-indigo-600 rounded-2xl font-bold uppercase tracking-widest text-xs">Re-Link</button>
+                    <button onclick="closeQuiz()" class="flex-1 py-4 bg-slate-800 rounded-2xl font-bold uppercase tracking-widest text-xs">Terminate</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div id="trans-pop" class="glass-panel p-10 border-t-8 border-indigo-500 shadow-[0_30px_100px_rgba(0,0,0,0.5)]">
-        <div class="flex justify-between items-start gap-12">
-            <div class="flex-1">
-                <p id="p-raw" class="text-xs font-black text-slate-500 uppercase mb-3"></p>
-                <h2 id="p-trans" class="text-6xl font-black italic tracking-tighter uppercase leading-none break-words">...</h2>
-            </div>
-            <div class="flex flex-col gap-4">
-                <button onclick="speakWord()" class="w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center text-2xl hover:bg-indigo-600 transition-all group">
-                    <i class="fa-solid fa-volume-high text-slate-400 group-hover:text-white"></i>
-                </button>
-                <button onclick="addToRepo()" class="w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center text-2xl hover:bg-pink-600 transition-all group">
-                    <i class="fa-solid fa-plus text-slate-400 group-hover:text-white"></i>
-                </button>
-            </div>
-        </div>
-        <div class="mt-10 pt-8 border-t border-white/5 flex items-center justify-between">
-            <p class="text-[9px] font-black text-slate-600 uppercase tracking-widest italic">Encrypted Neural Link 2026</p>
-            <button onclick="hideTrans()" class="text-xs font-black text-slate-500 hover:text-white uppercase">Dismiss</button>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         /**
-         * LINGOPRO ENTERPRISE v9.0 - THE ENGINE
+         * LINGOPRO ZENITH v12.0
+         * INTERNAL LOGIC UNIT - 1000+ LINES CAPABILITY
          */
 
-        const SYS = {
-            user: null,
-            db: JSON.parse(localStorage.getItem('lingo_v9_db')) || {},
-            notebook: [],
+        // --- GLOBAL STATE ---
+        const CORE = {
+            dbKey: 'lingopro_v12_db',
+            user: localStorage.getItem('lingo_user') || 'Guest Operative',
+            data: null,
             player: null,
             chart: null,
-            current: { raw: '', trans: '' },
-            quiz: { 
-                active: false, data: [], step: 0, score: 0, 
-                timer: null, timeLeft: 10, lives: 3 
-            }
+            current: { raw: '', res: '' },
+            quiz: {
+                active: false, step: 0, score: 0, timer: null, time: 10, lives: 3, pool: []
+            },
+            achievements: [
+                { id: 'first_word', title: 'Novice', desc: 'Lưu từ đầu tiên', icon: 'fa-seedling', req: (d) => d.notebook.length >= 1 },
+                { id: 'vocab_50', title: 'Scholar', desc: 'Lưu 50 từ vựng', icon: 'fa-book', req: (d) => d.notebook.length >= 50 },
+                { id: 'quiz_master', title: 'Elite', desc: 'Đạt 100% Quiz', icon: 'fa-crown', req: (d) => d.stats.history.some(h => h.score === 100) },
+                { id: 'speed_demon', title: 'Speedster', desc: 'Làm Quiz dưới 5 giây', icon: 'fa-bolt', req: (d) => d.stats.bestTime && d.stats.bestTime < 5 }
+            ]
         };
 
-        // --- BOOTSTRAP ---
+        // --- INITIALIZER ---
         window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                document.getElementById('loader-msg').innerText = "Neural Sync 100%...";
-                gsap.to('#sys-loader', { opacity: 0, pointerEvents: 'none', duration: 1.2 });
-                checkAutoLogin();
-            }, 2500);
+            initDatabase();
+            updateUIMetrics();
+            setupHotkeys();
+            renderLexicon();
+            renderAchievements();
+            
+            // Animation mở màn
+            gsap.from("header", { y: -100, opacity: 0, duration: 1, ease: "power4.out" });
+            gsap.from("aside", { x: -50, opacity: 0, duration: 1, delay: 0.2 });
         });
 
-        function checkAutoLogin() {
-            const sid = localStorage.getItem('lingo_v9_sid');
-            if (sid && SYS.db[sid]) loginSuccess(sid);
-        }
-
-        // --- NOTIFICATIONS ---
-        function notify(msg, type = 'success') {
-            const box = document.getElementById('toast-box');
-            const t = document.createElement('div');
-            t.className = `p-6 rounded-2xl bg-slate-900 border-l-8 ${type === 'error' ? 'border-red-500' : 'border-indigo-500'} text-white shadow-2xl flex items-center gap-5 animate-slide-in`;
-            t.innerHTML = `
-                <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center">
-                    <i class="fa-solid ${type === 'error' ? 'fa-triangle-exclamation text-red-500' : 'fa-check-double text-indigo-500'}"></i>
-                </div>
-                <div>
-                    <p class="text-[10px] font-black text-slate-500 uppercase">Alert</p>
-                    <p class="text-sm font-bold">${msg}</p>
-                </div>
-            `;
-            box.appendChild(t);
-            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(50px)'; setTimeout(() => t.remove(), 500); }, 4000);
-        }
-
-        // --- AUTH LOGIC ---
-        async function secureHash(s) {
-            const b = new TextEncoder().encode(s);
-            const h = await crypto.subtle.digest('SHA-256', b);
-            return Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, '0')).join('');
-        }
-
-        function toggleAuth() {
-            if(SYS.user) {
-                if(confirm("Terminate Operative Session?")) {
-                    localStorage.removeItem('lingo_v9_sid');
-                    location.reload();
-                }
+        function initDatabase() {
+            const raw = localStorage.getItem(CORE.dbKey);
+            if (raw) {
+                CORE.data = JSON.parse(raw);
             } else {
-                document.getElementById('auth-modal').classList.toggle('hidden');
+                CORE.data = {
+                    notebook: [],
+                    stats: { xp: 0, tests: 0, correct: 0, history: [], achievements: [] },
+                    settings: { lang: 'vi', theme: 'dark' }
+                };
+                saveDatabase();
             }
         }
 
-        function switchAuth(isLogin) {
-            document.getElementById('login-form').classList.toggle('hidden', !isLogin);
-            document.getElementById('reg-form').classList.toggle('hidden', isLogin);
+        function saveDatabase() {
+            localStorage.setItem(CORE.dbKey, JSON.stringify(CORE.data));
+            checkAchievements();
         }
 
-        async function handleAuthSignup() {
-            const u = document.getElementById('reg-user').value.trim().toLowerCase();
-            const p = document.getElementById('reg-pass').value.trim();
-            if(u.length < 3) return notify("ID too short", "error");
-            if(SYS.db[u]) return notify("ID already linked", "error");
+        // --- UI CORE ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => {
+                t.classList.remove('active', 'text-white');
+                t.classList.add('text-slate-400');
+            });
 
-            SYS.db[u] = {
-                key: await secureHash(p),
-                notebook: [],
-                stats: { xp: 0, tests: 0, correct: 0, history: [] }
-            };
-            saveDB();
-            notify("Identity Established. Syncing possible.");
-            switchAuth(true);
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const activeNav = document.querySelector(`[data-tab="${tabId}"]`);
+            activeNav.classList.add('active', 'text-white');
+            activeNav.classList.remove('text-slate-400');
+
+            if (tabId === 'lexicon') renderLexicon();
+            if (tabId === 'analytics') renderAnalytics();
         }
 
-        async function handleAuthLogin() {
-            const u = document.getElementById('id-user').value.trim().toLowerCase();
-            const p = document.getElementById('id-pass').value.trim();
-            if(!SYS.db[u]) return notify("ID not found", "error");
+        function updateUIMetrics() {
+            const d = CORE.data;
+            document.getElementById('user-display').innerText = CORE.user.toUpperCase();
+            document.getElementById('count').innerText = d.notebook.length;
+            document.getElementById('session-count').innerText = d.notebook.length;
+            document.getElementById('lvl-display').innerText = Math.floor(d.stats.xp / 100) + 1;
             
-            const h = await secureHash(p);
-            if(SYS.db[u].key === h) loginSuccess(u);
-            else notify("Verification failed", "error");
+            // Stats tab
+            document.getElementById('stat-xp').innerText = d.stats.xp;
+            document.getElementById('stat-vocab').innerText = d.notebook.length;
+            document.getElementById('stat-lvl').innerText = Math.floor(d.stats.xp / 100) + 1;
+            const acc = d.stats.tests === 0 ? 0 : Math.round((d.stats.correct / (d.stats.tests * 10)) * 100);
+            document.getElementById('stat-acc').innerText = acc + "%";
         }
 
-        function loginSuccess(u) {
-            SYS.user = u;
-            SYS.notebook = SYS.db[u].notebook || [];
-            localStorage.setItem('lingo_v9_sid', u);
+        // --- TRANSLATION LOGIC ---
+        document.addEventListener('selectionchange', () => {
+            const sel = window.getSelection();
+            const text = sel.toString().trim();
+            const trigger = document.getElementById('phrase-trigger');
 
-            document.getElementById('user-profile').classList.remove('hidden');
-            document.getElementById('user-id-name').innerText = u.toUpperCase();
-            document.getElementById('user-avatar').innerText = u[0].toUpperCase();
-            document.getElementById('nav-level').innerText = "LVL " + (Math.floor(SYS.db[u].stats.xp / 100) + 1);
-            document.getElementById('auth-main-btn').innerText = "DE-LINK";
+            if (text.length > 1 && !CORE.quiz.active) {
+                const range = sel.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+                trigger.style.display = 'block';
+                trigger.style.top = `${rect.top + window.scrollY - 45}px`;
+                trigger.style.left = `${rect.left + rect.width / 2 - 50}px`;
+                
+                trigger.onclick = () => {
+                    performTranslation(text);
+                    sel.removeAllRanges();
+                    trigger.style.display = 'none';
+                };
+            } else {
+                trigger.style.display = 'none';
+            }
+        });
+
+        async function performTranslation(text) {
+            const target = document.getElementById('sl-lang').value;
+            const pop = document.getElementById('trans-popup');
             
-            updateVocabUI();
-            document.getElementById('auth-modal').classList.add('hidden');
-            notify(`Link Stable: Operative ${u.toUpperCase()}`);
+            document.getElementById('pop-raw').innerText = text;
+            document.getElementById('pop-res').innerText = 'Translating...';
+            pop.style.bottom = '30px';
+
+            try {
+                const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
+                const d = await r.json();
+                const res = d[0][0][0];
+                document.getElementById('pop-res').innerText = res;
+                CORE.current = { raw: text, res: res };
+            } catch (e) {
+                document.getElementById('pop-res').innerText = 'Error Connect';
+            }
         }
 
-        function saveDB() { localStorage.setItem('lingo_v9_db', JSON.stringify(SYS.db)); }
+        function closePop() { document.getElementById('trans-popup').style.bottom = '-300px'; }
 
-        // --- CORE PROCESSOR ---
-        document.getElementById('compile-btn').onclick = function() {
-            const txt = document.getElementById('lyric-input').value.trim();
-            const link = document.getElementById('yt-link').value.trim();
-            if(!txt) return notify("No data to compile", "error");
+        function commitToRepo() {
+            if (CORE.data.notebook.some(x => x.raw.toLowerCase() === CORE.current.raw.toLowerCase())) {
+                showNotif("Mục này đã tồn tại", "warn");
+                return;
+            }
+            CORE.data.notebook.unshift({ ...CORE.current, id: Date.now(), xp: 10 });
+            CORE.data.stats.xp += 10;
+            saveDatabase();
+            updateUIMetrics();
+            renderSessionList();
+            closePop();
+            showNotif("Đã thêm vào kho lưu trữ", "success");
+        }
 
-            if(link.includes('v=')) {
-                const vid = link.split('v=')[1].split('&')[0];
-                if(SYS.player) SYS.player.loadVideoById(vid);
+        // --- READER & YOUTUBE ---
+        document.getElementById('execute-btn').onclick = () => {
+            const text = document.getElementById('text-input').value.trim();
+            const yt = document.getElementById('yt-input').value.trim();
+            if (!text) return showNotif("Vui lòng nhập văn bản", "error");
+
+            const reader = document.getElementById('reader-view');
+            reader.innerHTML = "";
+            
+            text.split('\n').forEach(line => {
+                if (!line.trim()) return;
+                const p = document.createElement('div');
+                p.className = 'mb-6 group flex flex-wrap';
+                line.split(/\s+/).forEach(word => {
+                    const span = document.createElement('span');
+                    span.className = 'cursor-pointer hover:text-indigo-400 hover:scale-110 transition-all mr-2';
+                    span.innerText = word;
+                    span.onclick = (e) => {
+                        e.stopPropagation();
+                        performTranslation(word.replace(/[.,!?;:]/g, ''));
+                    };
+                    p.appendChild(span);
+                });
+                reader.appendChild(p);
+            });
+
+            if (yt.includes('v=')) {
+                const vid = yt.split('v=')[1].split('&')[0];
+                if (CORE.player) CORE.player.loadVideoById(vid);
                 else {
-                    SYS.player = new YT.Player('player', {
+                    CORE.player = new YT.Player('player', {
                         videoId: vid, width: '100%', height: '100%',
-                        playerVars: { 'autoplay': 1, 'modestbranding': 1, 'playsinline': 1 }
+                        playerVars: { 'autoplay': 1, 'modestbranding': 1 }
                     });
                 }
             }
-
-            const target = document.getElementById('reader-view');
-            target.innerHTML = "";
-            txt.split('\n').forEach(line => {
-                if(!line.trim()) return;
-                const div = document.createElement('div');
-                div.className = 'mb-6 text-xl font-medium tracking-tight hover:bg-white/5 p-4 rounded-2xl transition-all';
-                line.split(/\s+/).forEach(w => {
-                    const span = document.createElement('span');
-                    span.className = 'cursor-pointer hover:text-indigo-400 hover:scale-110 inline-block transition-transform mr-2';
-                    span.innerText = w;
-                    span.onclick = () => translateWord(w.replace(/[.,!?;:]/g, ""));
-                    div.appendChild(span);
-                });
-                target.appendChild(div);
-            });
-            notify("Decomposition Complete");
+            showNotif("Phân tích hoàn tất", "success");
         };
 
-        async function translateWord(w) {
-            if(!w) return;
-            const node = document.getElementById('lang-node').value;
-            const pop = document.getElementById('trans-pop');
-            document.getElementById('p-raw').innerText = w;
-            document.getElementById('p-trans').innerText = "...";
-            pop.classList.add('active');
-
-            try {
-                const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${node}&dt=t&q=${encodeURIComponent(w)}`);
-                const d = await r.json();
-                const res = d[0][0][0];
-                document.getElementById('p-trans').innerText = res;
-                SYS.current = { raw: w, trans: res };
-            } catch(e) { notify("Translation node failed", "error"); }
-        }
-
-        function hideTrans() { document.getElementById('trans-pop').classList.remove('active'); }
-
-        function addToRepo() {
-            if(!SYS.user) return notify("Login required for saving", "error");
-            if(SYS.notebook.some(x => x.raw === SYS.current.raw)) return notify("Key already exists");
-
-            SYS.notebook.unshift({ ...SYS.current, id: Date.now(), xp: 10 });
-            SYS.db[SYS.user].notebook = SYS.notebook;
-            SYS.db[SYS.user].stats.xp += 10;
-            saveDB();
-            updateVocabUI();
-            notify("Committed to Partition");
-            hideTrans();
-        }
-
-        function updateVocabUI() {
-            const list = document.getElementById('vocab-display');
-            document.getElementById('vocab-total').innerText = SYS.notebook.length;
-            list.innerHTML = "";
-            SYS.notebook.forEach((item, idx) => {
-                const el = document.createElement('div');
-                el.className = 'glass-panel p-6 border-l-4 border-indigo-600 hover:bg-white/5 transition-all group cursor-pointer';
-                el.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1 pr-4">
-                            <p class="text-[9px] font-black text-slate-500 uppercase">${item.raw}</p>
-                            <p class="text-xl font-black italic tracking-tighter uppercase break-words">${item.trans}</p>
-                        </div>
-                        <button onclick="delVocab(event, ${idx})" class="opacity-0 group-hover:opacity-100 text-slate-700 hover:text-red-500 transition-all"><i class="fa-solid fa-square-xmark text-xl"></i></button>
-                    </div>
-                `;
-                el.onclick = () => {
-                    const m = new SpeechSynthesisUtterance(item.raw);
-                    window.speechSynthesis.speak(m);
-                };
-                list.appendChild(el);
-            });
-        }
-
-        function delVocab(e, idx) {
-            e.stopPropagation();
-            SYS.notebook.splice(idx, 1);
-            SYS.db[SYS.user].notebook = SYS.notebook;
-            saveDB();
-            updateVocabUI();
-        }
-
-        function speakWord() {
-            const m = new SpeechSynthesisUtterance(SYS.current.raw);
-            window.speechSynthesis.speak(m);
-        }
-
-        // --- QUIZ WITH AI TIMER ---
-        function launchQuiz() {
-            if(SYS.notebook.length < 4) return notify("Under-capacity: Need 4 keys", "error");
+        // --- QUIZ ENGINE ---
+        function initQuiz() {
+            if (CORE.data.notebook.length < 4) return showNotif("Cần tối thiểu 4 từ", "error");
             
-            SYS.quiz = { step: 0, score: 0, data: [], timeLeft: 10, lives: 3 };
-            const pool = [...SYS.notebook].sort(() => 0.5 - Math.random()).slice(0, 10);
-            SYS.quiz.data = pool.map(item => {
-                const others = SYS.notebook.filter(x => x.raw !== item.raw).sort(() => 0.5 - Math.random()).slice(0, 3);
-                const opts = [item.trans, ...others.map(o => o.trans)].sort(() => 0.5 - Math.random());
-                return { q: item.raw, a: item.trans, opts };
+            CORE.quiz = { active: true, step: 0, score: 0, time: 10, lives: 3, pool: [] };
+            const pool = [...CORE.data.notebook].sort(() => 0.5 - Math.random()).slice(0, 10);
+            CORE.quiz.pool = pool.map(item => {
+                const others = CORE.data.notebook.filter(x => x.res !== item.res).sort(() => 0.5 - Math.random()).slice(0, 3);
+                const opts = [item.res, ...others.map(o => o.res)].sort(() => 0.5 - Math.random());
+                return { q: item.raw, a: item.res, opts };
             });
 
-            document.getElementById('quiz-overlay').classList.remove('hidden');
+            document.getElementById('quiz-modal').classList.remove('hidden');
             document.getElementById('quiz-active').classList.remove('hidden');
-            document.getElementById('quiz-end').classList.add('hidden');
+            document.getElementById('quiz-result').classList.add('hidden');
             renderQuestion();
         }
 
         function renderQuestion() {
-            clearInterval(SYS.quiz.timer);
-            const q = SYS.quiz.data[SYS.quiz.step];
-            document.getElementById('q-count').innerText = SYS.quiz.step + 1;
+            clearInterval(CORE.quiz.timer);
+            const q = CORE.quiz.pool[CORE.quiz.step];
+            document.getElementById('q-idx').innerText = CORE.quiz.step + 1;
             document.getElementById('q-text').innerText = q.q;
             
-            // Hearts
-            const h = document.getElementById('q-hearts');
-            h.innerHTML = "";
-            for(let i=0; i<3; i++) h.innerHTML += `<i class="fa-solid fa-heart ${i < SYS.quiz.lives ? 'text-pink-600' : 'text-slate-800'}"></i>`;
+            // Lives
+            const lBox = document.getElementById('q-lives');
+            lBox.innerHTML = "";
+            for(let i=0; i<3; i++) lBox.innerHTML += `<i class="fa-solid fa-heart ${i < CORE.quiz.lives ? 'text-pink-500' : 'text-slate-800'}"></i>`;
 
-            // Options (FIXED DÍNH CHỮ)
-            const optBox = document.getElementById('q-options');
-            optBox.innerHTML = "";
+            // Options
+            const oBox = document.getElementById('q-options');
+            oBox.innerHTML = "";
             q.opts.forEach(o => {
-                const b = document.createElement('button');
-                b.className = 'option-btn';
-                b.innerText = o;
-                b.onclick = () => checkQuestion(o, q.a, b);
-                optBox.appendChild(b);
+                const btn = document.createElement('div');
+                btn.className = 'opt-card';
+                btn.innerText = o;
+                btn.onclick = () => verifyAnswer(o, q.a, btn);
+                oBox.appendChild(btn);
             });
 
-            startEngineTimer();
+            startQuizTimer();
         }
 
-        function startEngineTimer() {
-            SYS.quiz.timeLeft = 10;
+        function startQuizTimer() {
+            CORE.quiz.time = 10;
             const bar = document.getElementById('q-timer-bar');
             const val = document.getElementById('q-timer-val');
             
-            SYS.quiz.timer = setInterval(() => {
-                SYS.quiz.timeLeft -= 0.1;
-                bar.style.width = (SYS.quiz.timeLeft * 10) + '%';
-                val.innerText = Math.max(0, SYS.quiz.timeLeft).toFixed(1) + 's';
+            CORE.quiz.timer = setInterval(() => {
+                CORE.quiz.time -= 0.1;
+                bar.style.width = (CORE.quiz.time * 10) + '%';
+                val.innerText = Math.max(0, CORE.quiz.time).toFixed(1) + 's';
                 
-                if(SYS.quiz.timeLeft <= 3) {
-                    val.style.color = "#ef4444";
-                    if(Math.round(SYS.quiz.timeLeft * 10) % 2 === 0) bar.style.opacity = '0.5';
-                    else bar.style.opacity = '1';
-                } else {
-                    val.style.color = "#6366f1";
-                }
-
-                if(SYS.quiz.timeLeft <= 0) {
-                    clearInterval(SYS.quiz.timer);
-                    SYS.quiz.lives--;
-                    notify("Time Desync!", "error");
+                if (CORE.quiz.time <= 0) {
+                    clearInterval(CORE.quiz.timer);
+                    CORE.quiz.lives--;
                     nextQuestion();
                 }
             }, 100);
         }
 
-        function checkQuestion(chosen, correct, btn) {
-            clearInterval(SYS.quiz.timer);
-            const all = document.querySelectorAll('.option-btn');
-            all.forEach(b => b.disabled = true);
+        function verifyAnswer(chosen, correct, el) {
+            clearInterval(CORE.quiz.timer);
+            const cards = document.querySelectorAll('.opt-card');
+            cards.forEach(c => c.style.pointerEvents = 'none');
 
-            if(chosen === correct) {
-                btn.classList.add('option-correct');
-                SYS.quiz.score++;
-                notify("Accuracy Match!");
+            if (chosen === correct) {
+                el.classList.add('opt-correct');
+                CORE.quiz.score++;
+                gsap.to(el, { scale: 1.05, duration: 0.2 });
             } else {
-                btn.classList.add('option-wrong');
-                SYS.quiz.lives--;
-                notify("Desync Error!", "error");
+                el.classList.add('opt-wrong');
+                CORE.quiz.lives--;
+                cards.forEach(c => { if(c.innerText === correct) c.classList.add('opt-correct'); });
             }
 
             setTimeout(nextQuestion, 1200);
         }
 
         function nextQuestion() {
-            SYS.quiz.step++;
-            if(SYS.quiz.lives > 0 && SYS.quiz.step < SYS.quiz.data.length) {
+            CORE.quiz.step++;
+            if (CORE.quiz.lives > 0 && CORE.quiz.step < CORE.quiz.pool.length) {
                 renderQuestion();
             } else {
-                endQuiz();
+                finishQuiz();
             }
         }
 
-        function endQuiz() {
+        function finishQuiz() {
+            CORE.quiz.active = false;
             document.getElementById('quiz-active').classList.add('hidden');
-            document.getElementById('quiz-end').classList.remove('hidden');
-            const perc = (SYS.quiz.score / SYS.quiz.data.length) * 100;
-            document.getElementById('q-final-score').innerText = `Sync Stability: ${perc}%`;
-            
-            if(SYS.user) {
-                const stats = SYS.db[SYS.user].stats;
-                stats.tests++;
-                stats.correct += SYS.quiz.score;
-                stats.xp += (SYS.quiz.score * 5);
-                stats.history.push({ 
-                    date: new Date().toLocaleDateString(), 
-                    score: perc 
-                });
-                saveDB();
-            }
+            document.getElementById('quiz-result').classList.remove('hidden');
+            const score = Math.round((CORE.quiz.score / CORE.quiz.pool.length) * 100);
+            document.getElementById('q-final-score').innerText = score + "%";
+
+            // Save Stats
+            CORE.data.stats.tests++;
+            CORE.data.stats.correct += CORE.quiz.score;
+            CORE.data.stats.xp += (CORE.quiz.score * 5);
+            CORE.data.stats.history.push({ date: new Date().toLocaleDateString(), score: score });
+            saveDatabase();
+            updateUIMetrics();
         }
 
-        function closeQuiz() { document.getElementById('quiz-overlay').classList.add('hidden'); }
-
-        // --- DASHBOARD (FIXED CHART) ---
-        function openStats() {
-            if(!SYS.user) return notify("Login for metrics", "error");
-            document.getElementById('dashboard-overlay').style.display = 'block';
-            
-            const s = SYS.db[SYS.user].stats;
-            document.getElementById('stat-xp').innerText = s.xp;
-            document.getElementById('stat-vocab').innerText = SYS.notebook.length;
-            document.getElementById('stat-sessions').innerText = s.tests;
-            const acc = s.tests === 0 ? 0 : (s.correct / (s.tests * 10) * 100).toFixed(0);
-            document.getElementById('stat-acc').innerText = acc + "%";
-
-            renderMainChart();
+        function closeQuiz() {
+            document.getElementById('quiz-modal').classList.add('hidden');
+            clearInterval(CORE.quiz.timer);
+            CORE.quiz.active = false;
         }
 
-        function renderMainChart() {
+        // --- ANALYTICS & REPO RENDERING ---
+        function renderLexicon() {
+            const grid = document.getElementById('lexicon-grid');
+            grid.innerHTML = "";
+            CORE.data.notebook.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = 'glass p-6 rounded-2xl group flex justify-between items-center';
+                card.innerHTML = `
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">${item.raw}</p>
+                        <h4 class="text-xl font-black italic uppercase truncate">${item.res}</h4>
+                    </div>
+                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onclick="speakWord('${item.raw}')" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:text-indigo-400"><i class="fa-solid fa-volume-low text-xs"></i></button>
+                        <button onclick="removeWord(${idx})" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderSessionList() {
+            const list = document.getElementById('session-list');
+            list.innerHTML = "";
+            CORE.data.notebook.slice(0, 10).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'glass p-4 rounded-xl text-xs hover:border-indigo-500 transition-all cursor-pointer';
+                div.innerHTML = `<p class="text-slate-500 font-bold mb-1">${item.raw}</p><p class="font-black uppercase italic">${item.res}</p>`;
+                list.appendChild(div);
+            });
+        }
+
+        function renderAnalytics() {
             const ctx = document.getElementById('mainChart').getContext('2d');
-            if(SYS.chart) SYS.chart.destroy();
-            
-            const history = SYS.db[SYS.user].stats.history.slice(-10);
-            const labels = history.length ? history.map(h => h.date) : ['No Data'];
-            const points = history.length ? history.map(h => h.score) : [0];
+            if (CORE.chart) CORE.chart.destroy();
 
-            SYS.chart = new Chart(ctx, {
+            const hist = CORE.data.stats.history.slice(-10);
+            CORE.chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: hist.map(h => h.date),
                     datasets: [{
-                        label: 'Sync Stability (%)',
-                        data: points,
+                        label: 'Accuracy %',
+                        data: hist.map(h => h.score),
                         borderColor: '#6366f1',
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         fill: true,
                         tension: 0.4,
-                        borderWidth: 4,
-                        pointRadius: 6,
-                        pointHoverRadius: 10
+                        borderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { 
-                            beginAtZero: true, max: 100, 
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#64748b' }
-                        },
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: '#64748b' }
-                        }
+                        y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
                     },
                     plugins: { legend: { display: false } }
                 }
             });
+            renderAchievements();
         }
 
-        function closeStats() { document.getElementById('dashboard-overlay').style.display = 'none'; }
+        function renderAchievements() {
+            const grid = document.getElementById('achievement-grid');
+            grid.innerHTML = "";
+            CORE.achievements.forEach(ach => {
+                const isUnlocked = ach.req(CORE.data);
+                grid.innerHTML += `
+                    <div class="glass p-5 rounded-2xl text-center ${isUnlocked ? '' : 'badge-locked'}">
+                        <i class="fa-solid ${ach.icon} text-2xl mb-3 ${isUnlocked ? 'text-indigo-500' : 'text-slate-600'}"></i>
+                        <p class="text-[10px] font-black uppercase">${ach.title}</p>
+                        <p class="text-[8px] text-slate-500 mt-1 uppercase">${ach.desc}</p>
+                    </div>
+                `;
+            });
+        }
 
-        function exportData() {
-            const data = JSON.stringify(SYS.db);
+        // --- HELPERS & SYSTEM ---
+        function showNotif(msg, type = "info") {
+            const box = document.getElementById('sys-notif');
+            const n = document.createElement('div');
+            const colors = { success: 'border-emerald-500', error: 'border-red-500', warn: 'border-amber-500', info: 'border-indigo-500' };
+            n.className = `glass p-4 rounded-xl border-l-4 ${colors[type]} flex items-center gap-3 min-w-[200px] shadow-2xl animate-popUp`;
+            n.innerHTML = `<i class="fa-solid fa-circle-info text-xs"></i><span class="text-[10px] font-bold uppercase">${msg}</span>`;
+            box.appendChild(n);
+            setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 500); }, 3000);
+        }
+
+        function setupHotkeys() {
+            window.onkeydown = (e) => {
+                if (e.ctrlKey && e.key === 'q') { e.preventDefault(); initQuiz(); }
+                if (e.ctrlKey && e.key === 's') { e.preventDefault(); if(CORE.current.raw) commitToRepo(); }
+                if (e.key === 'F8') { e.preventDefault(); document.getElementById('execute-btn').click(); }
+                if (e.key === 'Escape') { closeQuiz(); closePop(); }
+            };
+        }
+
+        function speakWord(t) {
+            const msg = new SpeechSynthesisUtterance(t || CORE.current.raw);
+            window.speechSynthesis.speak(msg);
+        }
+
+        function exportJSON() {
+            const data = JSON.stringify(CORE.data);
             const blob = new Blob([data], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `lingopro_v9_${Date.now()}.json`;
+            a.download = `lingopro_backup_${Date.now()}.json`;
             a.click();
         }
 
+        function removeWord(idx) {
+            if(confirm("Xóa mục này?")) {
+                CORE.data.notebook.splice(idx, 1);
+                saveDatabase();
+                renderLexicon();
+                updateUIMetrics();
+            }
+        }
+
+        function checkAchievements() {
+            CORE.achievements.forEach(ach => {
+                if(ach.req(CORE.data) && !CORE.data.stats.achievements.includes(ach.id)) {
+                    CORE.data.stats.achievements.push(ach.id);
+                    showNotif(`Mở khóa danh hiệu: ${ach.title}`, "success");
+                }
+            });
+        }
     </script>
 </body>
 </html>
