@@ -3,676 +3,707 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro v14.0 | Enterprise Neural Workspace</title>
+    <title>LingoPro v17.0 | Enterprise Neural Workspace</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        /* --- GLOBAL ROOT VARIABLES --- */
+        /* ==========================================================================
+           GLOBAL CORE STYLES
+           ========================================================================== */
         :root {
-            --primary-color: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.5);
-            --secondary-color: #ec4899;
-            --accent-success: #10b981;
-            --bg-deep-slate: #020617;
-            --bg-card-slate: #0f172a;
+            --primary-blue: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-ultra: #020617;
+            --bg-panel: #0f172a;
+            --text-vibrant: #f8fafc;
+            --text-muted: #64748b;
             --border-alpha: rgba(255, 255, 255, 0.08);
-            --text-vibrant: #f1f5f9;
-            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
         }
 
-        /* --- BASE RESET & LAYOUT --- */
-        * {
+        html, body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-deep-slate);
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-ultra);
             color: var(--text-vibrant);
-            height: 100vh;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- CUSTOM SCROLLBAR SYSTEM --- */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #1e293b;
-            border-radius: 20px;
-            border: 2px solid var(--bg-deep-slate);
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #334155;
-        }
-
-        /* --- UI COMPONENTS --- */
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-alpha);
-        }
-
-        .nav-link {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .nav-link.active {
-            color: #ffffff !important;
-            background: var(--primary-color) !important;
-            box-shadow: 0 8px 25px var(--primary-glow);
-        }
-
-        /* --- READER ENGINE STYLES --- */
-        .word-unit {
-            display: inline-block;
-            cursor: pointer;
-            padding: 2px 4px;
-            margin: 0 1px;
-            border-radius: 6px;
-            transition: all 0.25s ease;
-            position: relative;
-        }
-
-        .word-unit:hover {
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--primary-color);
-            transform: translateY(-2px) scale(1.05);
-        }
-
-        /* --- LEXICON GRID SYSTEM --- */
-        .card-entry {
-            background: var(--bg-card-slate);
-            border: 1px solid var(--border-alpha);
-            border-radius: 24px;
-            padding: 24px;
-            transition: all 0.4s ease;
-            position: relative;
+        /* ==========================================================================
+           ATOMIC LAYOUT COMPONENTS
+           ========================================================================== */
+        .app-container {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 80px);
             overflow: hidden;
         }
 
-        .card-entry:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-8px);
+        .sidebar-panel {
+            width: 420px;
+            background: #070b1d;
+            border-right: 1px solid var(--border-alpha);
+            display: flex;
+            flex-direction: column;
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+
+        .main-workspace {
+            flex: 1;
+            position: relative;
+            background: var(--bg-ultra);
+            overflow: hidden;
+        }
+
+        /* ==========================================================================
+           TYPOGRAPHY & INPUTS
+           ========================================================================== */
+        .section-title {
+            font-size: 0.65rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.25rem;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .control-input {
+            width: 100%;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-alpha);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            color: white;
+            font-size: 0.875rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .control-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            background: var(--primary-blue);
+            color: white;
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15rem;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            border: none;
+            cursor: pointer;
+        }
+
+        .action-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        /* ==========================================================================
+           READER ENGINE STYLES
+           ========================================================================== */
+        .word-token {
+            display: inline-block;
+            margin-right: 0.25rem;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1.5rem;
+            line-height: 2.2;
+            color: #cbd5e1;
+        }
+
+        .word-token:hover {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary-blue);
+            transform: scale(1.05);
+        }
+
+        /* ==========================================================================
+           LEXICON GRID ARCHITECTURE
+           ========================================================================== */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            padding: 3rem;
+        }
+
+        .vocab-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-alpha);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            position: relative;
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+
+        .vocab-card:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
-        .card-entry::after {
+        .vocab-card::after {
             content: '';
             position: absolute;
             left: 0;
             top: 0;
-            width: 5px;
+            width: 4px;
             height: 100%;
-            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+            background: var(--primary-blue);
         }
 
-        /* --- XP SYSTEM UI --- */
-        .xp-container {
-            height: 10px;
-            background: #1e293b;
-            border-radius: 100px;
-            width: 150px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
+        /* ==========================================================================
+           NAVIGATION & TABS
+           ========================================================================== */
+        .top-nav {
+            height: 80px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-alpha);
+            display: flex;
+            align-items: center;
+            padding: 0 2.5rem;
+            justify-content: space-between;
+            z-index: 100;
         }
 
-        .xp-fill-active {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            width: 0%;
-            transition: width 1s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        /* --- TAB MANAGEMENT --- */
-        .pane {
-            display: none;
-            height: 100%;
-            opacity: 0;
-        }
-
-        .pane.active {
-            display: block;
-            opacity: 1;
-            animation: paneEntry 0.5s ease forwards;
-        }
-
-        @keyframes paneEntry {
-            from { opacity: 0; transform: scale(0.98) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        /* --- TOOLTIP & POPUPS --- */
-        #smart-tooltip {
-            position: fixed;
-            display: none;
-            z-index: 10000;
-            background: var(--primary-color);
-            color: white;
-            padding: 10px 22px;
-            border-radius: 50px;
-            font-size: 12px;
+        .tab-trigger {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 800;
-            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            transition: all 0.3s ease;
             cursor: pointer;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            border: none;
+            background: transparent;
+        }
+
+        .tab-trigger.active {
+            background: var(--primary-blue);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .tab-pane {
+            display: none;
+            height: 100%;
+            width: 100%;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: paneFade 0.5s ease;
+        }
+
+        @keyframes paneFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================================================
+           QUIZ SYSTEM STYLES
+           ========================================================================== */
+        .quiz-container {
+            max-width: 600px;
+            margin: 5rem auto;
+            text-align: center;
+        }
+
+        .quiz-option {
+            background: var(--bg-panel);
+            border: 2px solid var(--border-alpha);
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-blue);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* ==========================================================================
+           SCROLLBAR SYSTEM
+           ========================================================================== */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
 
-    <div id="smart-tooltip" onclick="engine.translatePhrase()">
-        <i class="fa-solid fa-bolt-lightning mr-2"></i> ANALYZE PHRASE
+    <div id="neural-tooltip" style="position:fixed;display:none;z-index:1000;background:#6366f1;color:white;padding:10px 20px;border-radius:30px;font-size:12px;font-weight:bold;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,0.5);" onclick="app.translateSelection()">
+        <i class="fa-solid fa-bolt mr-2"></i> NEURAL ANALYZE
     </div>
 
-    <header class="h-24 border-b border-white/5 px-10 flex items-center justify-between glass-panel z-[500]">
-        <div class="flex items-center gap-14">
-            <div class="flex items-center gap-4 group cursor-pointer" onclick="location.reload()">
-                <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:rotate-12 transition-all">
-                    <i class="fa-solid fa-layer-group text-white text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-black italic tracking-tighter">LINGOPRO <span class="text-indigo-500">v14</span></h1>
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Neural Learning Environment</p>
-                </div>
+    <header class="top-nav">
+        <div class="flex items-center gap-5">
+            <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-600/20">
+                <i class="fa-solid fa-layer-group text-white"></i>
             </div>
-
-            <nav class="flex items-center gap-3 bg-slate-900/40 p-2 rounded-2xl border border-white/5">
-                <button onclick="router.navigate('reader')" class="nav-link active px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest" data-nav="reader">Workspace</button>
-                <button onclick="router.navigate('lexicon')" class="nav-link px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest text-slate-400" data-nav="lexicon">Lexicon</button>
-                <button onclick="router.navigate('storage')" class="nav-link px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest text-slate-400" data-nav="storage">Data Center</button>
-            </nav>
+            <div>
+                <h1 class="font-black text-2xl italic tracking-tighter uppercase leading-none">LingoPro <span class="text-indigo-500">v17</span></h1>
+                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">Enterprise Neural Node</p>
+            </div>
         </div>
 
+        <nav class="flex bg-slate-900/50 p-1.5 rounded-2xl border border-white/5">
+            <button onclick="ui.switchTab('reader')" class="tab-trigger active" data-nav="reader">Workspace</button>
+            <button onclick="ui.switchTab('lexicon')" class="tab-trigger" data-nav="lexicon">Lexicon</button>
+            <button onclick="ui.switchTab('quiz')" class="tab-trigger" data-nav="quiz">Neural Test</button>
+            <button onclick="ui.switchTab('storage')" class="tab-trigger" data-nav="storage">user.json</button>
+        </nav>
+
         <div class="flex items-center gap-8">
-            <div class="flex flex-col items-end">
-                <div class="flex items-center gap-3 mb-2">
-                    <span id="display-level" class="bg-indigo-600/20 text-indigo-400 px-3 py-1 rounded-lg text-[10px] font-black">LEVEL 1</span>
-                    <span id="display-rank" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Neophyte</span>
-                </div>
-                <div class="xp-container">
-                    <div id="xp-bar-fill" class="xp-fill-active"></div>
-                </div>
-            </div>
-            <div class="h-12 w-[1px] bg-white/10"></div>
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center border border-white/5">
-                <i class="fa-solid fa-user-ninja text-slate-500"></i>
+            <div class="text-right">
+                <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Total Progress</p>
+                <p id="stat-xp" class="text-xs font-black text-indigo-400">0 XP</p>
             </div>
         </div>
     </header>
 
-    <main class="flex-1 flex overflow-hidden">
+    <div class="app-container">
         
-        <aside class="w-[380px] border-r border-white/5 flex flex-col p-8 space-y-10 bg-slate-950/30 overflow-y-auto">
+        <aside class="sidebar-panel custom-scroll">
             
-            <div class="space-y-6">
-                <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.25em] flex items-center gap-3">
-                    <i class="fa-solid fa-terminal text-sm"></i> Intelligence Input
-                </h3>
-                
-                <div class="space-y-4">
-                    <div class="group">
-                        <label class="text-[9px] font-bold text-slate-600 uppercase mb-2 block tracking-widest">Source Material</label>
-                        <textarea id="input-area" rows="12" placeholder="Paste English text, articles, or transcripts here..." class="w-full bg-slate-900/50 border border-white/5 p-5 rounded-2xl text-xs focus:border-indigo-500 transition-all resize-none shadow-inner"></textarea>
+            <div class="mb-10">
+                <h3 class="section-title"><i class="fa-solid fa-play"></i> Media Feed</h3>
+                <input type="text" id="yt-url" placeholder="YouTube Video Link..." class="control-input mb-4">
+                <div class="aspect-video bg-black rounded-2xl overflow-hidden border border-white/5 shadow-2xl relative">
+                    <div id="yt-player"></div>
+                    <div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+                        <i class="fa-brands fa-youtube text-4xl"></i>
                     </div>
-
-                    <button onclick="engine.initAnalysis()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-600/20 transition-all flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-microchip"></i> EXECUTE ENGINE (F8)
-                    </button>
                 </div>
             </div>
 
-            <div class="p-6 bg-slate-900/50 rounded-3xl border border-white/5 space-y-4">
-                <h4 class="text-[10px] font-black text-slate-500 uppercase">System Status</h4>
+            <div class="mb-10">
+                <h3 class="section-title"><i class="fa-solid fa-align-left"></i> Source Material</h3>
+                <textarea id="raw-text" rows="14" placeholder="Paste your study material here..." class="control-input mb-6 custom-scroll"></textarea>
+                
+                <button onclick="app.processMaterial()" class="action-button">
+                    <i class="fa-solid fa-microchip"></i> EXECUTE ANALYZER (F8)
+                </button>
+            </div>
+
+            <div class="p-6 bg-slate-900/40 rounded-3xl border border-white/5">
+                <h4 class="text-[10px] font-black text-slate-500 uppercase mb-4">System Identity</h4>
                 <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] text-slate-400">Database Linked</span>
-                        <span class="text-[10px] font-bold text-emerald-500">ACTIVE</span>
+                    <div class="flex justify-between">
+                        <span class="text-[10px] text-slate-500">Target File:</span>
+                        <span class="text-[10px] font-bold text-indigo-400 tracking-widest">user.json</span>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] text-slate-400">File Output</span>
-                        <span class="text-[10px] font-bold text-indigo-400">user.json</span>
+                    <div class="flex justify-between">
+                        <span class="text-[10px] text-slate-500">API Status:</span>
+                        <span class="text-[10px] font-bold text-emerald-500 tracking-widest">CONNECTED</span>
                     </div>
                 </div>
             </div>
 
         </aside>
 
-        <section class="flex-1 relative flex flex-col">
+        <main class="main-workspace">
             
-            <div id="pane-reader" class="pane active flex flex-col">
-                <div class="h-16 border-b border-white/5 px-10 flex items-center justify-between bg-slate-900/10">
-                    <div class="flex items-center gap-4">
-                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Reader Mode Active</span>
-                    </div>
+            <div id="pane-reader" class="tab-pane active overflow-y-auto custom-scroll p-20 text-3xl font-medium leading-relaxed">
+                <div class="h-full flex flex-col items-center justify-center opacity-10">
+                    <i class="fa-solid fa-terminal text-9xl mb-10"></i>
+                    <p class="font-black text-sm uppercase tracking-[1em]">Engine Idle</p>
                 </div>
-                
-                <div id="content-output" class="flex-1 p-16 overflow-y-auto custom-scroll text-xl leading-[2.8] font-medium">
-                    <div class="h-full flex flex-col items-center justify-center opacity-10">
-                        <i class="fa-solid fa-wind text-8xl mb-6"></i>
-                        <p class="font-black text-sm uppercase tracking-[0.5em]">Waiting for System Feed</p>
+            </div>
+
+            <div id="pane-lexicon" class="tab-pane overflow-y-auto custom-scroll">
+                <div class="max-w-7xl mx-auto">
+                    <div id="lexicon-view" class="vocab-grid"></div>
+                </div>
+            </div>
+
+            <div id="pane-quiz" class="tab-pane overflow-y-auto">
+                <div class="quiz-container">
+                    <div id="quiz-start-screen">
+                        <i class="fa-solid fa-graduation-cap text-7xl text-indigo-500 mb-8"></i>
+                        <h2 class="text-4xl font-black italic uppercase mb-4">Neural Testing</h2>
+                        <p class="text-slate-500 text-sm mb-10 leading-relaxed">Hệ thống sẽ chọn ngẫu nhiên các từ trong Lexicon của bạn để kiểm tra khả năng ghi nhớ.</p>
+                        <button onclick="quiz.start()" class="action-button max-w-xs mx-auto">Start Session</button>
+                    </div>
+                    <div id="quiz-active-screen" class="hidden">
+                        <p class="text-[10px] font-black text-indigo-400 uppercase mb-4 tracking-widest">Question #<span id="q-index">1</span></p>
+                        <h3 id="q-word" class="text-6xl font-black italic uppercase mb-12 tracking-tighter">APPLE</h3>
+                        <div id="q-options" class="grid grid-cols-1 gap-4"></div>
                     </div>
                 </div>
             </div>
 
-            <div id="pane-lexicon" class="pane p-16 overflow-y-auto custom-scroll">
-                <div class="max-w-6xl mx-auto">
-                    <div class="flex justify-between items-end mb-16">
-                        <div>
-                            <h2 class="text-6xl font-black italic tracking-tighter uppercase mb-4">Lexicon</h2>
-                            <p class="text-slate-500 text-[11px] font-bold uppercase tracking-[0.3em]">Total Synchronized Terms: <span id="count-total" class="text-white">0</span></p>
-                        </div>
+            <div id="pane-storage" class="tab-pane flex items-center justify-center p-20">
+                <div class="max-w-xl w-full bg-slate-900/50 p-16 rounded-[50px] border border-white/5 text-center shadow-2xl">
+                    <div class="w-24 h-24 bg-indigo-600/10 rounded-3xl flex items-center justify-center mx-auto mb-10">
+                        <i class="fa-solid fa-database text-indigo-500 text-4xl"></i>
                     </div>
-                    <div id="lexicon-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        </div>
-                </div>
-            </div>
-
-            <div id="pane-storage" class="pane p-16 overflow-y-auto custom-scroll">
-                <div class="max-w-4xl mx-auto">
-                    <h2 class="text-6xl font-black italic uppercase mb-16">Storage</h2>
+                    <h2 class="text-4xl font-black italic uppercase mb-4">Data Management</h2>
+                    <p class="text-slate-500 text-sm mb-12">Lưu trữ hoặc đồng bộ dữ liệu thông qua file user.json.</p>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        <div class="card-entry p-10">
-                            <h3 class="text-lg font-black uppercase mb-6 flex items-center gap-4">
-                                <i class="fa-solid fa-file-export text-indigo-500"></i> Export Engine
-                            </h3>
-                            <p class="text-xs text-slate-500 mb-10 leading-relaxed">
-                                Đóng gói toàn bộ cơ sở dữ liệu học tập vào file <strong>user.json</strong> để lưu trữ ngoại tuyến hoặc chuyển thiết bị.
-                            </p>
-                            <button onclick="storage.downloadData()" class="w-full bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 py-5 rounded-2xl text-[11px] font-black uppercase hover:bg-indigo-600 hover:text-white transition-all">
-                                Generate user.json
-                            </button>
-                        </div>
-
-                        <div class="card-entry p-10">
-                            <h3 class="text-lg font-black uppercase mb-6 flex items-center gap-4">
-                                <i class="fa-solid fa-file-import text-emerald-500"></i> Import Engine
-                            </h3>
-                            <p class="text-xs text-slate-500 mb-10 leading-relaxed">
-                                Khôi phục tiến trình từ file <strong>user.json</strong> hiện có. Hệ thống sẽ tự động đồng bộ hóa mọi từ vựng cũ.
-                            </p>
-                            <input type="file" id="file-input" class="hidden" onchange="storage.uploadData(event)">
-                            <button onclick="document.getElementById('file-input').click()" class="w-full bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 py-5 rounded-2xl text-[11px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all">
-                                Select user.json
-                            </button>
-                        </div>
+                    <div class="space-y-4">
+                        <button onclick="db.export()" class="action-button bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white">Download user.json</button>
+                        <input type="file" id="file-in" class="hidden" onchange="db.import(event)">
+                        <button onclick="document.getElementById('file-in').click()" class="w-full py-5 rounded-2xl bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all">Upload user.json</button>
                     </div>
                 </div>
             </div>
 
-        </section>
-    </main>
+        </main>
+    </div>
 
-    <div id="translation-pop" class="fixed bottom-[-600px] left-1/2 -translate-x-1/2 w-full max-w-2xl glass-panel p-12 rounded-[50px] shadow-[0_50px_100px_rgba(0,0,0,0.7)] border-t-4 border-indigo-600 transition-all duration-700 z-[2000]">
-        <div class="flex justify-between items-start gap-10">
-            <div class="flex-1 min-w-0">
-                <p id="term-source" class="text-[11px] font-black text-slate-500 uppercase mb-4 tracking-widest truncate"></p>
-                <h2 id="term-result" class="text-5xl font-black italic tracking-tighter uppercase leading-tight mb-6">...</h2>
-                <div class="flex gap-3">
-                    <span class="bg-indigo-600/20 text-indigo-400 text-[10px] font-black px-4 py-1.5 rounded-full uppercase">+10 XP GAIN</span>
-                </div>
+    <div id="trans-popup" class="fixed bottom-[-500px] left-1/2 -translate-x-1/2 w-full max-w-xl glass p-10 rounded-[40px] shadow-[0_50px_100px_rgba(0,0,0,0.8)] border-t-4 border-indigo-600 transition-all duration-700 z-[5000]" style="background:rgba(15,23,42,0.95);backdrop-filter:blur(20px);">
+        <div class="flex justify-between items-center gap-10">
+            <div class="flex-1">
+                <p id="pop-raw" class="text-[11px] font-black text-slate-500 uppercase mb-3 tracking-widest"></p>
+                <h2 id="pop-res" class="text-5xl font-black italic tracking-tighter uppercase leading-tight">...</h2>
             </div>
-            <div class="flex flex-col gap-5">
-                <button onclick="engine.commitWord()" class="w-24 h-24 bg-indigo-600 rounded-[35px] flex items-center justify-center text-4xl shadow-2xl shadow-indigo-600/40 hover:scale-110 active:scale-95 transition-all">
-                    <i class="fa-solid fa-plus text-white"></i>
-                </button>
-                <button onclick="ui.hidePopup()" class="text-[10px] font-black text-slate-600 uppercase hover:text-white transition-colors">Dismiss</button>
-            </div>
+            <button onclick="app.saveWord()" class="w-24 h-24 bg-indigo-600 rounded-[35px] flex items-center justify-center text-4xl shadow-2xl shadow-indigo-600/40 hover:scale-110 active:scale-95 transition-all">
+                <i class="fa-solid fa-plus text-white"></i>
+            </button>
         </div>
     </div>
 
-    <div id="notif-box" class="fixed top-10 right-10 z-[9999] pointer-events-none"></div>
-
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         /**
-         * LINGOPRO ENGINE v14.0
-         * MODULE-BASED ARCHITECTURE
-         * FILE TARGET: user.json
+         * LINGOPRO ENTERPRISE ARCHITECTURE
+         * VERSION: 17.0
+         * MODULES: DATABASE, UI, ENGINE, QUIZ, MEDIA
          */
 
-        // --- GLOBAL STATE ---
-        const DATABASE_KEY = 'lingopro_v14_enterprise_db';
-        
-        let appState = {
-            database: {
-                user: { xp: 0, level: 1, rank: 'Neophyte' },
+        const STORAGE_KEY = 'lingopro_v17_enterprise_core';
+
+        /* -------------------------------------------------------------------------
+           STATE MANAGEMENT
+           ------------------------------------------------------------------------- */
+        let state = {
+            db: {
+                user: { xp: 0, lastSync: Date.now() },
                 lexicon: [],
-                metadata: { lastSync: Date.now() }
+                settings: { autoPlay: true }
             },
-            currentTerm: { original: '', translated: '' },
-            activeSelection: ''
+            runtime: {
+                current: null,
+                selection: '',
+                player: null,
+                quiz: { current: null, score: 0 }
+            }
         };
 
-        // --- MODULE: STORAGE & I/O ---
-        const storage = {
-            /** * Initialize Database from LocalStorage 
-             */
+        /* -------------------------------------------------------------------------
+           MODULE: DATABASE ENGINE
+           ------------------------------------------------------------------------- */
+        class DatabaseEngine {
+            constructor() {
+                this.init();
+            }
+
             init() {
-                const rawData = localStorage.getItem(DATABASE_KEY);
-                if (rawData) {
+                const localData = localStorage.getItem(STORAGE_KEY);
+                if (localData) {
                     try {
-                        appState.database = JSON.parse(rawData);
-                    } catch (e) {
-                        console.error("DB Corrupted. Resetting...");
+                        state.db = JSON.parse(localData);
+                    } catch (err) {
+                        console.error("Database corruption detected.");
                     }
                 }
-                ui.refreshGlobalStats();
-            },
+                ui.refreshStats();
+            }
 
-            /** * Persistent Save 
-             */
             save() {
-                localStorage.setItem(DATABASE_KEY, JSON.stringify(appState.database));
-            },
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state.db));
+            }
 
-            /** * Export to user.json 
-             */
-            downloadData() {
-                const content = JSON.stringify(appState.database, null, 4);
-                const blob = new Blob([content], { type: 'application/json' });
-                const blobURL = URL.createObjectURL(blob);
+            export() {
+                const dataStr = JSON.stringify(state.db, null, 4);
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
                 
-                const downloader = document.createElement('a');
-                downloader.href = blobURL;
-                downloader.download = 'user.json'; // TÊN FILE THEO YÊU CẦU
-                
-                document.body.appendChild(downloader);
-                downloader.click();
-                document.body.removeChild(downloader);
-                
-                ui.notify("Dữ liệu đã được đóng gói vào user.json", "success");
-            },
+                const exportName = 'user.json';
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportName);
+                linkElement.click();
+            }
 
-            /** * Import from user.json 
-             */
-            uploadData(event) {
-                const targetFile = event.target.files[0];
-                if (!targetFile) return;
+            import(e) {
+                const file = e.target.files[0];
+                if (!file) return;
 
-                const fileReader = new FileReader();
-                fileReader.onload = (e) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
                     try {
-                        const importedData = JSON.parse(e.target.result);
-                        
-                        // Validation logic
-                        if (importedData.lexicon && importedData.user) {
-                            appState.database = importedData;
+                        const parsed = JSON.parse(event.target.result);
+                        if (parsed.lexicon && parsed.user) {
+                            state.db = parsed;
                             this.save();
-                            ui.notify("Đồng bộ user.json thành công!", "success");
-                            setTimeout(() => location.reload(), 1000);
-                        } else {
-                            throw new Error("Invalid structure");
+                            location.reload();
                         }
                     } catch (err) {
-                        ui.notify("File user.json không hợp lệ!", "error");
+                        alert("File user.json không hợp lệ!");
                     }
                 };
-                fileReader.readAsText(targetFile);
+                reader.readAsText(file);
             }
-        };
+        }
 
-        // --- MODULE: ROUTING & TABS ---
-        const router = {
-            navigate(targetID) {
-                // Clear active states
-                document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
-                document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active', 'text-white'));
+        /* -------------------------------------------------------------------------
+           MODULE: UI CONTROLLER
+           ------------------------------------------------------------------------- */
+        class UIController {
+            switchTab(id) {
+                const panes = document.querySelectorAll('.tab-pane');
+                const navs = document.querySelectorAll('.tab-trigger');
 
-                // Set new active
-                const targetPane = document.getElementById(`pane-${targetID}`);
-                const targetNav = document.querySelector(`[data-nav="${targetID}"]`);
+                panes.forEach(p => p.classList.remove('active'));
+                navs.forEach(n => n.classList.remove('active'));
 
-                if (targetPane && targetNav) {
-                    targetPane.classList.add('active');
-                    targetNav.classList.add('active', 'text-white');
-                }
+                document.getElementById(`pane-${id}`).classList.add('active');
+                document.querySelector(`[data-nav="${id}"]`).classList.add('active');
 
-                // Sub-module rendering
-                if (targetID === 'lexicon') ui.renderLexiconGrid();
+                if (id === 'lexicon') this.renderLexicon();
             }
-        };
 
-        // --- MODULE: UI & RENDERING ---
-        const ui = {
-            /** * Refresh XP and Level displays 
-             */
-            refreshGlobalStats() {
-                const currentXP = appState.database.user.xp;
-                const levelCalculated = Math.floor(currentXP / 100) + 1;
-                const progressPercentage = currentXP % 100;
+            refreshStats() {
+                document.getElementById('stat-xp').innerText = `${state.db.user.xp} XP`;
+            }
 
-                document.getElementById('display-level').innerText = `LEVEL ${levelCalculated}`;
-                document.getElementById('xp-bar-fill').style.width = `${progressPercentage}%`;
-                
-                // Rank logic
-                let currentRank = "Neophyte";
-                if (levelCalculated > 10) currentRank = "Scholar";
-                if (levelCalculated > 30) currentRank = "Polyglot";
-                document.getElementById('display-rank').innerText = currentRank;
-            },
-
-            /** * Render Vocabulary Cards 
-             */
-            renderLexiconGrid() {
-                const container = document.getElementById('lexicon-container');
-                const totalLabel = document.getElementById('count-total');
-                
-                const list = appState.database.lexicon;
-                totalLabel.innerText = list.length;
-
-                if (list.length === 0) {
-                    container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-600 font-bold uppercase tracking-widest">No terms saved yet</div>`;
+            renderLexicon() {
+                const container = document.getElementById('lexicon-view');
+                if (state.db.lexicon.length === 0) {
+                    container.innerHTML = `<div class="col-span-full py-20 text-center opacity-20"><i class="fa-solid fa-folder-open text-9xl mb-6"></i><p class="font-black uppercase tracking-widest">Lexicon is empty</p></div>`;
                     return;
                 }
 
-                container.innerHTML = list.map((item, index) => `
-                    <div class="card-entry group">
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-[9px] font-black text-indigo-500 tracking-[0.2em] uppercase">Vocal_Entry #${list.length - index}</span>
-                            <button onclick="engine.purgeWord(${index})" class="text-slate-700 hover:text-red-500 transition-colors">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                            </button>
+                container.innerHTML = state.db.lexicon.map((word, index) => `
+                    <div class="vocab-card group">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="text-[9px] font-black text-indigo-500 uppercase tracking-widest">Node ID #${state.db.lexicon.length - index}</span>
+                            <button onclick="app.deleteWord(${index})" class="text-slate-700 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
                         </div>
-                        <p class="text-[10px] font-black text-slate-500 uppercase mb-1">${item.original}</p>
-                        <h4 class="text-2xl font-black italic uppercase tracking-tighter truncate">${item.translated}</h4>
+                        <p class="text-[11px] font-black text-slate-500 uppercase mb-1">${word.q}</p>
+                        <h4 class="text-3xl font-black italic uppercase tracking-tighter truncate">${word.a}</h4>
                     </div>
                 `).join('');
-            },
-
-            /** * Show/Hide Translation Popup 
-             */
-            showPopup() {
-                const pop = document.getElementById('translation-pop');
-                pop.style.bottom = '40px';
-            },
-
-            hidePopup() {
-                const pop = document.getElementById('translation-pop');
-                pop.style.bottom = '-600px';
-            },
-
-            /** * Simple Notification System 
-             */
-            notify(msg, type = 'info') {
-                const box = document.getElementById('notif-box');
-                const n = document.createElement('div');
-                const bgColor = type === 'success' ? 'bg-indigo-600' : 'bg-red-600';
-                
-                n.className = `${bgColor} px-8 py-4 rounded-2xl shadow-2xl mb-4 text-xs font-black uppercase tracking-widest animate-bounce pointer-events-auto`;
-                n.innerText = msg;
-                
-                box.appendChild(n);
-                setTimeout(() => n.remove(), 3500);
             }
-        };
 
-        // --- MODULE: TRANSLATION ENGINE ---
-        const engine = {
-            /** * Process raw text into interactive words 
-             */
-            initAnalysis() {
-                const rawContent = document.getElementById('input-area').value;
-                if (!rawContent.trim()) {
-                    ui.notify("Vui lòng nhập văn bản nguồn!", "error");
-                    return;
-                }
+            togglePopup(show) {
+                const pop = document.getElementById('trans-popup');
+                pop.style.bottom = show ? '40px' : '-500px';
+            }
+        }
 
-                const outputNode = document.getElementById('content-output');
-                outputNode.innerHTML = "";
-                outputNode.classList.remove('opacity-10');
+        /* -------------------------------------------------------------------------
+           MODULE: NEURAL ENGINE (Translation & Processing)
+           ------------------------------------------------------------------------- */
+        class NeuralEngine {
+            processMaterial() {
+                const raw = document.getElementById('raw-text').value;
+                const yt = document.getElementById('yt-url').value;
+                
+                if (!raw) return;
 
-                const paragraphs = rawContent.split('\n');
-                paragraphs.forEach(pText => {
-                    if (!pText.trim()) return;
+                const reader = document.getElementById('pane-reader');
+                reader.innerHTML = "";
+                reader.classList.remove('flex', 'items-center', 'justify-center', 'opacity-10');
+
+                const paragraphs = raw.split('\n');
+                paragraphs.forEach(para => {
+                    const block = document.createElement('div');
+                    block.className = 'mb-12';
                     
-                    const pElement = document.createElement('div');
-                    pElement.className = 'paragraph-block mb-10';
-                    
-                    const tokens = pText.split(' ');
-                    tokens.forEach(token => {
+                    const words = para.split(' ');
+                    words.forEach(word => {
                         const span = document.createElement('span');
-                        span.className = 'word-unit';
-                        span.innerText = token + ' ';
-                        
-                        // Sanitize word for translation
-                        const cleanWord = token.replace(/[.,!?;:()"]/g, '');
-                        span.onclick = () => this.executeTranslation(cleanWord);
-                        
-                        pElement.appendChild(span);
+                        span.className = 'word-token';
+                        span.innerText = word + ' ';
+                        span.onclick = () => this.translate(word.replace(/[.,!?;:()"]/g, ''));
+                        block.appendChild(span);
                     });
-                    
-                    outputNode.appendChild(pElement);
+                    reader.appendChild(block);
                 });
 
-                ui.notify("Phân tích hoàn tất", "success");
-            },
+                if (yt.includes('v=')) {
+                    const id = yt.split('v=')[1].split('&')[0];
+                    if (state.runtime.player) {
+                        state.runtime.player.loadVideoById(id);
+                    } else {
+                        state.runtime.player = new YT.Player('yt-player', {
+                            videoId: id, width: '100%', height: '100%'
+                        });
+                    }
+                }
+                ui.switchTab('reader');
+            }
 
-            /** * Call Google Translate API 
-             */
-            async executeTranslation(query) {
+            async translate(query) {
                 if (!query) return;
 
-                document.getElementById('term-source').innerText = query;
-                document.getElementById('term-result').innerText = "Analyzing...";
-                ui.showPopup();
+                document.getElementById('pop-raw').innerText = query;
+                document.getElementById('pop-res').innerText = 'Syncing...';
+                ui.togglePopup(true);
 
                 try {
-                    const apiURL = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q=${encodeURIComponent(query)}`;
-                    const response = await fetch(apiURL);
-                    const data = await response.json();
+                    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURIComponent(query)}`;
+                    const res = await fetch(url);
+                    const data = await res.json();
                     
-                    const result = data[0][0][0];
-                    document.getElementById('term-result').innerText = result;
-                    
-                    appState.currentTerm = {
-                        original: query,
-                        translated: result
-                    };
-                } catch (error) {
-                    document.getElementById('term-result').innerText = "SYNC ERROR";
-                    ui.notify("Lỗi kết nối API dịch thuật", "error");
+                    state.runtime.current = { q: query, a: data[0][0][0] };
+                    document.getElementById('pop-res').innerText = state.runtime.current.a;
+                } catch (e) {
+                    document.getElementById('pop-res').innerText = 'ERROR';
                 }
-            },
+            }
 
-            /** * Smart Phrase Translation from Selection 
-             */
-            translatePhrase() {
-                this.executeTranslation(appState.activeSelection);
+            translateSelection() {
+                this.translate(state.runtime.selection);
                 window.getSelection().removeAllRanges();
-                document.getElementById('smart-tooltip').style.display = 'none';
-            },
+                document.getElementById('neural-tooltip').style.display = 'none';
+            }
 
-            /** * Save term to Lexicon 
-             */
-            commitWord() {
-                const word = appState.currentTerm;
-                
-                // Avoid duplicates
-                const isExists = appState.database.lexicon.some(x => x.original.toLowerCase() === word.original.toLowerCase());
-                if (isExists) {
-                    ui.notify("Từ này đã có trong Lexicon!", "info");
-                    ui.hidePopup();
+            saveWord() {
+                const word = state.runtime.current;
+                if (!word) return;
+
+                const isExists = state.db.lexicon.some(x => x.q.toLowerCase() === word.q.toLowerCase());
+                if (!isExists) {
+                    state.db.lexicon.unshift({...word});
+                    state.db.user.xp += 10;
+                    db.save();
+                    ui.refreshStats();
+                }
+                ui.togglePopup(false);
+            }
+
+            deleteWord(idx) {
+                if (confirm("Xóa mục này khỏi Lexicon?")) {
+                    state.db.lexicon.splice(idx, 1);
+                    db.save();
+                    ui.renderLexicon();
+                }
+            }
+        }
+
+        /* -------------------------------------------------------------------------
+           MODULE: QUIZ ENGINE
+           ------------------------------------------------------------------------- */
+        class QuizEngine {
+            start() {
+                if (state.db.lexicon.length < 4) {
+                    alert("Cần ít nhất 4 từ trong Lexicon để bắt đầu Quiz!");
                     return;
                 }
 
-                appState.database.lexicon.unshift({...word});
-                appState.database.user.xp += 10;
-                
-                storage.save();
-                ui.refreshGlobalStats();
-                ui.hidePopup();
-                ui.notify(`Saved: ${word.original}`, "success");
-            },
-
-            /** * Remove term 
-             */
-            purgeWord(idx) {
-                appState.database.lexicon.splice(idx, 1);
-                storage.save();
-                ui.renderLexiconGrid();
-                ui.notify("Đã xóa mục từ vựng", "info");
+                document.getElementById('quiz-start-screen').classList.add('hidden');
+                document.getElementById('quiz-active-screen').classList.remove('hidden');
+                this.nextQuestion();
             }
-        };
 
-        // --- SYSTEM INITIALIZATION & EVENT LISTENERS ---
-        
-        /** * Handle Selection Events for Smart Phrase Tooltip 
-         */
+            nextQuestion() {
+                const randomIndex = Math.floor(Math.random() * state.db.lexicon.length);
+                const question = state.db.lexicon[randomIndex];
+                state.runtime.quiz.current = question;
+
+                document.getElementById('q-word').innerText = question.q;
+                
+                // Generate options
+                let options = [question.a];
+                while (options.length < 4) {
+                    const opt = state.db.lexicon[Math.floor(Math.random() * state.db.lexicon.length)].a;
+                    if (!options.includes(opt)) options.push(opt);
+                }
+                options.sort(() => Math.random() - 0.5);
+
+                const optContainer = document.getElementById('q-options');
+                optContainer.innerHTML = options.map(opt => `
+                    <div class="quiz-option" onclick="quiz.check('${opt}')">${opt}</div>
+                `).join('');
+            }
+
+            check(selected) {
+                if (selected === state.runtime.quiz.current.a) {
+                    alert("Chính xác! +5 XP");
+                    state.db.user.xp += 5;
+                    db.save();
+                    ui.refreshStats();
+                } else {
+                    alert(`Sai rồi! Đáp án đúng là: ${state.runtime.quiz.current.a}`);
+                }
+                this.nextQuestion();
+            }
+        }
+
+        /* -------------------------------------------------------------------------
+           SYSTEM INITIALIZATION
+           ------------------------------------------------------------------------- */
+        const db = new DatabaseEngine();
+        const ui = new UIController();
+        const app = new NeuralEngine();
+        const quiz = new QuizEngine();
+
+        // Handle text selection
         window.addEventListener('selectionchange', () => {
-            const selection = window.getSelection();
-            const selectedText = selection.toString().trim();
-            const tooltip = document.getElementById('smart-tooltip');
+            const sel = window.getSelection();
+            const text = sel.toString().trim();
+            const tip = document.getElementById('neural-tooltip');
 
-            if (selectedText.length > 1) {
-                const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-                
-                tooltip.style.display = 'block';
-                tooltip.style.top = `${rect.top + window.scrollY - 55}px`;
-                tooltip.style.left = `${rect.left}px`;
-                appState.activeSelection = selectedText;
+            if (text.length > 1) {
+                const rect = sel.getRangeAt(0).getBoundingClientRect();
+                tip.style.display = 'block';
+                tip.style.top = `${rect.top + window.scrollY - 55}px`;
+                tip.style.left = `${rect.left}px`;
+                state.runtime.selection = text;
             } else {
-                tooltip.style.display = 'none';
+                tip.style.display = 'none';
             }
         });
 
-        /** * Keyboard Shortcuts 
-         */
+        // Global Key Listeners
         window.addEventListener('keydown', (e) => {
-            // F8 to Process
-            if (e.key === 'F8') {
-                e.preventDefault();
-                engine.initAnalysis();
-            }
+            if (e.key === 'F8') app.processMaterial();
+            if (e.key === 'Escape') ui.togglePopup(false);
         });
 
-        /** * Bootup Sequence 
-         */
-        window.onload = () => {
-            storage.init();
-            console.log("LingoPro Enterprise System Online. Target: user.json");
-        };
-
+        console.log("LingoPro Enterprise v17 System Online.");
     </script>
 </body>
 </html>
