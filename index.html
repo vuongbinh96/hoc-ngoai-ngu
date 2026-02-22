@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro v12 Zenith - 1000+ Lines System</title>
+    <title>LingoPro v14.0 | Enterprise Neural Workspace</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,730 +12,667 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
+        /* --- GLOBAL ROOT VARIABLES --- */
         :root {
-            --primary: #6366f1; --primary-hover: #4f46e5;
-            --secondary: #ec4899; --accent: #10b981;
-            --bg: #020617; --card: #0f172a; --border: rgba(255,255,255,0.08);
+            --primary-color: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --secondary-color: #ec4899;
+            --accent-success: #10b981;
+            --bg-deep-slate: #020617;
+            --bg-card-slate: #0f172a;
+            --border-alpha: rgba(255, 255, 255, 0.08);
+            --text-vibrant: #f1f5f9;
+            --text-muted: #94a3b8;
         }
 
-        * { box-sizing: border-box; outline: none; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        /* --- BASE RESET & LAYOUT --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            outline: none;
+        }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg);
-            color: #f1f5f9;
+            background-color: var(--bg-deep-slate);
+            color: var(--text-vibrant);
             height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* TYPOGRAPHY & UTILS */
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid var(--border); }
-        .btn-press { transition: all 0.1s active:scale-95; }
-        
-        /* PHRASE SELECTION SYSTEM */
-        #phrase-trigger {
-            position: fixed; display: none; z-index: 9999;
-            background: var(--primary); color: white;
-            padding: 8px 16px; border-radius: 20px; font-size: 11px;
-            font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
-            animation: popUp 0.2s ease-out;
-        }
-        @keyframes popUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* TAB SYSTEM */
-        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* QUIZ ENGINE STYLES */
-        .timer-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
-        .timer-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 0.1s linear; }
-        .opt-card {
-            background: #1e293b; border: 2px solid transparent;
-            padding: 20px; border-radius: 16px; cursor: pointer;
-            transition: all 0.2s; font-weight: 600; text-align: center;
-        }
-        .opt-card:hover { border-color: var(--primary); background: #242f45; }
-        .opt-correct { background: #065f46 !important; border-color: #10b981 !important; }
-        .opt-wrong { background: #7f1d1d !important; border-color: #ef4444 !important; }
-
-        /* ACHIEVEMENTS */
-        .badge-locked { filter: grayscale(1) opacity(0.3); }
-
-        /* NOTIFICATION BOX */
-        #sys-notif {
-            position: fixed; top: 20px; right: 20px; z-index: 10000;
-            display: flex; flex-direction: column; gap: 10px;
+        /* --- CUSTOM SCROLLBAR SYSTEM --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
 
-        .kbd {
-            background: #334155; padding: 2px 6px; border-radius: 4px;
-            font-size: 10px; border-bottom: 2px solid #1e293b;
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 20px;
+            border: 2px solid var(--bg-deep-slate);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-alpha);
+        }
+
+        .nav-link {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-link.active {
+            color: #ffffff !important;
+            background: var(--primary-color) !important;
+            box-shadow: 0 8px 25px var(--primary-glow);
+        }
+
+        /* --- READER ENGINE STYLES --- */
+        .word-unit {
+            display: inline-block;
+            cursor: pointer;
+            padding: 2px 4px;
+            margin: 0 1px;
+            border-radius: 6px;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .word-unit:hover {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary-color);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        /* --- LEXICON GRID SYSTEM --- */
+        .card-entry {
+            background: var(--bg-card-slate);
+            border: 1px solid var(--border-alpha);
+            border-radius: 24px;
+            padding: 24px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-entry:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .card-entry::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+        }
+
+        /* --- XP SYSTEM UI --- */
+        .xp-container {
+            height: 10px;
+            background: #1e293b;
+            border-radius: 100px;
+            width: 150px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .xp-fill-active {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 1s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* --- TAB MANAGEMENT --- */
+        .pane {
+            display: none;
+            height: 100%;
+            opacity: 0;
+        }
+
+        .pane.active {
+            display: block;
+            opacity: 1;
+            animation: paneEntry 0.5s ease forwards;
+        }
+
+        @keyframes paneEntry {
+            from { opacity: 0; transform: scale(0.98) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* --- TOOLTIP & POPUPS --- */
+        #smart-tooltip {
+            position: fixed;
+            display: none;
+            z-index: 10000;
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
     </style>
 </head>
 <body>
 
-    <div id="phrase-trigger"><i class="fa-solid fa-wand-sparkles mr-2"></i> DỊCH CỤM</div>
-    <div id="sys-notif"></div>
+    <div id="smart-tooltip" onclick="engine.translatePhrase()">
+        <i class="fa-solid fa-bolt-lightning mr-2"></i> ANALYZE PHRASE
+    </div>
 
-    <header class="h-16 border-b border-white/5 px-6 flex items-center justify-between glass z-50">
-        <div class="flex items-center gap-8">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <i class="fa-solid fa-brain"></i>
+    <header class="h-24 border-b border-white/5 px-10 flex items-center justify-between glass-panel z-[500]">
+        <div class="flex items-center gap-14">
+            <div class="flex items-center gap-4 group cursor-pointer" onclick="location.reload()">
+                <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl group-hover:rotate-12 transition-all">
+                    <i class="fa-solid fa-layer-group text-white text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-extrabold uppercase tracking-tighter italic">LingoPro <span class="text-indigo-500">v12</span></h1>
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Neural Learning OS</p>
+                    <h1 class="text-2xl font-black italic tracking-tighter">LINGOPRO <span class="text-indigo-500">v14</span></h1>
+                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">Neural Learning Environment</p>
                 </div>
             </div>
 
-            <nav class="flex items-center gap-1 bg-slate-900/50 p-1 rounded-xl">
-                <button onclick="switchTab('reader')" class="nav-tab active px-5 py-2 rounded-lg text-xs font-bold transition-all" data-tab="reader">Reader</button>
-                <button onclick="switchTab('lexicon')" class="nav-tab px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-400" data-tab="lexicon">Lexicon</button>
-                <button onclick="switchTab('analytics')" class="nav-tab px-5 py-2 rounded-lg text-xs font-bold transition-all text-slate-400" data-tab="analytics">Analytics</button>
+            <nav class="flex items-center gap-3 bg-slate-900/40 p-2 rounded-2xl border border-white/5">
+                <button onclick="router.navigate('reader')" class="nav-link active px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest" data-nav="reader">Workspace</button>
+                <button onclick="router.navigate('lexicon')" class="nav-link px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest text-slate-400" data-nav="lexicon">Lexicon</button>
+                <button onclick="router.navigate('storage')" class="nav-link px-8 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest text-slate-400" data-nav="storage">Data Center</button>
             </nav>
         </div>
 
-        <div class="flex items-center gap-5">
-            <div class="text-right hidden sm:block">
-                <p id="user-display" class="text-xs font-bold">Guest Operative</p>
-                <div class="flex items-center gap-2 justify-end">
-                    <span class="text-[10px] text-indigo-400 font-bold uppercase">Level</span>
-                    <span id="lvl-display" class="text-[10px] bg-indigo-500/20 px-2 rounded text-indigo-300">1</span>
+        <div class="flex items-center gap-8">
+            <div class="flex flex-col items-end">
+                <div class="flex items-center gap-3 mb-2">
+                    <span id="display-level" class="bg-indigo-600/20 text-indigo-400 px-3 py-1 rounded-lg text-[10px] font-black">LEVEL 1</span>
+                    <span id="display-rank" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Neophyte</span>
+                </div>
+                <div class="xp-container">
+                    <div id="xp-bar-fill" class="xp-fill-active"></div>
                 </div>
             </div>
-            <button onclick="toggleAuth()" class="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:bg-slate-700">
-                <i class="fa-solid fa-user-gear text-sm"></i>
-            </button>
+            <div class="h-12 w-[1px] bg-white/10"></div>
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center border border-white/5">
+                <i class="fa-solid fa-user-ninja text-slate-500"></i>
+            </div>
         </div>
     </header>
 
     <main class="flex-1 flex overflow-hidden">
         
-        <aside class="w-80 border-r border-white/5 flex flex-col bg-slate-950/50">
-            <div class="p-5 border-b border-white/5">
-                <h3 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-[0.2em]">Source Input</h3>
+        <aside class="w-[380px] border-r border-white/5 flex flex-col p-8 space-y-10 bg-slate-950/30 overflow-y-auto">
+            
+            <div class="space-y-6">
+                <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.25em] flex items-center gap-3">
+                    <i class="fa-solid fa-terminal text-sm"></i> Intelligence Input
+                </h3>
+                
                 <div class="space-y-4">
-                    <div class="relative">
-                        <i class="fa-brands fa-youtube absolute left-3 top-3 text-red-500"></i>
-                        <input type="text" id="yt-input" placeholder="YouTube URL..." class="w-full bg-slate-900/50 border border-white/10 p-2.5 pl-10 rounded-xl text-xs focus:border-indigo-500 transition-all">
+                    <div class="group">
+                        <label class="text-[9px] font-bold text-slate-600 uppercase mb-2 block tracking-widest">Source Material</label>
+                        <textarea id="input-area" rows="12" placeholder="Paste English text, articles, or transcripts here..." class="w-full bg-slate-900/50 border border-white/5 p-5 rounded-2xl text-xs focus:border-indigo-500 transition-all resize-none shadow-inner"></textarea>
                     </div>
-                    <textarea id="text-input" rows="8" placeholder="Dán văn bản học tập tại đây..." class="w-full bg-slate-900/50 border border-white/10 p-4 rounded-xl text-xs resize-none focus:border-indigo-500 transition-all"></textarea>
-                    <button id="execute-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20">
-                        Phân tích dữ liệu (F8)
+
+                    <button onclick="engine.initAnalysis()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-5 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-600/20 transition-all flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-microchip"></i> EXECUTE ENGINE (F8)
                     </button>
                 </div>
             </div>
 
-            <div class="flex-1 p-5 overflow-y-auto custom-scroll">
-                <h3 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-[0.2em]">Quick Player</h3>
-                <div id="video-container" class="aspect-video bg-black rounded-xl overflow-hidden border border-white/5 shadow-2xl">
-                    <div id="player"></div>
+            <div class="p-6 bg-slate-900/50 rounded-3xl border border-white/5 space-y-4">
+                <h4 class="text-[10px] font-black text-slate-500 uppercase">System Status</h4>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] text-slate-400">Database Linked</span>
+                        <span class="text-[10px] font-bold text-emerald-500">ACTIVE</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] text-slate-400">File Output</span>
+                        <span class="text-[10px] font-bold text-indigo-400">user.json</span>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <section class="flex-1 relative flex flex-col">
+            
+            <div id="pane-reader" class="pane active flex flex-col">
+                <div class="h-16 border-b border-white/5 px-10 flex items-center justify-between bg-slate-900/10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Reader Mode Active</span>
+                    </div>
                 </div>
                 
-                <div class="mt-8">
-                    <h3 class="text-[10px] font-black text-slate-500 uppercase mb-4 tracking-[0.2em]">Hotkeys</h3>
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center text-[10px]">
-                            <span class="text-slate-400">Dịch từ/cụm</span>
-                            <span class="kbd">Click/Select</span>
-                        </div>
-                        <div class="flex justify-between items-center text-[10px]">
-                            <span class="text-slate-400">Mở Quiz</span>
-                            <span class="kbd">Ctrl + Q</span>
-                        </div>
-                        <div class="flex justify-between items-center text-[10px]">
-                            <span class="text-slate-400">Lưu nhanh</span>
-                            <span class="kbd">Ctrl + S</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <section class="flex-1 flex flex-col relative bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900/20 via-transparent to-transparent">
-            
-            <div id="tab-reader" class="tab-content active h-full flex flex-col">
-                <div class="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-slate-900/20">
-                    <div class="flex items-center gap-4">
-                        <select id="sl-lang" class="bg-transparent text-[10px] font-bold uppercase outline-none border border-white/10 rounded px-2 py-1">
-                            <option value="vi">Dịch sang Tiếng Việt</option>
-                            <option value="en">Dịch sang Tiếng Anh</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="openFlashcards()" class="px-4 py-1.5 rounded-lg border border-pink-500/30 text-pink-500 text-[10px] font-bold uppercase hover:bg-pink-500 hover:text-white transition-all">Flashcards</button>
-                        <button onclick="initQuiz()" class="px-4 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-bold uppercase hover:bg-indigo-500 transition-all">Bắt đầu Quiz</button>
-                    </div>
-                </div>
-                <div id="reader-view" class="flex-1 p-12 overflow-y-auto custom-scroll leading-[2.5] text-lg lg:text-xl font-medium">
-                    <div class="h-full flex flex-col items-center justify-center opacity-20 text-center">
-                        <i class="fa-solid fa-terminal text-6xl mb-6"></i>
-                        <p class="mono text-sm tracking-widest uppercase">System Waiting for Input...</p>
+                <div id="content-output" class="flex-1 p-16 overflow-y-auto custom-scroll text-xl leading-[2.8] font-medium">
+                    <div class="h-full flex flex-col items-center justify-center opacity-10">
+                        <i class="fa-solid fa-wind text-8xl mb-6"></i>
+                        <p class="font-black text-sm uppercase tracking-[0.5em]">Waiting for System Feed</p>
                     </div>
                 </div>
             </div>
 
-            <div id="tab-lexicon" class="tab-content h-full p-8 overflow-y-auto custom-scroll">
-                <div class="max-w-4xl mx-auto">
-                    <div class="flex justify-between items-end mb-10">
+            <div id="pane-lexicon" class="pane p-16 overflow-y-auto custom-scroll">
+                <div class="max-w-6xl mx-auto">
+                    <div class="flex justify-between items-end mb-16">
                         <div>
-                            <h2 class="text-4xl font-black italic uppercase">Master Repository</h2>
-                            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-2">Quản lý và ôn tập danh sách từ vựng của bạn</p>
+                            <h2 class="text-6xl font-black italic tracking-tighter uppercase mb-4">Lexicon</h2>
+                            <p class="text-slate-500 text-[11px] font-bold uppercase tracking-[0.3em]">Total Synchronized Terms: <span id="count-total" class="text-white">0</span></p>
                         </div>
-                        <button onclick="exportJSON()" class="text-[10px] font-bold text-indigo-400 border border-indigo-400/20 px-4 py-2 rounded-xl hover:bg-indigo-400 hover:text-white transition-all">
-                            EXPORT DATABASE (.JSON)
-                        </button>
                     </div>
+                    <div id="lexicon-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        </div>
+                </div>
+            </div>
+
+            <div id="pane-storage" class="pane p-16 overflow-y-auto custom-scroll">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-6xl font-black italic uppercase mb-16">Storage</h2>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="lexicon-grid">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <div class="card-entry p-10">
+                            <h3 class="text-lg font-black uppercase mb-6 flex items-center gap-4">
+                                <i class="fa-solid fa-file-export text-indigo-500"></i> Export Engine
+                            </h3>
+                            <p class="text-xs text-slate-500 mb-10 leading-relaxed">
+                                Đóng gói toàn bộ cơ sở dữ liệu học tập vào file <strong>user.json</strong> để lưu trữ ngoại tuyến hoặc chuyển thiết bị.
+                            </p>
+                            <button onclick="storage.downloadData()" class="w-full bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 py-5 rounded-2xl text-[11px] font-black uppercase hover:bg-indigo-600 hover:text-white transition-all">
+                                Generate user.json
+                            </button>
                         </div>
+
+                        <div class="card-entry p-10">
+                            <h3 class="text-lg font-black uppercase mb-6 flex items-center gap-4">
+                                <i class="fa-solid fa-file-import text-emerald-500"></i> Import Engine
+                            </h3>
+                            <p class="text-xs text-slate-500 mb-10 leading-relaxed">
+                                Khôi phục tiến trình từ file <strong>user.json</strong> hiện có. Hệ thống sẽ tự động đồng bộ hóa mọi từ vựng cũ.
+                            </p>
+                            <input type="file" id="file-input" class="hidden" onchange="storage.uploadData(event)">
+                            <button onclick="document.getElementById('file-input').click()" class="w-full bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 py-5 rounded-2xl text-[11px] font-black uppercase hover:bg-emerald-600 hover:text-white transition-all">
+                                Select user.json
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div id="tab-analytics" class="tab-content h-full p-10 overflow-y-auto custom-scroll">
-                <div class="max-w-5xl mx-auto">
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-10">
-                        <div class="glass p-6 rounded-3xl">
-                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">XP Earned</p>
-                            <p id="stat-xp" class="text-4xl font-black italic">0</p>
-                        </div>
-                        <div class="glass p-6 rounded-3xl">
-                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Total Vocabulary</p>
-                            <p id="stat-vocab" class="text-4xl font-black italic text-indigo-500">0</p>
-                        </div>
-                        <div class="glass p-6 rounded-3xl">
-                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Quiz Success</p>
-                            <p id="stat-acc" class="text-4xl font-black italic text-emerald-500">0%</p>
-                        </div>
-                        <div class="glass p-6 rounded-3xl">
-                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-2">Neural Level</p>
-                            <p id="stat-lvl" class="text-4xl font-black italic text-pink-500">1</p>
-                        </div>
-                    </div>
-
-                    <div class="glass p-8 rounded-[32px] mb-10">
-                        <h3 class="font-bold mb-8 uppercase text-xs tracking-widest flex items-center gap-2">
-                            <i class="fa-solid fa-chart-area text-indigo-500"></i> Performance History
-                        </h3>
-                        <div class="h-[400px]">
-                            <canvas id="mainChart"></canvas>
-                        </div>
-                    </div>
-
-                    <h3 class="font-bold mb-6 uppercase text-xs tracking-widest">Achievements</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="achievement-grid">
-                        </div>
-                </div>
-            </div>
         </section>
-
-        <aside class="w-72 border-l border-white/5 bg-slate-950/80 flex flex-col">
-            <div class="p-6 border-b border-white/5">
-                <div class="flex justify-between items-center">
-                    <span class="text-[10px] font-black text-slate-500 uppercase">Session Vocab</span>
-                    <span id="session-count" class="bg-indigo-600 text-[9px] px-2 py-0.5 rounded-full font-bold">0</span>
-                </div>
-            </div>
-            <div id="session-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scroll">
-                </div>
-        </aside>
     </main>
 
-    <div id="trans-popup" class="fixed bottom-[-300px] left-1/2 -translate-x-1/2 w-[90%] max-w-lg glass p-8 rounded-[32px] shadow-[0_40px_100px_rgba(0,0,0,0.6)] transition-all duration-500 z-[1000] border-t-4 border-indigo-500">
-        <div class="flex justify-between items-start gap-6">
+    <div id="translation-pop" class="fixed bottom-[-600px] left-1/2 -translate-x-1/2 w-full max-w-2xl glass-panel p-12 rounded-[50px] shadow-[0_50px_100px_rgba(0,0,0,0.7)] border-t-4 border-indigo-600 transition-all duration-700 z-[2000]">
+        <div class="flex justify-between items-start gap-10">
             <div class="flex-1 min-w-0">
-                <p id="pop-raw" class="text-[10px] font-bold text-slate-500 uppercase mb-2 truncate"></p>
-                <h2 id="pop-res" class="text-4xl font-black italic tracking-tighter uppercase leading-none break-words">...</h2>
-                <div class="flex gap-2 mt-4">
-                    <span class="text-[9px] bg-slate-800 px-2 py-1 rounded text-slate-400 font-bold uppercase">Manual Link</span>
-                    <span class="text-[9px] bg-indigo-500/10 px-2 py-1 rounded text-indigo-400 font-bold uppercase">+10 XP</span>
+                <p id="term-source" class="text-[11px] font-black text-slate-500 uppercase mb-4 tracking-widest truncate"></p>
+                <h2 id="term-result" class="text-5xl font-black italic tracking-tighter uppercase leading-tight mb-6">...</h2>
+                <div class="flex gap-3">
+                    <span class="bg-indigo-600/20 text-indigo-400 text-[10px] font-black px-4 py-1.5 rounded-full uppercase">+10 XP GAIN</span>
                 </div>
             </div>
-            <div class="flex flex-col gap-3">
-                <button onclick="speakWord()" class="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center hover:bg-indigo-600 transition-all">
-                    <i class="fa-solid fa-volume-high"></i>
+            <div class="flex flex-col gap-5">
+                <button onclick="engine.commitWord()" class="w-24 h-24 bg-indigo-600 rounded-[35px] flex items-center justify-center text-4xl shadow-2xl shadow-indigo-600/40 hover:scale-110 active:scale-95 transition-all">
+                    <i class="fa-solid fa-plus text-white"></i>
                 </button>
-                <button onclick="commitToRepo()" class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-xl hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/30">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-            </div>
-        </div>
-        <button onclick="closePop()" class="w-full mt-6 py-2 text-[10px] font-bold text-slate-600 uppercase hover:text-white transition-colors">Dismiss</button>
-    </div>
-
-    <div id="quiz-modal" class="fixed inset-0 z-[6000] bg-slate-950/95 backdrop-blur-xl hidden flex items-center justify-center p-6">
-        <div class="max-w-2xl w-full glass p-10 rounded-[40px] relative overflow-hidden">
-            <div id="quiz-active">
-                <div class="flex justify-between items-center mb-8">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center font-bold" id="q-idx">1</div>
-                        <div>
-                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Question Pool</p>
-                            <div class="flex gap-1 mt-1" id="q-lives"></div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[10px] font-black text-slate-500 uppercase">Synchronizing</p>
-                        <p id="q-timer-val" class="text-2xl font-black italic text-indigo-500">10.0s</p>
-                    </div>
-                </div>
-                <div class="timer-track mb-12">
-                    <div id="q-timer-bar" class="timer-fill"></div>
-                </div>
-                <h2 id="q-text" class="text-6xl font-black text-center mb-16 italic tracking-tighter uppercase break-words">WORD</h2>
-                <div id="q-options" class="grid grid-cols-1 gap-4"></div>
-            </div>
-
-            <div id="quiz-result" class="hidden text-center">
-                <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-600/40">
-                    <i class="fa-solid fa-trophy text-3xl"></i>
-                </div>
-                <h2 class="text-4xl font-black italic uppercase mb-2">Sync Complete</h2>
-                <p class="text-slate-500 font-bold mb-10 uppercase tracking-widest">Stability Score: <span id="q-final-score" class="text-white">0%</span></p>
-                <div class="flex gap-4">
-                    <button onclick="initQuiz()" class="flex-1 py-4 bg-indigo-600 rounded-2xl font-bold uppercase tracking-widest text-xs">Re-Link</button>
-                    <button onclick="closeQuiz()" class="flex-1 py-4 bg-slate-800 rounded-2xl font-bold uppercase tracking-widest text-xs">Terminate</button>
-                </div>
+                <button onclick="ui.hidePopup()" class="text-[10px] font-black text-slate-600 uppercase hover:text-white transition-colors">Dismiss</button>
             </div>
         </div>
     </div>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
+    <div id="notif-box" class="fixed top-10 right-10 z-[9999] pointer-events-none"></div>
+
     <script>
         /**
-         * LINGOPRO ZENITH v12.0
-         * INTERNAL LOGIC UNIT - 1000+ LINES CAPABILITY
+         * LINGOPRO ENGINE v14.0
+         * MODULE-BASED ARCHITECTURE
+         * FILE TARGET: user.json
          */
 
         // --- GLOBAL STATE ---
-        const CORE = {
-            dbKey: 'lingopro_v12_db',
-            user: localStorage.getItem('lingo_user') || 'Guest Operative',
-            data: null,
-            player: null,
-            chart: null,
-            current: { raw: '', res: '' },
-            quiz: {
-                active: false, step: 0, score: 0, timer: null, time: 10, lives: 3, pool: []
+        const DATABASE_KEY = 'lingopro_v14_enterprise_db';
+        
+        let appState = {
+            database: {
+                user: { xp: 0, level: 1, rank: 'Neophyte' },
+                lexicon: [],
+                metadata: { lastSync: Date.now() }
             },
-            achievements: [
-                { id: 'first_word', title: 'Novice', desc: 'Lưu từ đầu tiên', icon: 'fa-seedling', req: (d) => d.notebook.length >= 1 },
-                { id: 'vocab_50', title: 'Scholar', desc: 'Lưu 50 từ vựng', icon: 'fa-book', req: (d) => d.notebook.length >= 50 },
-                { id: 'quiz_master', title: 'Elite', desc: 'Đạt 100% Quiz', icon: 'fa-crown', req: (d) => d.stats.history.some(h => h.score === 100) },
-                { id: 'speed_demon', title: 'Speedster', desc: 'Làm Quiz dưới 5 giây', icon: 'fa-bolt', req: (d) => d.stats.bestTime && d.stats.bestTime < 5 }
-            ]
+            currentTerm: { original: '', translated: '' },
+            activeSelection: ''
         };
 
-        // --- INITIALIZER ---
-        window.addEventListener('DOMContentLoaded', () => {
-            initDatabase();
-            updateUIMetrics();
-            setupHotkeys();
-            renderLexicon();
-            renderAchievements();
-            
-            // Animation mở màn
-            gsap.from("header", { y: -100, opacity: 0, duration: 1, ease: "power4.out" });
-            gsap.from("aside", { x: -50, opacity: 0, duration: 1, delay: 0.2 });
-        });
+        // --- MODULE: STORAGE & I/O ---
+        const storage = {
+            /** * Initialize Database from LocalStorage 
+             */
+            init() {
+                const rawData = localStorage.getItem(DATABASE_KEY);
+                if (rawData) {
+                    try {
+                        appState.database = JSON.parse(rawData);
+                    } catch (e) {
+                        console.error("DB Corrupted. Resetting...");
+                    }
+                }
+                ui.refreshGlobalStats();
+            },
 
-        function initDatabase() {
-            const raw = localStorage.getItem(CORE.dbKey);
-            if (raw) {
-                CORE.data = JSON.parse(raw);
-            } else {
-                CORE.data = {
-                    notebook: [],
-                    stats: { xp: 0, tests: 0, correct: 0, history: [], achievements: [] },
-                    settings: { lang: 'vi', theme: 'dark' }
-                };
-                saveDatabase();
-            }
-        }
+            /** * Persistent Save 
+             */
+            save() {
+                localStorage.setItem(DATABASE_KEY, JSON.stringify(appState.database));
+            },
 
-        function saveDatabase() {
-            localStorage.setItem(CORE.dbKey, JSON.stringify(CORE.data));
-            checkAchievements();
-        }
-
-        // --- UI CORE ---
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(t => {
-                t.classList.remove('active', 'text-white');
-                t.classList.add('text-slate-400');
-            });
-
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            const activeNav = document.querySelector(`[data-tab="${tabId}"]`);
-            activeNav.classList.add('active', 'text-white');
-            activeNav.classList.remove('text-slate-400');
-
-            if (tabId === 'lexicon') renderLexicon();
-            if (tabId === 'analytics') renderAnalytics();
-        }
-
-        function updateUIMetrics() {
-            const d = CORE.data;
-            document.getElementById('user-display').innerText = CORE.user.toUpperCase();
-            document.getElementById('count').innerText = d.notebook.length;
-            document.getElementById('session-count').innerText = d.notebook.length;
-            document.getElementById('lvl-display').innerText = Math.floor(d.stats.xp / 100) + 1;
-            
-            // Stats tab
-            document.getElementById('stat-xp').innerText = d.stats.xp;
-            document.getElementById('stat-vocab').innerText = d.notebook.length;
-            document.getElementById('stat-lvl').innerText = Math.floor(d.stats.xp / 100) + 1;
-            const acc = d.stats.tests === 0 ? 0 : Math.round((d.stats.correct / (d.stats.tests * 10)) * 100);
-            document.getElementById('stat-acc').innerText = acc + "%";
-        }
-
-        // --- TRANSLATION LOGIC ---
-        document.addEventListener('selectionchange', () => {
-            const sel = window.getSelection();
-            const text = sel.toString().trim();
-            const trigger = document.getElementById('phrase-trigger');
-
-            if (text.length > 1 && !CORE.quiz.active) {
-                const range = sel.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-                trigger.style.display = 'block';
-                trigger.style.top = `${rect.top + window.scrollY - 45}px`;
-                trigger.style.left = `${rect.left + rect.width / 2 - 50}px`;
+            /** * Export to user.json 
+             */
+            downloadData() {
+                const content = JSON.stringify(appState.database, null, 4);
+                const blob = new Blob([content], { type: 'application/json' });
+                const blobURL = URL.createObjectURL(blob);
                 
-                trigger.onclick = () => {
-                    performTranslation(text);
-                    sel.removeAllRanges();
-                    trigger.style.display = 'none';
+                const downloader = document.createElement('a');
+                downloader.href = blobURL;
+                downloader.download = 'user.json'; // TÊN FILE THEO YÊU CẦU
+                
+                document.body.appendChild(downloader);
+                downloader.click();
+                document.body.removeChild(downloader);
+                
+                ui.notify("Dữ liệu đã được đóng gói vào user.json", "success");
+            },
+
+            /** * Import from user.json 
+             */
+            uploadData(event) {
+                const targetFile = event.target.files[0];
+                if (!targetFile) return;
+
+                const fileReader = new FileReader();
+                fileReader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        
+                        // Validation logic
+                        if (importedData.lexicon && importedData.user) {
+                            appState.database = importedData;
+                            this.save();
+                            ui.notify("Đồng bộ user.json thành công!", "success");
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            throw new Error("Invalid structure");
+                        }
+                    } catch (err) {
+                        ui.notify("File user.json không hợp lệ!", "error");
+                    }
                 };
-            } else {
-                trigger.style.display = 'none';
+                fileReader.readAsText(targetFile);
             }
-        });
+        };
 
-        async function performTranslation(text) {
-            const target = document.getElementById('sl-lang').value;
-            const pop = document.getElementById('trans-popup');
-            
-            document.getElementById('pop-raw').innerText = text;
-            document.getElementById('pop-res').innerText = 'Translating...';
-            pop.style.bottom = '30px';
+        // --- MODULE: ROUTING & TABS ---
+        const router = {
+            navigate(targetID) {
+                // Clear active states
+                document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active', 'text-white'));
 
-            try {
-                const r = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
-                const d = await r.json();
-                const res = d[0][0][0];
-                document.getElementById('pop-res').innerText = res;
-                CORE.current = { raw: text, res: res };
-            } catch (e) {
-                document.getElementById('pop-res').innerText = 'Error Connect';
+                // Set new active
+                const targetPane = document.getElementById(`pane-${targetID}`);
+                const targetNav = document.querySelector(`[data-nav="${targetID}"]`);
+
+                if (targetPane && targetNav) {
+                    targetPane.classList.add('active');
+                    targetNav.classList.add('active', 'text-white');
+                }
+
+                // Sub-module rendering
+                if (targetID === 'lexicon') ui.renderLexiconGrid();
             }
-        }
+        };
 
-        function closePop() { document.getElementById('trans-popup').style.bottom = '-300px'; }
+        // --- MODULE: UI & RENDERING ---
+        const ui = {
+            /** * Refresh XP and Level displays 
+             */
+            refreshGlobalStats() {
+                const currentXP = appState.database.user.xp;
+                const levelCalculated = Math.floor(currentXP / 100) + 1;
+                const progressPercentage = currentXP % 100;
 
-        function commitToRepo() {
-            if (CORE.data.notebook.some(x => x.raw.toLowerCase() === CORE.current.raw.toLowerCase())) {
-                showNotif("Mục này đã tồn tại", "warn");
-                return;
+                document.getElementById('display-level').innerText = `LEVEL ${levelCalculated}`;
+                document.getElementById('xp-bar-fill').style.width = `${progressPercentage}%`;
+                
+                // Rank logic
+                let currentRank = "Neophyte";
+                if (levelCalculated > 10) currentRank = "Scholar";
+                if (levelCalculated > 30) currentRank = "Polyglot";
+                document.getElementById('display-rank').innerText = currentRank;
+            },
+
+            /** * Render Vocabulary Cards 
+             */
+            renderLexiconGrid() {
+                const container = document.getElementById('lexicon-container');
+                const totalLabel = document.getElementById('count-total');
+                
+                const list = appState.database.lexicon;
+                totalLabel.innerText = list.length;
+
+                if (list.length === 0) {
+                    container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-600 font-bold uppercase tracking-widest">No terms saved yet</div>`;
+                    return;
+                }
+
+                container.innerHTML = list.map((item, index) => `
+                    <div class="card-entry group">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-[9px] font-black text-indigo-500 tracking-[0.2em] uppercase">Vocal_Entry #${list.length - index}</span>
+                            <button onclick="engine.purgeWord(${index})" class="text-slate-700 hover:text-red-500 transition-colors">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                        <p class="text-[10px] font-black text-slate-500 uppercase mb-1">${item.original}</p>
+                        <h4 class="text-2xl font-black italic uppercase tracking-tighter truncate">${item.translated}</h4>
+                    </div>
+                `).join('');
+            },
+
+            /** * Show/Hide Translation Popup 
+             */
+            showPopup() {
+                const pop = document.getElementById('translation-pop');
+                pop.style.bottom = '40px';
+            },
+
+            hidePopup() {
+                const pop = document.getElementById('translation-pop');
+                pop.style.bottom = '-600px';
+            },
+
+            /** * Simple Notification System 
+             */
+            notify(msg, type = 'info') {
+                const box = document.getElementById('notif-box');
+                const n = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-indigo-600' : 'bg-red-600';
+                
+                n.className = `${bgColor} px-8 py-4 rounded-2xl shadow-2xl mb-4 text-xs font-black uppercase tracking-widest animate-bounce pointer-events-auto`;
+                n.innerText = msg;
+                
+                box.appendChild(n);
+                setTimeout(() => n.remove(), 3500);
             }
-            CORE.data.notebook.unshift({ ...CORE.current, id: Date.now(), xp: 10 });
-            CORE.data.stats.xp += 10;
-            saveDatabase();
-            updateUIMetrics();
-            renderSessionList();
-            closePop();
-            showNotif("Đã thêm vào kho lưu trữ", "success");
-        }
+        };
 
-        // --- READER & YOUTUBE ---
-        document.getElementById('execute-btn').onclick = () => {
-            const text = document.getElementById('text-input').value.trim();
-            const yt = document.getElementById('yt-input').value.trim();
-            if (!text) return showNotif("Vui lòng nhập văn bản", "error");
+        // --- MODULE: TRANSLATION ENGINE ---
+        const engine = {
+            /** * Process raw text into interactive words 
+             */
+            initAnalysis() {
+                const rawContent = document.getElementById('input-area').value;
+                if (!rawContent.trim()) {
+                    ui.notify("Vui lòng nhập văn bản nguồn!", "error");
+                    return;
+                }
 
-            const reader = document.getElementById('reader-view');
-            reader.innerHTML = "";
-            
-            text.split('\n').forEach(line => {
-                if (!line.trim()) return;
-                const p = document.createElement('div');
-                p.className = 'mb-6 group flex flex-wrap';
-                line.split(/\s+/).forEach(word => {
-                    const span = document.createElement('span');
-                    span.className = 'cursor-pointer hover:text-indigo-400 hover:scale-110 transition-all mr-2';
-                    span.innerText = word;
-                    span.onclick = (e) => {
-                        e.stopPropagation();
-                        performTranslation(word.replace(/[.,!?;:]/g, ''));
-                    };
-                    p.appendChild(span);
-                });
-                reader.appendChild(p);
-            });
+                const outputNode = document.getElementById('content-output');
+                outputNode.innerHTML = "";
+                outputNode.classList.remove('opacity-10');
 
-            if (yt.includes('v=')) {
-                const vid = yt.split('v=')[1].split('&')[0];
-                if (CORE.player) CORE.player.loadVideoById(vid);
-                else {
-                    CORE.player = new YT.Player('player', {
-                        videoId: vid, width: '100%', height: '100%',
-                        playerVars: { 'autoplay': 1, 'modestbranding': 1 }
+                const paragraphs = rawContent.split('\n');
+                paragraphs.forEach(pText => {
+                    if (!pText.trim()) return;
+                    
+                    const pElement = document.createElement('div');
+                    pElement.className = 'paragraph-block mb-10';
+                    
+                    const tokens = pText.split(' ');
+                    tokens.forEach(token => {
+                        const span = document.createElement('span');
+                        span.className = 'word-unit';
+                        span.innerText = token + ' ';
+                        
+                        // Sanitize word for translation
+                        const cleanWord = token.replace(/[.,!?;:()"]/g, '');
+                        span.onclick = () => this.executeTranslation(cleanWord);
+                        
+                        pElement.appendChild(span);
                     });
+                    
+                    outputNode.appendChild(pElement);
+                });
+
+                ui.notify("Phân tích hoàn tất", "success");
+            },
+
+            /** * Call Google Translate API 
+             */
+            async executeTranslation(query) {
+                if (!query) return;
+
+                document.getElementById('term-source').innerText = query;
+                document.getElementById('term-result').innerText = "Analyzing...";
+                ui.showPopup();
+
+                try {
+                    const apiURL = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q=${encodeURIComponent(query)}`;
+                    const response = await fetch(apiURL);
+                    const data = await response.json();
+                    
+                    const result = data[0][0][0];
+                    document.getElementById('term-result').innerText = result;
+                    
+                    appState.currentTerm = {
+                        original: query,
+                        translated: result
+                    };
+                } catch (error) {
+                    document.getElementById('term-result').innerText = "SYNC ERROR";
+                    ui.notify("Lỗi kết nối API dịch thuật", "error");
                 }
+            },
+
+            /** * Smart Phrase Translation from Selection 
+             */
+            translatePhrase() {
+                this.executeTranslation(appState.activeSelection);
+                window.getSelection().removeAllRanges();
+                document.getElementById('smart-tooltip').style.display = 'none';
+            },
+
+            /** * Save term to Lexicon 
+             */
+            commitWord() {
+                const word = appState.currentTerm;
+                
+                // Avoid duplicates
+                const isExists = appState.database.lexicon.some(x => x.original.toLowerCase() === word.original.toLowerCase());
+                if (isExists) {
+                    ui.notify("Từ này đã có trong Lexicon!", "info");
+                    ui.hidePopup();
+                    return;
+                }
+
+                appState.database.lexicon.unshift({...word});
+                appState.database.user.xp += 10;
+                
+                storage.save();
+                ui.refreshGlobalStats();
+                ui.hidePopup();
+                ui.notify(`Saved: ${word.original}`, "success");
+            },
+
+            /** * Remove term 
+             */
+            purgeWord(idx) {
+                appState.database.lexicon.splice(idx, 1);
+                storage.save();
+                ui.renderLexiconGrid();
+                ui.notify("Đã xóa mục từ vựng", "info");
             }
-            showNotif("Phân tích hoàn tất", "success");
         };
 
-        // --- QUIZ ENGINE ---
-        function initQuiz() {
-            if (CORE.data.notebook.length < 4) return showNotif("Cần tối thiểu 4 từ", "error");
-            
-            CORE.quiz = { active: true, step: 0, score: 0, time: 10, lives: 3, pool: [] };
-            const pool = [...CORE.data.notebook].sort(() => 0.5 - Math.random()).slice(0, 10);
-            CORE.quiz.pool = pool.map(item => {
-                const others = CORE.data.notebook.filter(x => x.res !== item.res).sort(() => 0.5 - Math.random()).slice(0, 3);
-                const opts = [item.res, ...others.map(o => o.res)].sort(() => 0.5 - Math.random());
-                return { q: item.raw, a: item.res, opts };
-            });
+        // --- SYSTEM INITIALIZATION & EVENT LISTENERS ---
+        
+        /** * Handle Selection Events for Smart Phrase Tooltip 
+         */
+        window.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+            const tooltip = document.getElementById('smart-tooltip');
 
-            document.getElementById('quiz-modal').classList.remove('hidden');
-            document.getElementById('quiz-active').classList.remove('hidden');
-            document.getElementById('quiz-result').classList.add('hidden');
-            renderQuestion();
-        }
-
-        function renderQuestion() {
-            clearInterval(CORE.quiz.timer);
-            const q = CORE.quiz.pool[CORE.quiz.step];
-            document.getElementById('q-idx').innerText = CORE.quiz.step + 1;
-            document.getElementById('q-text').innerText = q.q;
-            
-            // Lives
-            const lBox = document.getElementById('q-lives');
-            lBox.innerHTML = "";
-            for(let i=0; i<3; i++) lBox.innerHTML += `<i class="fa-solid fa-heart ${i < CORE.quiz.lives ? 'text-pink-500' : 'text-slate-800'}"></i>`;
-
-            // Options
-            const oBox = document.getElementById('q-options');
-            oBox.innerHTML = "";
-            q.opts.forEach(o => {
-                const btn = document.createElement('div');
-                btn.className = 'opt-card';
-                btn.innerText = o;
-                btn.onclick = () => verifyAnswer(o, q.a, btn);
-                oBox.appendChild(btn);
-            });
-
-            startQuizTimer();
-        }
-
-        function startQuizTimer() {
-            CORE.quiz.time = 10;
-            const bar = document.getElementById('q-timer-bar');
-            const val = document.getElementById('q-timer-val');
-            
-            CORE.quiz.timer = setInterval(() => {
-                CORE.quiz.time -= 0.1;
-                bar.style.width = (CORE.quiz.time * 10) + '%';
-                val.innerText = Math.max(0, CORE.quiz.time).toFixed(1) + 's';
+            if (selectedText.length > 1) {
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
                 
-                if (CORE.quiz.time <= 0) {
-                    clearInterval(CORE.quiz.timer);
-                    CORE.quiz.lives--;
-                    nextQuestion();
-                }
-            }, 100);
-        }
-
-        function verifyAnswer(chosen, correct, el) {
-            clearInterval(CORE.quiz.timer);
-            const cards = document.querySelectorAll('.opt-card');
-            cards.forEach(c => c.style.pointerEvents = 'none');
-
-            if (chosen === correct) {
-                el.classList.add('opt-correct');
-                CORE.quiz.score++;
-                gsap.to(el, { scale: 1.05, duration: 0.2 });
+                tooltip.style.display = 'block';
+                tooltip.style.top = `${rect.top + window.scrollY - 55}px`;
+                tooltip.style.left = `${rect.left}px`;
+                appState.activeSelection = selectedText;
             } else {
-                el.classList.add('opt-wrong');
-                CORE.quiz.lives--;
-                cards.forEach(c => { if(c.innerText === correct) c.classList.add('opt-correct'); });
+                tooltip.style.display = 'none';
             }
+        });
 
-            setTimeout(nextQuestion, 1200);
-        }
-
-        function nextQuestion() {
-            CORE.quiz.step++;
-            if (CORE.quiz.lives > 0 && CORE.quiz.step < CORE.quiz.pool.length) {
-                renderQuestion();
-            } else {
-                finishQuiz();
+        /** * Keyboard Shortcuts 
+         */
+        window.addEventListener('keydown', (e) => {
+            // F8 to Process
+            if (e.key === 'F8') {
+                e.preventDefault();
+                engine.initAnalysis();
             }
-        }
+        });
 
-        function finishQuiz() {
-            CORE.quiz.active = false;
-            document.getElementById('quiz-active').classList.add('hidden');
-            document.getElementById('quiz-result').classList.remove('hidden');
-            const score = Math.round((CORE.quiz.score / CORE.quiz.pool.length) * 100);
-            document.getElementById('q-final-score').innerText = score + "%";
+        /** * Bootup Sequence 
+         */
+        window.onload = () => {
+            storage.init();
+            console.log("LingoPro Enterprise System Online. Target: user.json");
+        };
 
-            // Save Stats
-            CORE.data.stats.tests++;
-            CORE.data.stats.correct += CORE.quiz.score;
-            CORE.data.stats.xp += (CORE.quiz.score * 5);
-            CORE.data.stats.history.push({ date: new Date().toLocaleDateString(), score: score });
-            saveDatabase();
-            updateUIMetrics();
-        }
-
-        function closeQuiz() {
-            document.getElementById('quiz-modal').classList.add('hidden');
-            clearInterval(CORE.quiz.timer);
-            CORE.quiz.active = false;
-        }
-
-        // --- ANALYTICS & REPO RENDERING ---
-        function renderLexicon() {
-            const grid = document.getElementById('lexicon-grid');
-            grid.innerHTML = "";
-            CORE.data.notebook.forEach((item, idx) => {
-                const card = document.createElement('div');
-                card.className = 'glass p-6 rounded-2xl group flex justify-between items-center';
-                card.innerHTML = `
-                    <div class="min-w-0 flex-1">
-                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">${item.raw}</p>
-                        <h4 class="text-xl font-black italic uppercase truncate">${item.res}</h4>
-                    </div>
-                    <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onclick="speakWord('${item.raw}')" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:text-indigo-400"><i class="fa-solid fa-volume-low text-xs"></i></button>
-                        <button onclick="removeWord(${idx})" class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function renderSessionList() {
-            const list = document.getElementById('session-list');
-            list.innerHTML = "";
-            CORE.data.notebook.slice(0, 10).forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'glass p-4 rounded-xl text-xs hover:border-indigo-500 transition-all cursor-pointer';
-                div.innerHTML = `<p class="text-slate-500 font-bold mb-1">${item.raw}</p><p class="font-black uppercase italic">${item.res}</p>`;
-                list.appendChild(div);
-            });
-        }
-
-        function renderAnalytics() {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            if (CORE.chart) CORE.chart.destroy();
-
-            const hist = CORE.data.stats.history.slice(-10);
-            CORE.chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: hist.map(h => h.date),
-                    datasets: [{
-                        label: 'Accuracy %',
-                        data: hist.map(h => h.score),
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        x: { grid: { display: false } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-            renderAchievements();
-        }
-
-        function renderAchievements() {
-            const grid = document.getElementById('achievement-grid');
-            grid.innerHTML = "";
-            CORE.achievements.forEach(ach => {
-                const isUnlocked = ach.req(CORE.data);
-                grid.innerHTML += `
-                    <div class="glass p-5 rounded-2xl text-center ${isUnlocked ? '' : 'badge-locked'}">
-                        <i class="fa-solid ${ach.icon} text-2xl mb-3 ${isUnlocked ? 'text-indigo-500' : 'text-slate-600'}"></i>
-                        <p class="text-[10px] font-black uppercase">${ach.title}</p>
-                        <p class="text-[8px] text-slate-500 mt-1 uppercase">${ach.desc}</p>
-                    </div>
-                `;
-            });
-        }
-
-        // --- HELPERS & SYSTEM ---
-        function showNotif(msg, type = "info") {
-            const box = document.getElementById('sys-notif');
-            const n = document.createElement('div');
-            const colors = { success: 'border-emerald-500', error: 'border-red-500', warn: 'border-amber-500', info: 'border-indigo-500' };
-            n.className = `glass p-4 rounded-xl border-l-4 ${colors[type]} flex items-center gap-3 min-w-[200px] shadow-2xl animate-popUp`;
-            n.innerHTML = `<i class="fa-solid fa-circle-info text-xs"></i><span class="text-[10px] font-bold uppercase">${msg}</span>`;
-            box.appendChild(n);
-            setTimeout(() => { n.style.opacity = '0'; setTimeout(() => n.remove(), 500); }, 3000);
-        }
-
-        function setupHotkeys() {
-            window.onkeydown = (e) => {
-                if (e.ctrlKey && e.key === 'q') { e.preventDefault(); initQuiz(); }
-                if (e.ctrlKey && e.key === 's') { e.preventDefault(); if(CORE.current.raw) commitToRepo(); }
-                if (e.key === 'F8') { e.preventDefault(); document.getElementById('execute-btn').click(); }
-                if (e.key === 'Escape') { closeQuiz(); closePop(); }
-            };
-        }
-
-        function speakWord(t) {
-            const msg = new SpeechSynthesisUtterance(t || CORE.current.raw);
-            window.speechSynthesis.speak(msg);
-        }
-
-        function exportJSON() {
-            const data = JSON.stringify(CORE.data);
-            const blob = new Blob([data], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `lingopro_backup_${Date.now()}.json`;
-            a.click();
-        }
-
-        function removeWord(idx) {
-            if(confirm("Xóa mục này?")) {
-                CORE.data.notebook.splice(idx, 1);
-                saveDatabase();
-                renderLexicon();
-                updateUIMetrics();
-            }
-        }
-
-        function checkAchievements() {
-            CORE.achievements.forEach(ach => {
-                if(ach.req(CORE.data) && !CORE.data.stats.achievements.includes(ach.id)) {
-                    CORE.data.stats.achievements.push(ach.id);
-                    showNotif(`Mở khóa danh hiệu: ${ach.title}`, "success");
-                }
-            });
-        }
     </script>
 </body>
 </html>
