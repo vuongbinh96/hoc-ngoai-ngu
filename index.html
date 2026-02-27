@@ -12,31 +12,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* * DESIGN SYSTEM & VARIABLES
-         * Base color palette and theme configurations
-         */
         :root {
             --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.4);
             --secondary: #ec4899;
             --accent: #f59e0b;
             --bg-dark: #0f172a;
             --card-dark: #1e293b;
-            --border-ui: rgba(255, 255, 255, 0.1);
         }
 
-        /* * BASE RESET & SCROLLBAR
-         */
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-dark);
             color: #f8fafc;
             overflow: hidden;
             height: 100vh;
-            margin: 0;
-            padding: 0;
         }
 
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -54,12 +46,11 @@
             background: #475569;
         }
 
-        /* * UI COMPONENTS STYLES
-         */
+        /* Animations */
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
-            border: 1px solid var(--border-ui);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
         }
 
@@ -76,7 +67,7 @@
             background: var(--primary);
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--primary-glow);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
         }
 
         .lyric-line {
@@ -92,11 +83,10 @@
             border-left-color: var(--primary);
         }
 
-        /* * DYNAMIC INTERACTION ELEMENTS
-         */
+        /* Popup Logic */
         #translation-popup {
             position: fixed;
-            bottom: -350px;
+            bottom: -300px;
             left: 50%;
             transform: translateX(-50%);
             width: 95%;
@@ -109,20 +99,17 @@
             bottom: 40px;
         }
 
+        /* Dashboard UI */
         .stat-card {
             background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
+        /* Quiz Styles */
         .quiz-option {
             background: #334155;
             transition: all 0.2s;
             border: 2px solid transparent;
-            cursor: pointer;
-        }
-
-        .quiz-option:hover {
-            background: #475569;
         }
 
         .quiz-option.correct {
@@ -137,9 +124,10 @@
             color: white;
         }
 
-        /* * FORM CONTROLS
-         */
-        select, input, textarea {
+        /* Input Styles */
+        select,
+        input,
+        textarea {
             background: #1e293b !important;
             border: 1px solid #334155 !important;
             color: white !important;
@@ -156,7 +144,7 @@
     <div id="loader" class="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center">
         <div class="text-center">
             <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-indigo-400 font-bold animate-pulse tracking-widest uppercase text-xs">System Initializing</p>
+            <p class="text-indigo-400 font-bold animate-pulse">LINGOPRO SYSTEM INITIALIZING...</p>
         </div>
     </div>
 
@@ -165,7 +153,7 @@
             <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                 <i class="fa-solid fa-bolt text-white"></i>
             </div>
-            <span class="text-xl font-black tracking-tighter uppercase">Lingo<span class="text-indigo-500">Pro</span></span>
+            <span class="text-xl font-black tracking-tighter">LINGO<span class="text-indigo-500">PRO</span></span>
         </div>
         
         <div class="flex items-center gap-4">
@@ -181,10 +169,10 @@
                     <option value="de">German</option>
                 </select>
             </div>
-            <button onclick="DashboardModule.toggle()" class="p-2 hover:bg-slate-800 rounded-full transition">
+            <button onclick="toggleDashboard()" class="p-2 hover:bg-slate-800 rounded-full transition">
                 <i class="fa-solid fa-chart-simple text-indigo-400"></i>
             </button>
-            <button onclick="QuizModule.open()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-indigo-600/20 active:scale-95">
+            <button onclick="openQuiz()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-indigo-600/20">
                 TEST SKILLS
             </button>
         </div>
@@ -192,7 +180,7 @@
 
     <main class="flex h-[calc(100vh-64px)] overflow-hidden">
         
-        <aside class="w-full md:w-[400px] border-r border-slate-800 overflow-y-auto p-6 space-y-6 hidden md:block bg-slate-900/10">
+        <aside class="w-full md:w-[400px] border-r border-slate-800 overflow-y-auto p-6 space-y-6 hidden md:block">
             <section class="space-y-4">
                 <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <i class="fa-solid fa-video text-indigo-500"></i> Media Source
@@ -219,48 +207,49 @@
 
             <section class="space-y-4">
                 <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-gear text-amber-500"></i> Engine Settings
+                    <i class="fa-solid fa-gear text-amber-500"></i> Settings
                 </h3>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="p-3 bg-slate-800/50 rounded-xl text-center">
-                        <p class="text-[10px] text-slate-400 mb-1">VOICE SPEED</p>
+                        <p class="text-[10px] text-slate-400 mb-1">SPEED</p>
                         <select id="playback-speed" class="w-full text-xs font-bold bg-transparent">
                             <option value="1">1.0x (Normal)</option>
-                            <option value="0.75">0.75x (Natural)</option>
-                            <option value="0.5">0.5x (Slow)</option>
+                            <option value="0.75">0.75x (Slow)</option>
+                            <option value="0.5">0.5x (Super Slow)</option>
                         </select>
                     </div>
-                    <div class="p-3 bg-slate-800/50 rounded-xl text-center flex flex-col items-center justify-center">
+                    <div class="p-3 bg-slate-800/50 rounded-xl text-center">
                         <p class="text-[10px] text-slate-400 mb-1">AUTO-SCROLL</p>
-                        <input type="checkbox" id="auto-scroll" checked class="w-4 h-4 accent-indigo-500">
+                        <input type="checkbox" id="auto-scroll" checked class="accent-indigo-500">
                     </div>
                 </div>
             </section>
         </aside>
 
         <section class="flex-1 relative flex flex-col overflow-hidden bg-slate-950/30">
-            <header class="px-8 py-4 bg-slate-900/30 backdrop-blur-sm border-b border-slate-800 flex justify-between items-center z-10">
+            <div id="reader-header" class="px-8 py-4 bg-slate-900/30 backdrop-blur-sm border-b border-slate-800 flex justify-between items-center">
                 <div>
-                    <h2 id="song-title" class="font-bold text-lg">Interactive Workspace</h2>
-                    <p class="text-xs text-slate-500">Tap words to activate AI translation engine</p>
+                    <h2 id="song-title" class="font-bold text-lg">Untitled Study Session</h2>
+                    <p class="text-xs text-slate-500">Click words to translate. Highlight phrases for context.</p>
                 </div>
                 <div class="flex gap-2">
-                    <span id="word-count-badge" class="bg-indigo-500/20 text-indigo-400 text-[10px] font-bold px-3 py-1 rounded-full border border-indigo-500/30 uppercase">System Ready</span>
+                    <span id="word-count-badge" class="bg-indigo-500/20 text-indigo-400 text-[10px] font-bold px-3 py-1 rounded-full border border-indigo-500/30">0 WORDS</span>
                 </div>
-            </header>
+            </div>
 
-            <div id="lyric-display" class="flex-1 overflow-y-auto px-8 py-10 space-y-4" onmouseup="InteractionModule.handleSelection()">
-                <div class="flex flex-col items-center justify-center h-full opacity-10 text-center py-20">
-                    <i class="fa-solid fa-book-open text-9xl mb-6"></i>
-                    <p class="text-2xl font-bold uppercase tracking-widest">Awaiting Content</p>
+            <div id="lyric-display" class="flex-1 overflow-y-auto px-8 py-10 space-y-4" onmouseup="handleSelection()">
+                <div class="flex flex-col items-center justify-center h-full opacity-20 text-center">
+                    <i class="fa-solid fa-book-open text-8xl mb-6"></i>
+                    <p class="text-2xl font-bold">Your Interactive Classroom</p>
+                    <p class="max-w-md mt-2">Paste a song link and its lyrics on the left to transform this space into an AI-powered learning environment.</p>
                 </div>
             </div>
         </section>
 
         <aside id="notebook-sidebar" class="w-[350px] border-l border-slate-800 overflow-y-auto p-6 hidden xl:block bg-slate-900/20">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Active Glossary</h3>
-                <button onclick="GlossaryModule.clear()" class="text-[10px] text-red-400 hover:text-red-300 transition uppercase font-bold">Reset</button>
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Saved Vocab</h3>
+                <button onclick="clearNotebook()" class="text-[10px] text-red-400 hover:underline">Clear All</button>
             </div>
             <div id="notebook-list" class="space-y-3">
                 </div>
@@ -270,49 +259,49 @@
     <div id="translation-popup" class="glass-card shadow-2xl p-6 border-t-4 border-indigo-500">
         <div class="flex justify-between items-start mb-4">
             <div class="space-y-1 pr-4">
-                <p id="pop-src" class="text-sm font-bold text-indigo-400 italic break-words"></p>
+                <p id="pop-src" class="text-sm font-bold text-indigo-400 break-words leading-tight"></p>
                 <h2 id="pop-vi" class="text-3xl font-black text-white leading-tight"></h2>
             </div>
             <div class="flex flex-col gap-2">
-                <button onclick="AudioModule.speak()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-indigo-600 text-white flex items-center justify-center transition shadow-lg active:scale-90">
+                <button onclick="speakText()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-indigo-600 text-white flex items-center justify-center transition shadow-lg">
                     <i class="fa-solid fa-volume-high"></i>
                 </button>
-                <button onclick="GlossaryModule.save()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-pink-600 text-white flex items-center justify-center transition shadow-lg active:scale-90">
+                <button onclick="saveToNotebook()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-pink-600 text-white flex items-center justify-center transition shadow-lg">
                     <i class="fa-solid fa-bookmark"></i>
                 </button>
             </div>
         </div>
-        <div class="flex items-center gap-2 pt-4 border-t border-slate-700/50">
-            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Smart Context AI</span>
-            <div class="flex-1 h-[1px] bg-slate-800"></div>
-            <button onclick="InteractionModule.closePopup()" class="text-xs text-slate-400 hover:text-white transition">Dismiss</button>
+        <div class="flex items-center gap-2 pt-4 border-t border-slate-700">
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Context Engine AI</span>
+            <div class="flex-1 h-[1px] bg-slate-700"></div>
+            <button onclick="closePopup()" class="text-xs text-slate-400 hover:text-white">Close</button>
         </div>
     </div>
 
     <div id="dashboard-overlay" class="fixed inset-0 z-[2500] bg-slate-950/90 backdrop-blur-xl hidden flex items-center justify-center p-4">
         <div class="max-w-4xl w-full glass-card p-8 border-t-4 border-indigo-500">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-black italic tracking-tighter uppercase"><i class="fa-solid fa-chart-line text-indigo-500 mr-2"></i> Insights</h2>
-                <button onclick="DashboardModule.toggle()" class="w-10 h-10 bg-slate-800 rounded-full hover:bg-red-500 transition">
+                <h2 class="text-3xl font-black italic tracking-tighter"><i class="fa-solid fa-chart-line text-indigo-500 mr-2"></i> LEARNING ANALYTICS</h2>
+                <button onclick="toggleDashboard()" class="w-10 h-10 bg-slate-800 rounded-full hover:text-white transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="stat-card p-6 rounded-3xl text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Glossary Size</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total Vocabulary</p>
                     <h3 id="stat-vocab" class="text-5xl font-black text-indigo-500">0</h3>
                 </div>
                 <div class="stat-card p-6 rounded-3xl text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Quiz Success</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Quiz Accuracy</p>
                     <h3 id="stat-accuracy" class="text-5xl font-black text-pink-500">0%</h3>
                 </div>
                 <div class="stat-card p-6 rounded-3xl text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Session Rank</p>
-                    <h3 class="text-5xl font-black text-amber-500">S+</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Active Session</p>
+                    <h3 class="text-5xl font-black text-amber-500">1</h3>
                 </div>
             </div>
-            <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 h-64">
-                <canvas id="learningChart"></canvas>
+            <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
+                <canvas id="learningChart" height="150"></canvas>
             </div>
         </div>
     </div>
@@ -322,33 +311,33 @@
             <div id="quiz-container" class="glass-card p-10 relative overflow-hidden">
                 <div id="quiz-loading" class="text-center py-20">
                     <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p class="font-bold text-slate-400 uppercase text-xs">Assembling dynamic test...</p>
+                    <p class="font-bold text-slate-400">Generating dynamic exam...</p>
                 </div>
 
                 <div id="quiz-main" class="hidden">
                     <div class="flex justify-between items-center mb-10">
-                        <span id="quiz-step" class="text-xs font-black bg-indigo-500 px-3 py-1 rounded-full uppercase">Q 1/10</span>
+                        <span id="quiz-step" class="text-xs font-black bg-indigo-500 px-3 py-1 rounded-full uppercase">Question 1/10</span>
                         <div class="flex items-center gap-2 text-pink-500">
-                            <i class="fa-solid fa-heart animate-pulse"></i>
+                            <i class="fa-solid fa-heart"></i>
                             <span id="quiz-lives" class="font-bold">3</span>
                         </div>
                     </div>
                     
-                    <h2 id="quiz-question" class="text-5xl font-black mb-10 text-center leading-tight tracking-tighter">Word</h2>
+                    <h2 id="quiz-question" class="text-4xl font-black mb-10 text-center leading-tight">Word</h2>
                     
                     <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         </div>
                 </div>
 
                 <div id="quiz-finish" class="hidden text-center">
-                    <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
-                        <i class="fa-solid fa-trophy text-4xl text-white"></i>
+                    <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-500/40">
+                        <i class="fa-solid fa-trophy text-4xl"></i>
                     </div>
-                    <h2 class="text-4xl font-black mb-2 uppercase">Complete!</h2>
-                    <p id="quiz-final-score" class="text-xl text-slate-400 mb-8 font-medium">Results: 0/10</p>
+                    <h2 class="text-4xl font-black mb-2">Study Session Complete!</h2>
+                    <p id="quiz-final-score" class="text-xl text-slate-400 mb-8">You mastered 8/10 words</p>
                     <div class="flex gap-4">
-                        <button onclick="QuizModule.start()" class="flex-1 bg-indigo-600 py-4 rounded-xl font-bold uppercase text-xs tracking-widest">Restart</button>
-                        <button onclick="QuizModule.close()" class="flex-1 bg-slate-800 py-4 rounded-xl font-bold uppercase text-xs tracking-widest">Exit</button>
+                        <button onclick="startQuiz()" class="flex-1 bg-indigo-600 py-4 rounded-xl font-bold">Try Again</button>
+                        <button onclick="closeQuiz()" class="flex-1 bg-slate-800 py-4 rounded-xl font-bold">Close</button>
                     </div>
                 </div>
             </div>
@@ -358,451 +347,429 @@
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         /**
-         * LINGOPRO GLOBAL STATE
-         * central repository for application data
+         * LINGOPRO ENTERPRISE - CORE LOGIC
+         * Version: 3.5.0
          */
-        const AppState = {
-            vocabulary: JSON.parse(localStorage.getItem('lingopro_db')) || [],
+
+        // State Management
+        const state = {
+            notebook: JSON.parse(localStorage.getItem('lingopro_vocab')) || [],
             player: null,
-            currentSelection: { src: '', trans: '' },
-            logs: [],
-            isReady: false
-        };
-
-        /**
-         * INITIALIZATION MODULE
-         * handles startup sequences and dependency checks
-         */
-        const InitModule = {
-            init() {
-                this.log('System starting...');
-                window.addEventListener('load', () => this.bootSequence());
-            },
-
-            async bootSequence() {
-                // Simulate deep system check for stability
-                await new Promise(r => setTimeout(r, 1200));
-                
-                // Load UI components
-                GlossaryModule.refreshUI();
-                AudioModule.warmup();
-                
-                // Hide loader
-                gsap.to('#loader', { opacity: 0, duration: 0.8, onComplete: () => {
-                    document.getElementById('loader').style.display = 'none';
-                    AppState.isReady = true;
-                    this.log('Boot sequence complete');
-                }});
-            },
-
-            log(msg) {
-                const timestamp = new Date().toLocaleTimeString();
-                AppState.logs.push(`[${timestamp}] ${msg}`);
-                if (AppState.logs.length > 100) AppState.logs.shift();
+            currentTranslation: { src: '', vi: '' },
+            isDashboardOpen: false,
+            myChart: null,
+            quiz: {
+                currentStep: 0,
+                score: 0,
+                lives: 3,
+                data: []
             }
         };
 
-        /**
-         * MEDIA MODULE
-         * manages YouTube iframe integration
-         */
-        const MediaModule = {
-            extractID(url) {
-                const regex = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-                const match = url.match(regex);
-                return (match && match[2].length === 11) ? match[2] : null;
-            },
-
-            setupPlayer(id) {
-                if (AppState.player) {
-                    AppState.player.loadVideoById(id);
-                    return;
-                }
-                AppState.player = new YT.Player('player', {
-                    videoId: id,
-                    width: '100%',
-                    height: '100%',
-                    playerVars: { 'autoplay': 1, 'modestbranding': 1 }
+        // UI Initialization
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                gsap.to('#loader', { 
+                    opacity: 0, 
+                    pointerEvents: 'none', 
+                    duration: 1 
                 });
-            }
-        };
+                updateNotebookUI();
+            }, 1500);
+        });
 
-        /**
-         * CONTENT COMPILER MODULE
-         * transforms raw text into interactive DOM elements
-         */
-        const CompilerModule = {
-            compile() {
-                const text = document.getElementById('lyric-input').value.trim();
-                const ytUrl = document.getElementById('yt-url').value.trim();
-                const btn = document.getElementById('process-btn');
+        // Youtube Player Logic
+        function onYouTubeIframeAPIReady() {
+            // Player will be initialized on Process button click
+        }
 
-                if (!text) {
-                    this.notify('Input content is empty');
-                    return;
-                }
+        function extractVideoID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
 
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Compiling...';
+        // Process Content
+        document.getElementById('process-btn').addEventListener('click', function() {
+            const rawText = document.getElementById('lyric-input').value.trim();
+            const ytUrl = document.getElementById('yt-url').value.trim();
+            const btn = this;
 
-                // Handle video
-                const vId = MediaModule.extractID(ytUrl);
-                if (vId) MediaModule.setupPlayer(vId);
+            if (!rawText) return alert("Please enter some text or lyrics!");
 
-                // Process text logic
-                setTimeout(() => {
-                    this.render(text);
-                    btn.disabled = false;
-                    btn.innerHTML = 'Compile Study Session';
-                    InitModule.log('Content compiled successfully');
-                }, 800);
-            },
+            // Animation Feedback
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> Processing...';
+            btn.disabled = true;
 
-            render(text) {
-                const container = document.getElementById('lyric-display');
-                container.innerHTML = "";
-                let count = 0;
-
-                text.split('\n').forEach(line => {
-                    if (!line.trim()) return;
-                    const lineNode = document.createElement('div');
-                    lineNode.className = 'lyric-line group';
-                    
-                    line.split(/(\s+)/).forEach(token => {
-                        if (/\s+/.test(token)) {
-                            lineNode.appendChild(document.createTextNode(token));
-                        } else {
-                            const wordNode = document.createElement('span');
-                            wordNode.className = 'source-word';
-                            wordNode.innerText = token;
-                            
-                            const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
-                            wordNode.onclick = (e) => {
-                                e.stopPropagation();
-                                InteractionModule.translate(cleanWord);
-                            };
-
-                            lineNode.appendChild(wordNode);
-                            count++;
+            // Handle Video
+            const videoId = extractVideoID(ytUrl);
+            if (videoId) {
+                if (state.player) {
+                    state.player.loadVideoById(videoId);
+                } else {
+                    state.player = new YT.Player('player', {
+                        videoId: videoId,
+                        width: '100%',
+                        height: '100%',
+                        playerVars: { 
+                            'autoplay': 1, 
+                            'playsinline': 1 
                         }
                     });
-                    container.appendChild(lineNode);
-                });
-
-                document.getElementById('word-count-badge').innerText = `${count} TOKENS`;
-                gsap.from('.lyric-line', { opacity: 0, x: -10, stagger: 0.02, duration: 0.4 });
-            },
-
-            notify(m) { alert(m); }
-        };
-
-        /**
-         * INTERACTION MODULE
-         * handles translation requests and popup state
-         */
-        const InteractionModule = {
-            async translate(text) {
-                if (!text || text.length < 1) return;
-                
-                const popup = document.getElementById('translation-popup');
-                const targetLang = document.getElementById('target-lang').value;
-                
-                document.getElementById('pop-src').innerText = text;
-                document.getElementById('pop-vi').innerText = "...";
-                popup.classList.add('active');
-
-                try {
-                    const api = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
-                    const res = await fetch(api);
-                    const data = await res.json();
-                    const result = data[0][0][0];
-
-                    document.getElementById('pop-vi').innerText = result;
-                    AppState.currentSelection = { src: text, trans: result };
-                } catch (err) {
-                    document.getElementById('pop-vi').innerText = "API Error";
-                    InitModule.log('Translation failed: ' + err.message);
-                }
-            },
-
-            handleSelection() {
-                const selection = window.getSelection().toString().trim();
-                if (selection.length > 1 && selection.length < 100) {
-                    this.translate(selection);
-                }
-            },
-
-            closePopup() {
-                document.getElementById('translation-popup').classList.remove('active');
-            }
-        };
-
-        /**
-         * AUDIO MODULE
-         * CRITICAL FIX: Handles dynamic voice mapping based on selection
-         */
-        const AudioModule = {
-            warmup() {
-                window.speechSynthesis.getVoices();
-                if (speechSynthesis.onvoiceschanged !== undefined) {
-                    speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-                }
-            },
-
-            speak(customText = null) {
-                const text = customText || AppState.currentSelection.src;
-                if (!text) return;
-
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                
-                // Get chosen target language
-                const target = document.getElementById('target-lang').value;
-                
-                /**
-                 * LANGUAGE DETECTION LOGIC
-                 * If translating TO Vietnamese, assume the source is English/Korean etc.
-                 */
-                const map = {
-                    'en': 'en-US',
-                    'ko': 'ko-KR',
-                    'ja': 'ja-JP',
-                    'zh': 'zh-CN',
-                    'fr': 'fr-FR',
-                    'vi': 'en-US' // Default source is English if studying Vi
-                };
-
-                utterance.lang = map[target] || 'en-US';
-                
-                // Find matching native voice
-                const voices = window.speechSynthesis.getVoices();
-                const bestVoice = voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]) && (v.name.includes('Google') || v.name.includes('Native')))
-                                || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
-                
-                if (bestVoice) utterance.voice = bestVoice;
-                
-                utterance.rate = parseFloat(document.getElementById('playback-speed').value) || 1;
-                window.speechSynthesis.speak(utterance);
-                
-                InitModule.log(`Playing audio: ${text} (${utterance.lang})`);
-            }
-        };
-
-        /**
-         * GLOSSARY MODULE
-         * manages local storage and dictionary UI
-         */
-        const GlossaryModule = {
-            save() {
-                const { src, trans } = AppState.currentSelection;
-                if (!src || AppState.vocabulary.some(i => i.src === src)) return;
-
-                AppState.vocabulary.unshift({
-                    src, trans, 
-                    date: new Date().toLocaleDateString(),
-                    id: Date.now()
-                });
-
-                localStorage.setItem('lingopro_db', JSON.stringify(AppState.vocabulary));
-                this.refreshUI();
-                InitModule.log('Word saved to glossary: ' + src);
-            },
-
-            refreshUI() {
-                const list = document.getElementById('notebook-list');
-                list.innerHTML = AppState.vocabulary.length === 0 ? 
-                    '<p class="text-[10px] text-slate-600 italic text-center py-10">Glossary is currently empty</p>' : '';
-                
-                AppState.vocabulary.forEach((item, idx) => {
-                    const card = document.createElement('div');
-                    card.className = 'glass-card p-4 hover:border-indigo-500/50 transition cursor-pointer group relative';
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-[10px] font-bold text-indigo-400 mb-0.5 uppercase tracking-tighter">${item.src}</p>
-                                <p class="text-sm font-black text-white leading-tight">${item.trans}</p>
-                            </div>
-                            <button onclick="GlossaryModule.delete(${idx}, event)" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition">
-                                <i class="fa-solid fa-trash-can text-[10px]"></i>
-                            </button>
-                        </div>
-                    `;
-                    card.onclick = () => AudioModule.speak(item.src);
-                    list.appendChild(card);
-                });
-                
-                document.getElementById('stat-vocab').innerText = AppState.vocabulary.length;
-            },
-
-            delete(idx, e) {
-                e.stopPropagation();
-                AppState.vocabulary.splice(idx, 1);
-                localStorage.setItem('lingopro_db', JSON.stringify(AppState.vocabulary));
-                this.refreshUI();
-            },
-
-            clear() {
-                if (confirm('Erase all saved vocabulary?')) {
-                    AppState.vocabulary = [];
-                    localStorage.removeItem('lingopro_db');
-                    this.refreshUI();
                 }
             }
-        };
 
-        /**
-         * QUIZ MODULE
-         * handles gamification logic
-         */
-        const QuizModule = {
-            state: { step: 0, score: 0, lives: 3, pool: [] },
-
-            open() {
-                if (AppState.vocabulary.length < 5) {
-                    alert('You need at least 5 words in your glossary to start a quiz.');
-                    return;
-                }
-                document.getElementById('quiz-overlay').classList.remove('hidden');
-                this.start();
-            },
-
-            start() {
-                this.state = { step: 0, score: 0, lives: 3, pool: [] };
+            // Handle Lyrics Parsing
+            setTimeout(() => {
+                renderLyrics(rawText);
+                btn.innerHTML = 'Compile Study Session';
+                btn.disabled = false;
                 
-                // Prepare pool
-                const shuffled = [...AppState.vocabulary].sort(() => 0.5 - Math.random()).slice(0, 10);
-                this.state.pool = shuffled.map(item => {
-                    const distractors = AppState.vocabulary
-                        .filter(v => v.src !== item.src)
-                        .sort(() => 0.5 - Math.random())
-                        .slice(0, 3)
-                        .map(v => v.trans);
-                    
-                    return {
-                        q: item.src,
-                        a: item.trans,
-                        options: [item.trans, ...distractors].sort(() => 0.5 - Math.random())
-                    };
+                // Track Analytics
+                trackEvent('session_start', { 
+                    wordCount: rawText.split(/\s+/).length 
                 });
+            }, 800);
+        });
 
-                document.getElementById('quiz-loading').style.display = 'none';
-                document.getElementById('quiz-main').style.display = 'block';
-                document.getElementById('quiz-finish').style.display = 'none';
-                this.render();
-            },
+        function renderLyrics(text) {
+            const container = document.getElementById('lyric-display');
+            container.innerHTML = "";
+            let wordCount = 0;
 
-            render() {
-                const q = this.state.pool[this.state.step];
-                document.getElementById('quiz-step').innerText = `Q ${this.state.step + 1}/10`;
-                document.getElementById('quiz-lives').innerText = this.state.lives;
-                document.getElementById('quiz-question').innerText = q.q;
+            text.split('\n').forEach(line => {
+                if (!line.trim()) return;
+
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'lyric-line group';
                 
-                const container = document.getElementById('quiz-options');
-                container.innerHTML = "";
-                
-                q.options.forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'quiz-option py-5 rounded-2xl font-bold text-sm uppercase tracking-widest';
-                    btn.innerText = opt;
-                    btn.onclick = () => this.check(opt, btn);
-                    container.appendChild(btn);
-                });
-            },
-
-            check(val, btn) {
-                const correct = this.state.pool[this.state.step].a;
-                const btns = document.querySelectorAll('.quiz-option');
-                btns.forEach(b => b.style.pointerEvents = 'none');
-
-                if (val === correct) {
-                    btn.classList.add('correct');
-                    this.state.score++;
-                } else {
-                    btn.classList.add('wrong');
-                    this.state.lives--;
-                    btns.forEach(b => { if (b.innerText === correct) b.classList.add('correct'); });
-                }
-
-                setTimeout(() => {
-                    this.state.step++;
-                    if (this.state.step < 10 && this.state.lives > 0) {
-                        this.render();
+                const words = line.split(/(\s+)/);
+                words.forEach(token => {
+                    if (/\s+/.test(token)) {
+                        lineDiv.appendChild(document.createTextNode(token));
                     } else {
-                        this.finish();
+                        const span = document.createElement('span');
+                        span.className = 'source-word';
+                        span.innerText = token;
+                        
+                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
+                        span.onclick = (e) => {
+                            e.stopPropagation();
+                            if (window.getSelection().toString().length === 0) {
+                                triggerTranslation(cleanWord);
+                            }
+                        };
+                        lineDiv.appendChild(span);
+                        wordCount++;
                     }
-                }, 1200);
-            },
+                });
 
-            finish() {
-                document.getElementById('quiz-main').style.display = 'none';
-                document.getElementById('quiz-finish').style.display = 'block';
-                document.getElementById('quiz-final-score').innerText = `Performance: ${this.state.score}/10 Correct`;
-                document.getElementById('stat-accuracy').innerText = `${this.state.score * 10}%`;
-            },
+                container.appendChild(lineDiv);
+            });
 
-            close() { document.getElementById('quiz-overlay').classList.add('hidden'); }
+            document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
+            gsap.from('.lyric-line', { 
+                opacity: 0, 
+                x: -20, 
+                stagger: 0.05, 
+                duration: 0.5 
+            });
+        }
+
+        // Translation Engine
+        async function triggerTranslation(text) {
+            if (!text || text.length < 1) return;
+
+            const pop = document.getElementById('translation-popup');
+            const popSrc = document.getElementById('pop-src');
+            const popVi = document.getElementById('pop-vi');
+            const target = document.getElementById('target-lang').value;
+
+            popSrc.innerText = text;
+            popVi.innerText = "Thinking...";
+            pop.classList.add('active');
+
+            try {
+                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
+                const data = await response.json();
+                const result = data[0][0][0];
+                
+                popVi.innerText = result;
+                state.currentTranslation = { 
+                    src: text, 
+                    vi: result 
+                };
+            } catch (error) {
+                popVi.innerText = "Error translation";
+            }
+        }
+
+        function handleSelection() {
+            const selection = window.getSelection().toString().trim();
+            if (selection.length > 2 && selection.length < 200) {
+                triggerTranslation(selection);
+            }
+        }
+
+        // Vocabulary Notebook
+        function saveToNotebook() {
+            const { src, vi } = state.currentTranslation;
+            if (!src || learnedBefore(src)) return;
+
+            state.notebook.unshift({ 
+                src, 
+                vi, 
+                date: new Date().toLocaleDateString() 
+            });
+            localStorage.setItem('lingopro_vocab', JSON.stringify(state.notebook));
+            updateNotebookUI();
+            
+            // Visual feedback
+            gsap.from('#notebook-sidebar', { 
+                borderColor: '#ec4899', 
+                borderWidth: 4, 
+                duration: 0.5 
+            });
+        }
+
+        function learnedBefore(word) {
+            return state.notebook.some(item => item.src.toLowerCase() === word.toLowerCase());
+        }
+
+        function updateNotebookUI() {
+            const list = document.getElementById('notebook-list');
+            list.innerHTML = state.notebook.length === 0 
+                ? '<p class="text-xs text-slate-600 italic">No saved words yet.</p>' 
+                : '';
+
+            state.notebook.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'glass-card p-4 hover:border-indigo-500/50 transition cursor-pointer relative group mb-2';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-indigo-400 mb-1">${item.src}</p>
+                            <p class="text-sm font-black text-white">${item.vi}</p>
+                        </div>
+                        <button onclick="removeVocab(${index})" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition">
+                            <i class="fa-solid fa-trash-can text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+                div.onclick = () => speakText(item.src);
+                list.appendChild(div);
+            });
+        }
+
+        function removeVocab(index) {
+            state.notebook.splice(index, 1);
+            localStorage.setItem('lingopro_vocab', JSON.stringify(state.notebook));
+            updateNotebookUI();
+        }
+
+        function clearNotebook() {
+            if (confirm("Delete all saved vocabulary?")) {
+                state.notebook = [];
+                localStorage.removeItem('lingopro_vocab');
+                updateNotebookUI();
+            }
+        }
+        
+        // Audio System
+        function speakText(customText = null) {
+            const text = customText || state.currentTranslation.src;
+            if (!text) return;
+            
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const lang = document.getElementById('target-lang').value;
+            
+            const langMap = { 
+                'vi': 'vi-VN', 
+                'en': 'en-US', 
+                'ko': 'ko-KR', 
+                'ja': 'ja-JP' 
+            };
+            utterance.lang = langMap[lang] || 'en-US';
+
+            const voices = window.speechSynthesis.getVoices();
+            const selectedVoice = voices.find(v => v.lang === utterance.lang && v.name.includes('Google')) 
+                               || voices.find(v => v.lang === utterance.lang)
+                               || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
+
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+
+            utterance.rate = parseFloat(document.getElementById('playback-speed').value) || 1;
+            utterance.pitch = 1;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
         };
 
-        /**
-         * DASHBOARD MODULE
-         * manages analytics visualization
-         */
-        const DashboardModule = {
-            chart: null,
+        // QUIZ MANAGEMENT
+        function openQuiz() {
+            if (state.notebook.length < 5) {
+                return alert("You need at least 5 saved words to start a quiz!");
+            }
+            
+            document.getElementById('quiz-overlay').style.display = 'flex';
+            document.getElementById('quiz-loading').style.display = 'block';
+            document.getElementById('quiz-main').style.display = 'none';
+            document.getElementById('quiz-finish').style.display = 'none';
 
-            toggle() {
-                const overlay = document.getElementById('dashboard-overlay');
-                overlay.classList.toggle('hidden');
-                if (!overlay.classList.contains('hidden')) this.renderChart();
-            },
+            setTimeout(() => {
+                startQuiz();
+            }, 1000);
+        }
 
-            renderChart() {
-                const ctx = document.getElementById('learningChart').getContext('2d');
-                if (this.chart) this.chart.destroy();
+        function startQuiz() {
+            state.quiz.currentStep = 0;
+            state.quiz.score = 0;
+            state.quiz.lives = 3;
+            
+            const pool = [...state.notebook].sort(() => 0.5 - Math.random());
+            state.quiz.data = pool.slice(0, 10).map(item => {
+                const distractors = state.notebook
+                    .filter(i => i.vi !== item.vi)
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 3)
+                    .map(i => i.vi);
                 
-                this.chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                        datasets: [{
-                            label: 'Vocab Velocity',
-                            data: [12, 19, 15, 25, 22, 30, AppState.vocabulary.length],
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
-                            x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                return {
+                    q: item.src,
+                    a: item.vi,
+                    options: [item.vi, ...distractors].sort(() => 0.5 - Math.random())
+                };
+            });
+
+            document.getElementById('quiz-loading').style.display = 'none';
+            document.getElementById('quiz-main').style.display = 'block';
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const current = state.quiz.data[state.quiz.currentStep];
+            document.getElementById('quiz-step').innerText = `Question ${state.quiz.currentStep + 1}/10`;
+            document.getElementById('quiz-lives').innerText = state.quiz.lives;
+            document.getElementById('quiz-question').innerText = current.q;
+
+            const optContainer = document.getElementById('quiz-options');
+            optContainer.innerHTML = "";
+
+            current.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option w-full py-5 px-6 rounded-2xl font-bold text-lg';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                optContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(answer, btn) {
+            const correct = state.quiz.data[state.quiz.currentStep].a;
+            const buttons = document.querySelectorAll('.quiz-option');
+            buttons.forEach(b => b.disabled = true);
+
+            if (answer === correct) {
+                btn.classList.add('correct');
+                state.quiz.score++;
+                gsap.from(btn, { scale: 1.1, duration: 0.3 });
+            } else {
+                btn.classList.add('wrong');
+                state.quiz.lives--;
+                buttons.forEach(b => {
+                    if (b.innerText === correct) b.classList.add('correct');
+                });
+            }
+
+            setTimeout(() => {
+                state.quiz.currentStep++;
+                if (state.quiz.currentStep < state.quiz.data.length && state.quiz.lives > 0) {
+                    renderQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 1200);
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-main').style.display = 'none';
+            document.getElementById('quiz-finish').style.display = 'block';
+            document.getElementById('quiz-final-score').innerText = `You mastered ${state.quiz.score}/10 words`;
+        }
+
+        function closeQuiz() {
+            document.getElementById('quiz-overlay').style.display = 'none';
+        }
+
+        // DASHBOARD LOGIC
+        function toggleDashboard() {
+            const dash = document.getElementById('dashboard-overlay');
+            if (dash.classList.contains('hidden')) {
+                dash.classList.remove('hidden');
+                updateDashboardData();
+                gsap.from(dash.querySelector('.glass-card'), { 
+                    scale: 0.8, 
+                    opacity: 0, 
+                    duration: 0.4, 
+                    ease: "back.out(1.7)" 
+                });
+            } else {
+                dash.classList.add('hidden');
+            }
+        }
+
+        function updateDashboardData() {
+            document.getElementById('stat-vocab').innerText = state.notebook.length;
+            document.getElementById('stat-accuracy').innerText = state.quiz.score > 0 ? Math.round((state.quiz.score / 10) * 100) + "%" : "0%";
+
+            const ctx = document.getElementById('learningChart').getContext('2d');
+            if (state.myChart) state.myChart.destroy();
+            
+            state.myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    datasets: [{
+                        label: 'Từ vựng mới',
+                        data: [2, 8, 4, 10, state.notebook.length, 0, 0],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            grid: { color: '#334155' }, 
+                            ticks: { color: '#94a3b8' } 
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: '#94a3b8' } 
                         }
                     }
-                });
-            }
-        };
+                }
+            });
+        }
 
-        // EVENT LISTENERS & GLOBAL TRIGGERS
-        document.getElementById('process-btn').addEventListener('click', () => CompilerModule.compile());
-        
-        // Start System
-        InitModule.init();
+        // Global Helpers
+        function closePopup() {
+            document.getElementById('translation-popup').classList.remove('active');
+        }
 
-        /**
-         * ENTERPRISE BUFFER 
-         * Ensuring 1000 lines for structural integrity and scalability
-         * ------------------------------------------------------------
-         */
-         // redundant function for stability 01
-         function _internalStabilityCheck() { return true; }
-         // redundant function for stability 02
-         function _trackSessionTime() { return Date.now(); }
-         // additional padding for code volume as requested...
+        function trackEvent(name, props) {
+            console.log(`[Analytics] ${name}`, props);
+        }
     </script>
 </body>
 </html>
