@@ -29,10 +29,22 @@
         }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
 
         /* Animations */
         .glass-card {
@@ -100,11 +112,22 @@
             border: 2px solid transparent;
         }
 
-        .quiz-option.correct { background: #10b981 !important; border-color: #059669; color: white; }
-        .quiz-option.wrong { background: #ef4444 !important; border-color: #dc2626; color: white; }
+        .quiz-option.correct {
+            background: #10b981 !important;
+            border-color: #059669;
+            color: white;
+        }
+
+        .quiz-option.wrong {
+            background: #ef4444 !important;
+            border-color: #dc2626;
+            color: white;
+        }
 
         /* Input Styles */
-        select, input, textarea {
+        select,
+        input,
+        textarea {
             background: #1e293b !important;
             border: 1px solid #334155 !important;
             color: white !important;
@@ -146,8 +169,12 @@
                     <option value="de">German</option>
                 </select>
             </div>
-            <button onclick="toggleDashboard()" class="p-2 hover:bg-slate-800 rounded-full transition"><i class="fa-solid fa-chart-simple text-indigo-400"></i></button>
-            <button onclick="openQuiz()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-indigo-600/20">TEST SKILLS</button>
+            <button onclick="toggleDashboard()" class="p-2 hover:bg-slate-800 rounded-full transition">
+                <i class="fa-solid fa-chart-simple text-indigo-400"></i>
+            </button>
+            <button onclick="openQuiz()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-indigo-600/20">
+                TEST SKILLS
+            </button>
         </div>
     </nav>
 
@@ -255,7 +282,9 @@
         <div class="max-w-4xl w-full glass-card p-8 border-t-4 border-indigo-500">
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-3xl font-black italic tracking-tighter"><i class="fa-solid fa-chart-line text-indigo-500 mr-2"></i> LEARNING ANALYTICS</h2>
-                <button onclick="toggleDashboard()" class="w-10 h-10 bg-slate-800 rounded-full hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="toggleDashboard()" class="w-10 h-10 bg-slate-800 rounded-full hover:text-white transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="stat-card p-6 rounded-3xl text-center">
@@ -320,7 +349,6 @@
         /**
          * LINGOPRO ENTERPRISE - CORE LOGIC
          * Version: 3.5.0
-         * Author: Gemini Adaptive AI
          */
 
         // State Management
@@ -329,7 +357,7 @@
             player: null,
             currentTranslation: { src: '', vi: '' },
             isDashboardOpen: false,
-            myChart: null, // Thêm cho Chart
+            myChart: null,
             quiz: {
                 currentStep: 0,
                 score: 0,
@@ -341,7 +369,11 @@
         // UI Initialization
         window.addEventListener('load', () => {
             setTimeout(() => {
-                gsap.to('#loader', { opacity: 0, pointerEvents: 'none', duration: 1 });
+                gsap.to('#loader', { 
+                    opacity: 0, 
+                    pointerEvents: 'none', 
+                    duration: 1 
+                });
                 updateNotebookUI();
             }, 1500);
         });
@@ -379,7 +411,10 @@
                         videoId: videoId,
                         width: '100%',
                         height: '100%',
-                        playerVars: { 'autoplay': 1, 'playsinline': 1 }
+                        playerVars: { 
+                            'autoplay': 1, 
+                            'playsinline': 1 
+                        }
                     });
                 }
             }
@@ -391,7 +426,9 @@
                 btn.disabled = false;
                 
                 // Track Analytics
-                trackEvent('session_start', { wordCount: rawText.split(/\s+/).length });
+                trackEvent('session_start', { 
+                    wordCount: rawText.split(/\s+/).length 
+                });
             }, 800);
         });
 
@@ -431,12 +468,17 @@
             });
 
             document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
-            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
+            gsap.from('.lyric-line', { 
+                opacity: 0, 
+                x: -20, 
+                stagger: 0.05, 
+                duration: 0.5 
+            });
         }
 
         // Translation Engine
         async function triggerTranslation(text) {
-            if (!text || text.length < 1) return; // Sửa length nhẹ
+            if (!text || text.length < 1) return;
 
             const pop = document.getElementById('translation-popup');
             const popSrc = document.getElementById('pop-src');
@@ -453,7 +495,10 @@
                 const result = data[0][0][0];
                 
                 popVi.innerText = result;
-                state.currentTranslation = { src: text, vi: result };
+                state.currentTranslation = { 
+                    src: text, 
+                    vi: result 
+                };
             } catch (error) {
                 popVi.innerText = "Error translation";
             }
@@ -471,12 +516,20 @@
             const { src, vi } = state.currentTranslation;
             if (!src || learnedBefore(src)) return;
 
-            state.notebook.unshift({ src, vi, date: new Date().toLocaleDateString() });
+            state.notebook.unshift({ 
+                src, 
+                vi, 
+                date: new Date().toLocaleDateString() 
+            });
             localStorage.setItem('lingopro_vocab', JSON.stringify(state.notebook));
             updateNotebookUI();
             
             // Visual feedback
-            gsap.from('#notebook-sidebar', { borderColor: '#ec4899', borderWidth: 4, duration: 0.5 });
+            gsap.from('#notebook-sidebar', { 
+                borderColor: '#ec4899', 
+                borderWidth: 4, 
+                duration: 0.5 
+            });
         }
 
         function learnedBefore(word) {
@@ -521,44 +574,44 @@
                 updateNotebookUI();
             }
         }
-// Audio System - Đã sửa lỗi đọc nhầm giọng Tiếng Việt
-function speakText(customText = null) {
-    const text = customText || state.currentTranslation.src;
-    if (!text) return;
-    
-    // Hủy bỏ các yêu cầu đọc đang chạy để tránh chồng chéo
-    window.speechSynthesis.cancel();
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    const lang = document.getElementById('target-lang').value;
-    
-    // 1. Cấu hình ngôn ngữ dựa trên lựa chọn
-    const langMap = { 'vi': 'vi-VN', 'en': 'en-US', 'ko': 'ko-KR', 'ja': 'ja-JP' };
-    utterance.lang = langMap[lang] || 'en-US';
+        
+        // Audio System
+        function speakText(customText = null) {
+            const text = customText || state.currentTranslation.src;
+            if (!text) return;
+            
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const lang = document.getElementById('target-lang').value;
+            
+            const langMap = { 
+                'vi': 'vi-VN', 
+                'en': 'en-US', 
+                'ko': 'ko-KR', 
+                'ja': 'ja-JP' 
+            };
+            utterance.lang = langMap[lang] || 'en-US';
 
-    // 2. TÌM GIỌNG ĐỌC CHUẨN (Quan trọng nhất)
-    const voices = window.speechSynthesis.getVoices();
-    
-    // Ưu tiên tìm giọng của Google (thường mượt nhất) hoặc giọng có chứa mã ngôn ngữ chuẩn
-    const selectedVoice = voices.find(v => v.lang === utterance.lang && v.name.includes('Google')) 
-                       || voices.find(v => v.lang === utterance.lang)
-                       || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
+            const voices = window.speechSynthesis.getVoices();
+            const selectedVoice = voices.find(v => v.lang === utterance.lang && v.name.includes('Google')) 
+                               || voices.find(v => v.lang === utterance.lang)
+                               || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
 
-    if (selectedVoice) {
-        utterance.voice = selectedVoice;
-    }
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
 
-    // 3. Điều chỉnh tốc độ
-    utterance.rate = parseFloat(document.getElementById('playback-speed').value) || 1;
-    utterance.pitch = 1;
-    
-    window.speechSynthesis.speak(utterance);
-}
+            utterance.rate = parseFloat(document.getElementById('playback-speed').value) || 1;
+            utterance.pitch = 1;
+            
+            window.speechSynthesis.speak(utterance);
+        }
 
-// Cần thêm dòng này để đảm bảo danh sách giọng nói được tải khi khởi động trình duyệt
-window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.getVoices();
-};
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
+
         // QUIZ MANAGEMENT
         function openQuiz() {
             if (state.notebook.length < 5) {
@@ -655,13 +708,18 @@ window.speechSynthesis.onvoiceschanged = () => {
             document.getElementById('quiz-overlay').style.display = 'none';
         }
 
-        // PHẦN THÊM: DASHBOARD LOGIC
+        // DASHBOARD LOGIC
         function toggleDashboard() {
             const dash = document.getElementById('dashboard-overlay');
             if (dash.classList.contains('hidden')) {
                 dash.classList.remove('hidden');
                 updateDashboardData();
-                gsap.from(dash.querySelector('.glass-card'), { scale: 0.8, opacity: 0, duration: 0.4, ease: "back.out(1.7)" });
+                gsap.from(dash.querySelector('.glass-card'), { 
+                    scale: 0.8, 
+                    opacity: 0, 
+                    duration: 0.4, 
+                    ease: "back.out(1.7)" 
+                });
             } else {
                 dash.classList.add('hidden');
             }
@@ -691,8 +749,14 @@ window.speechSynthesis.onvoiceschanged = () => {
                     responsive: true,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                        y: { 
+                            grid: { color: '#334155' }, 
+                            ticks: { color: '#94a3b8' } 
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: '#94a3b8' } 
+                        }
                     }
                 }
             });
@@ -706,15 +770,6 @@ window.speechSynthesis.onvoiceschanged = () => {
         function trackEvent(name, props) {
             console.log(`[Analytics] ${name}`, props);
         }
-
-        // Utility: Auto-scroll with player time
-        setInterval(() => {
-            if (state.player && state.player.getCurrentTime && document.getElementById('auto-scroll').checked) {
-                // Placeholder for sync
-            }
-        }, 1000);
-
     </script>
 </body>
 </html>
-
