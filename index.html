@@ -8,13 +8,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* * GLOBAL DESIGN SYSTEM 
-         * Variables and Base Reset
-         */
         :root {
             --primary: #6366f1;
             --primary-hover: #4f46e5;
@@ -24,7 +22,7 @@
             --card-dark: #1e293b;
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.1);
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
@@ -34,236 +32,220 @@
             overflow: hidden;
             height: 100vh;
             margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* * CUSTOM SCROLLBAR DESIGN 
-         * Minimalist Industrial Style
-         */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
+        /* Scrollbar Customization */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.1); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.5);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 10px;
-            border: 1px solid transparent;
-            background-clip: content-box;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-
-        /* * COMPONENT STYLES
-         * Glassmorphism & Interactive Elements
-         */
+        /* UI Components */
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 24px;
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
 
         .source-word {
             display: inline-block;
             cursor: pointer;
-            padding: 0 4px;
+            padding: 2px 4px;
             margin: 0 1px;
             border-radius: 6px;
-            transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: var(--transition-smooth);
             font-weight: 500;
-            color: inherit;
             position: relative;
         }
 
         .source-word:hover {
             background: var(--primary);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(99, 102, 241, 0.4);
+            z-index: 10;
         }
 
         .lyric-line {
             padding: 14px 20px;
             margin-bottom: 10px;
             border-radius: 16px;
-            transition: all 0.3s ease;
+            transition: var(--transition-smooth);
             border-left: 4px solid transparent;
-            background: transparent;
+            cursor: default;
         }
 
         .lyric-line:hover {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.05);
             border-left-color: var(--primary);
-            padding-left: 25px;
+            transform: translateX(5px);
         }
 
-        .lyric-line.active-segment {
-            background: rgba(99, 102, 241, 0.1);
-            border-left-color: var(--primary);
+        .lyric-line.active-sync {
+            background: rgba(99, 102, 241, 0.15);
+            border-left-color: var(--secondary);
         }
 
-        /* * FLOATING TRANSLATION POPUP
-         * Dynamic positioning logic
-         */
+        /* Popups & Overlays */
         #translation-popup {
             position: fixed;
             bottom: -400px;
             left: 50%;
             transform: translateX(-50%);
             width: 92%;
-            max-width: 550px;
-            z-index: 9999;
-            transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
-            visibility: hidden;
-            opacity: 0;
+            max-width: 520px;
+            z-index: 1000;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         #translation-popup.active {
             bottom: 40px;
-            visibility: visible;
-            opacity: 1;
         }
 
-        /* * DASHBOARD & ANALYTICS UI
-         */
         .stat-card {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(236, 72, 153, 0.08));
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.05));
             border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(5px);
             transition: transform 0.3s ease;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.12));
         }
 
-        /* * QUIZ SYSTEM ANIMATIONS
-         */
+        /* Quiz UI */
         .quiz-option {
             background: #334155;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid rgba(255, 255, 255, 0.05);
-            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: 2px solid transparent;
             position: relative;
             overflow: hidden;
         }
 
-        .quiz-option:hover {
-            background: #475569;
-            border-color: var(--primary);
-            transform: scale(1.02);
+        .quiz-option::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
         }
 
-        .quiz-option.correct {
-            background: #10b981 !important;
-            border-color: #059669 !important;
-            color: white;
-            animation: pulse-green 0.5s ease-in-out;
-        }
+        .quiz-option:hover::after { left: 100%; }
 
-        .quiz-option.wrong {
-            background: #ef4444 !important;
-            border-color: #dc2626 !important;
+        .quiz-option.correct { 
+            background: #10b981 !important; 
+            border-color: #34d399; 
+            color: white; 
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .quiz-option.wrong { 
+            background: #ef4444 !important; 
+            border-color: #f87171; 
             color: white;
             animation: shake 0.4s ease-in-out;
         }
 
-        @keyframes pulse-green {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
 
-        /* * INPUT & FORM CONTROLS
-         */
-        select, 
-        input, 
-        textarea {
+        /* Input Customization */
+        select, input, textarea {
             background: #1e293b !important;
-            border: 1.5px solid #334155 !important;
+            border: 1px solid #334155 !important;
             color: white !important;
-            border-radius: 12px !important;
-            padding: 10px 15px;
+            transition: all 0.3s ease;
         }
 
-        select:focus, 
-        input:focus, 
-        textarea:focus {
+        select:focus, input:focus, textarea:focus {
             border-color: var(--primary) !important;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
 
-        /* * MEDIA QUERIES
-         */
-        @media (max-width: 768px) {
-            #reader-header { padding: 10px 20px; }
-            .glass-card { border-radius: 16px; }
+        /* Tooltip style */
+        .hint-text {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        /* Animation Classes */
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .keyboard-key {
+            background: #475569;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            border-bottom: 2px solid #1e293b;
         }
     </style>
 </head>
-
-<body class="antialiased selection:bg-indigo-500/30">
+<body class="antialiased overflow-hidden">
 
     <div id="loader" class="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center">
         <div class="text-center">
             <div class="relative w-24 h-24 mx-auto mb-8">
                 <div class="absolute inset-0 border-4 border-indigo-500/20 rounded-full"></div>
                 <div class="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                <i class="fa-solid fa-bolt absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl text-indigo-500 animate-pulse"></i>
+                <div class="absolute inset-4 border-4 border-pink-500 border-b-transparent rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
             </div>
-            <h1 class="text-white text-xl font-black tracking-[0.2em] mb-2">LINGOPRO <span class="text-indigo-500">SYSTEM</span></h1>
-            <p id="loader-status" class="text-slate-500 text-xs font-mono uppercase tracking-widest">Booting Core Modules...</p>
+            <h1 class="text-2xl font-black tracking-[0.2em] text-white mb-2">LINGOPRO <span class="text-indigo-500">SYSTEM</span></h1>
+            <p id="loader-status" class="text-indigo-400 text-xs font-bold animate-pulse">OPTIMIZING NEURAL TRANSLATION...</p>
         </div>
     </div>
 
-    <nav class="h-16 border-b border-slate-800 px-6 flex items-center justify-between bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-        <div class="flex items-center gap-3 group cursor-pointer">
-            <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
-                <i class="fa-solid fa-bolt text-white"></i>
+    <nav class="h-16 border-b border-slate-800 px-8 flex items-center justify-between bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50">
+        <div class="flex items-center gap-4 group cursor-pointer">
+            <div class="w-11 h-11 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-bolt-lightning text-white text-lg"></i>
             </div>
-            <span class="text-xl font-black tracking-tighter">LINGO<span class="text-indigo-500">PRO</span> <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md ml-1 border border-slate-700">v4.0</span></span>
+            <div>
+                <span class="text-2xl font-black tracking-tighter block leading-none">LINGO<span class="text-indigo-500">PRO</span></span>
+                <span class="text-[9px] font-bold text-slate-500 tracking-[0.3em] uppercase">Enterprise Edition</span>
+            </div>
         </div>
         
-        <div class="flex items-center gap-4">
-            <div class="hidden lg:flex bg-slate-800/80 rounded-full px-4 py-1.5 items-center gap-3 border border-slate-700 hover:border-indigo-500/50 transition">
-                <i class="fa-solid fa-earth-americas text-indigo-400 text-sm"></i>
-                <label for="target-lang" class="sr-only">Target Language</label>
-                <select id="target-lang" class="bg-transparent border-none text-xs font-bold focus:ring-0 cursor-pointer p-0 h-auto w-auto">
+        <div class="flex items-center gap-6">
+            <div class="hidden lg:flex bg-slate-800/50 rounded-2xl px-5 py-2 items-center gap-4 border border-slate-700/50 hover:border-slate-600 transition">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-language text-indigo-400"></i>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Target:</span>
+                </div>
+                <select id="target-lang" class="bg-transparent border-none text-xs font-bold focus:ring-0 cursor-pointer appearance-none pr-4">
                     <option value="vi">Tiếng Việt</option>
                     <option value="en">English (US)</option>
-                    <option value="ko">Korean</option>
-                    <option value="ja">Japanese</option>
-                    <option value="zh">Chinese</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="es">Spanish</option>
+                    <option value="ko">한국어 (Korean)</option>
+                    <option value="ja">日本語 (Japanese)</option>
+                    <option value="zh">中文 (Chinese)</option>
+                    <option value="fr">Français (French)</option>
+                    <option value="de">Deutsch (German)</option>
+                    <option value="es">Español (Spanish)</option>
                 </select>
             </div>
 
-            <div class="flex items-center gap-2">
-                <button onclick="toggleDashboard()" class="w-10 h-10 flex items-center justify-center hover:bg-slate-800 rounded-full transition text-slate-400 hover:text-indigo-400" title="Analytics">
-                    <i class="fa-solid fa-chart-simple"></i>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleDashboard()" class="w-10 h-10 flex items-center justify-center hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-indigo-400" title="Analytics">
+                    <i class="fa-solid fa-chart-pie"></i>
                 </button>
-                <button onclick="openQuiz()" class="hidden sm:block bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-full font-bold text-sm transition shadow-lg shadow-indigo-600/20 active:scale-95">
-                    TEST SKILLS
+                <button onclick="exportData()" class="w-10 h-10 flex items-center justify-center hover:bg-slate-800 rounded-xl transition-all text-slate-400 hover:text-emerald-400" title="Export Vocabulary">
+                    <i class="fa-solid fa-file-export"></i>
+                </button>
+                <div class="h-6 w-[1px] bg-slate-800 mx-2"></div>
+                <button onclick="openQuiz()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-2.5 rounded-2xl font-extrabold text-xs transition-all shadow-xl shadow-indigo-600/20 active:scale-95">
+                    TEST KNOWLEDGE
                 </button>
             </div>
         </div>
@@ -271,826 +253,759 @@
 
     <main class="flex h-[calc(100vh-64px)] overflow-hidden">
         
-        <aside class="w-full md:w-[420px] border-r border-slate-800 overflow-y-auto p-6 space-y-8 hidden md:block bg-slate-900/10">
+        <aside class="w-full md:w-[420px] border-r border-slate-800/50 overflow-y-auto p-8 space-y-8 bg-slate-900/20">
             
             <section class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
-                        Media Source
-                    </h3>
-                    <span class="text-[10px] text-slate-500 font-mono">YouTube API v3</span>
-                </div>
-                <div class="glass-card p-4 space-y-4">
-                    <div id="player-container" class="aspect-video bg-slate-950 rounded-2xl overflow-hidden shadow-2xl relative group">
-                        <div id="player"></div>
-                        <div id="player-placeholder" class="absolute inset-0 flex items-center justify-center bg-slate-900 group-hover:bg-slate-800 transition">
-                            <i class="fa-brands fa-youtube text-5xl text-slate-700 group-hover:text-red-600 transition"></i>
+                <h3 class="hint-text flex items-center gap-2">
+                    <i class="fa-solid fa-circle-play text-indigo-500"></i> Multimedia Source
+                </h3>
+                <div class="glass-card p-5 space-y-4">
+                    <div id="player-container" class="aspect-video bg-slate-950 rounded-2xl overflow-hidden shadow-2xl group relative">
+                        <div id="player" class="w-full h-full"></div>
+                        <div id="player-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-700 bg-slate-900">
+                            <i class="fa-brands fa-youtube text-5xl mb-3"></i>
+                            <p class="text-[10px] font-bold uppercase tracking-widest">Waiting for stream...</p>
                         </div>
                     </div>
                     <div class="relative">
-                        <i class="fa-solid fa-link absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                        <input type="text" id="yt-url" placeholder="Paste YouTube link here..." class="w-full pl-10 pr-4 py-3 text-sm">
+                        <i class="fa-brands fa-youtube absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="yt-url" placeholder="YouTube Video URL..." class="w-full pl-12 pr-4 py-4 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/20 transition-all">
                     </div>
                 </div>
             </section>
 
             <section class="space-y-4">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <span class="w-2 h-2 bg-pink-500 rounded-full"></span>
-                    Interactive Content
+                <h3 class="hint-text flex items-center gap-2">
+                    <i class="fa-solid fa-align-left text-pink-500"></i> Content Corpus
                 </h3>
-                <div class="glass-card p-4 space-y-4">
-                    <textarea id="lyric-input" rows="10" placeholder="Paste your lyrics or study text here..." class="w-full text-sm leading-relaxed scrollbar-hide"></textarea>
-                    
-                    <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 py-4 rounded-2xl font-black uppercase tracking-[0.1em] hover:opacity-90 transition active:scale-[0.98] shadow-xl shadow-indigo-900/20 flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>Compile Study Session</span>
+                <div class="glass-card p-5 space-y-4">
+                    <div class="relative">
+                        <textarea id="lyric-input" rows="10" placeholder="Paste your study material, song lyrics, or article text here..." class="w-full p-5 rounded-2xl text-xs font-medium leading-relaxed resize-none transition-all"></textarea>
+                        <div class="absolute bottom-4 right-4 text-[10px] text-slate-500 font-bold bg-slate-900/80 px-2 py-1 rounded">
+                            MD SUPPORTED
+                        </div>
+                    </div>
+                    <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-pink-600 py-5 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:opacity-95 transition-all active:scale-[0.98] shadow-2xl shadow-indigo-500/30 group">
+                        <span class="group-hover:mr-2 transition-all">GENERATE INTERACTIVE SESSION</span>
+                        <i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i>
                     </button>
                 </div>
             </section>
 
             <section class="space-y-4">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <span class="w-2 h-2 bg-amber-500 rounded-full"></span>
-                    Engine Settings
+                <h3 class="hint-text flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-amber-500"></i> Engine Preferences
                 </h3>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/50">
-                        <p class="text-[10px] text-slate-500 font-bold mb-2 uppercase">Audio Speed</p>
-                        <select id="playback-speed" class="w-full text-xs font-bold bg-transparent border-none p-0 focus:ring-0">
+                    <div class="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/30">
+                        <p class="text-[9px] font-black text-slate-500 mb-2 uppercase tracking-tighter">TTS SPEED</p>
+                        <select id="playback-speed" class="w-full text-xs font-extrabold bg-transparent border-none p-0 cursor-pointer">
                             <option value="1">1.0x Normal</option>
                             <option value="0.85">0.85x Natural</option>
-                            <option value="0.75">0.75x Slow</option>
-                            <option value="0.5">0.50x Debug</option>
+                            <option value="0.7">0.7x Slow</option>
+                            <option value="0.5">0.5x Analysis</option>
                         </select>
                     </div>
-                    <div class="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/50 flex flex-col justify-center">
-                        <p class="text-[10px] text-slate-500 font-bold mb-2 uppercase">Auto-Scroll</p>
-                        <div class="flex items-center">
-                            <input type="checkbox" id="auto-scroll" checked class="w-4 h-4 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-900">
-                            <span class="ml-2 text-xs font-bold text-slate-300">Enabled</span>
+                    <div class="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/30 flex items-center justify-between">
+                        <div>
+                            <p class="text-[9px] font-black text-slate-500 mb-1 uppercase tracking-tighter">SMART SYNC</p>
+                            <p class="text-[8px] text-slate-600">Auto-scroll text</p>
                         </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="auto-scroll" checked class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
                     </div>
                 </div>
             </section>
 
+            <div class="pt-4 flex flex-wrap gap-2">
+                <span class="text-[9px] text-slate-600 font-bold uppercase">Quick Keys:</span>
+                <span class="keyboard-key">Space</span><span class="text-[9px] text-slate-700">Play</span>
+                <span class="keyboard-key">S</span><span class="text-[9px] text-slate-700">Save</span>
+                <span class="keyboard-key">R</span><span class="text-[9px] text-slate-700">Read</span>
+            </div>
         </aside>
 
-        <section class="flex-1 relative flex flex-col overflow-hidden bg-slate-950/20">
+        <section class="flex-1 relative flex flex-col overflow-hidden bg-slate-950/40">
             
-            <header id="reader-header" class="px-8 py-5 bg-slate-900/40 backdrop-blur-md border-b border-slate-800 flex justify-between items-center z-10">
-                <div class="flex items-center gap-4">
-                    <div class="w-2 h-8 bg-indigo-500 rounded-full"></div>
-                    <div>
-                        <h2 id="song-title" class="font-extrabold text-xl tracking-tight text-white">Interactive Workspace</h2>
-                        <p class="text-[11px] text-slate-500 font-medium">Select any word to activate AI Context Engine</p>
+            <div id="reader-header" class="px-10 py-6 bg-slate-900/40 backdrop-blur-md border-b border-slate-800/50 flex justify-between items-end">
+                <div class="space-y-1">
+                    <h2 id="song-title" class="font-extrabold text-2xl tracking-tight text-white">Interactive Workspace</h2>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                            AI Engine Ready
+                        </div>
+                        <span class="text-slate-700">•</span>
+                        <p class="text-[10px] text-slate-500 font-medium">Click words to analyze. Use <kbd class="bg-slate-800 px-1 rounded">Ctrl</kbd> + click for phrase selection.</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <div class="flex -space-x-2">
-                        <div class="w-8 h-8 rounded-full border-2 border-slate-900 bg-indigo-500 flex items-center justify-center text-[10px] font-bold">AI</div>
-                        <div class="w-8 h-8 rounded-full border-2 border-slate-900 bg-pink-500 flex items-center justify-center text-[10px] font-bold">JS</div>
+                    <div id="word-count-badge" class="bg-indigo-500/10 text-indigo-400 text-[10px] font-black px-4 py-2 rounded-xl border border-indigo-500/20 uppercase tracking-widest">
+                        0 Elements Loaded
                     </div>
-                    <span id="word-count-badge" class="bg-slate-800 text-slate-300 text-[10px] font-bold px-4 py-1.5 rounded-full border border-slate-700">READY</span>
-                </div>
-            </header>
-
-            <div id="lyric-display" class="flex-1 overflow-y-auto px-8 md:px-16 py-12 space-y-6 scroll-smooth" onmouseup="App.handleSelection()">
-                <div id="empty-state" class="flex flex-col items-center justify-center h-full text-center py-20">
-                    <div class="relative mb-8">
-                        <div class="absolute inset-0 bg-indigo-500 blur-[80px] opacity-10"></div>
-                        <i class="fa-solid fa-book-open-reader text-8xl text-slate-800 relative z-10"></i>
-                    </div>
-                    <h2 class="text-3xl font-black text-slate-700 mb-4">Start Your Learning Journey</h2>
-                    <p class="max-w-md mx-auto text-slate-500 text-sm leading-relaxed">
-                        Insert a YouTube URL and corresponding text in the sidebar. 
-                        Our system will synchronize the media and create an interactive 
-                        environment for language acquisition.
-                    </p>
                 </div>
             </div>
 
-            <div class="absolute bottom-6 right-8 hidden xl:flex items-center gap-2 px-4 py-2 bg-slate-900/80 rounded-full border border-slate-800 text-[10px] font-bold text-slate-500">
-                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                FOCUS MODE ACTIVE
+            <div id="lyric-display" class="flex-1 overflow-y-auto px-10 py-12 space-y-2 relative scroll-smooth" onmouseup="handleSelection()">
+                
+                <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-center p-10 transition-opacity duration-500">
+                    <div class="w-32 h-32 bg-slate-900 rounded-[40px] flex items-center justify-center mb-8 border border-slate-800 shadow-inner">
+                        <i class="fa-solid fa-book-open-reader text-5xl text-indigo-500/50"></i>
+                    </div>
+                    <h3 class="text-3xl font-black text-white mb-4 tracking-tight">Your Digital Classroom</h3>
+                    <p class="max-w-md text-slate-500 text-sm leading-relaxed mb-8">
+                        LingoPro uses advanced NLP to break down complex texts. Paste content on the left to begin your immersive learning journey.
+                    </p>
+                    <div class="grid grid-cols-3 gap-6 w-full max-w-lg">
+                        <div class="space-y-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">AI Parsing</p>
+                        </div>
+                        <div class="space-y-2">
+                            <i class="fa-solid fa-ear-listen text-pink-500"></i>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Native TTS</p>
+                        </div>
+                        <div class="space-y-2">
+                            <i class="fa-solid fa-layer-group text-amber-500"></i>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase">Deep Insight</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-1 bg-slate-800 w-full overflow-hidden">
+                <div id="reading-progress" class="h-full bg-indigo-500 w-0 transition-all duration-300"></div>
             </div>
         </section>
 
-        <aside id="notebook-sidebar" class="w-[380px] border-l border-slate-800 overflow-y-auto p-6 hidden xl:block bg-slate-900/30">
+        <aside id="notebook-sidebar" class="w-[380px] border-l border-slate-800/50 overflow-y-auto p-8 hidden xl:block bg-slate-900/40">
             <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-bookmark text-indigo-500"></i>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Active Glossary</h3>
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-bookmark text-pink-500"></i>
+                    <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Personal Lexicon</h3>
                 </div>
-                <button onclick="App.clearNotebook()" class="text-[10px] text-slate-500 hover:text-red-400 transition flex items-center gap-1">
-                    <i class="fa-solid fa-trash-can"></i>
-                    RESET
-                </button>
-            </div>
-
-            <div class="mb-6 relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-xs"></i>
-                <input type="text" id="vocab-search" placeholder="Search saved words..." class="w-full pl-9 py-2 text-xs bg-slate-800/50 border-slate-700">
+                <div class="flex gap-2">
+                    <button onclick="sortNotebook()" class="text-[10px] text-slate-500 hover:text-white" title="Sort">
+                        <i class="fa-solid fa-arrow-down-a-z"></i>
+                    </button>
+                    <button onclick="clearNotebook()" class="text-[10px] text-red-500/70 hover:text-red-400 font-bold uppercase hover:underline underline-offset-4">Reset</button>
+                </div>
             </div>
 
             <div id="notebook-list" class="space-y-4">
                 </div>
+
+            <div class="mt-10 p-6 glass-card border-indigo-500/20 bg-indigo-500/5 group cursor-pointer overflow-hidden relative">
+                <div class="relative z-10">
+                    <h4 class="text-xs font-black text-indigo-400 mb-1">SMART RECALL</h4>
+                    <p class="text-[10px] text-slate-500 mb-3">Convert your lexicon into AI-generated flashcards.</p>
+                    <button class="text-[9px] font-black text-white bg-indigo-600 px-3 py-1.5 rounded-lg group-hover:bg-indigo-500 transition">LAUNCH CARDS</button>
+                </div>
+                <i class="fa-solid fa-brain absolute -right-4 -bottom-4 text-6xl text-indigo-500/10 group-hover:scale-125 transition-transform duration-700"></i>
+            </div>
         </aside>
     </main>
 
-    <div id="translation-popup" class="glass-card shadow-2xl p-8 border-t-4 border-indigo-500">
-        <div class="flex justify-between items-start gap-6">
-            <div class="flex-1 space-y-3">
+    <div id="translation-popup" class="glass-card shadow-[0_30px_100px_rgba(0,0,0,0.5)] p-8 border-t-4 border-indigo-500">
+        <div class="flex justify-between items-start mb-6">
+            <div class="space-y-2 pr-6 flex-1">
                 <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[10px] font-black rounded uppercase">Source Word</span>
-                    <p id="pop-src" class="text-sm font-bold text-slate-400 italic"></p>
+                    <span id="pop-lang-badge" class="text-[8px] font-black bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded uppercase">Detected</span>
+                    <p id="pop-src" class="text-sm font-bold text-indigo-300 italic break-words leading-tight"></p>
                 </div>
-                <h2 id="pop-vi" class="text-4xl font-black text-white leading-tight tracking-tighter"></h2>
-                <div id="pop-extra" class="flex gap-2 pt-2">
-                    </div>
+                <h2 id="pop-vi" class="text-4xl font-black text-white leading-[1.1] tracking-tight"></h2>
             </div>
             <div class="flex flex-col gap-3">
-                <button onclick="App.speakCurrent()" class="w-14 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition shadow-lg shadow-indigo-600/30 active:scale-90" title="Listen Pronunciation">
-                    <i class="fa-solid fa-volume-high text-xl"></i>
+                <button onclick="speakText()" class="w-14 h-14 rounded-2xl bg-slate-800 hover:bg-indigo-600 text-white flex items-center justify-center transition-all shadow-xl active:scale-90 group">
+                    <i class="fa-solid fa-volume-high text-xl group-hover:animate-bounce"></i>
                 </button>
-                <button onclick="App.saveCurrent()" class="w-14 h-14 rounded-2xl bg-slate-800 hover:bg-pink-600 text-white flex items-center justify-center transition shadow-lg active:scale-90" title="Save to Glossary">
-                    <i class="fa-solid fa-plus text-xl"></i>
+                <button onclick="saveToNotebook()" class="w-14 h-14 rounded-2xl bg-slate-800 hover:bg-pink-600 text-white flex items-center justify-center transition-all shadow-xl active:scale-90 group">
+                    <i class="fa-solid fa-plus text-xl group-hover:rotate-90 transition-transform"></i>
                 </button>
             </div>
         </div>
-        <div class="flex items-center gap-4 mt-8 pt-5 border-t border-slate-700/50">
-            <div class="flex items-center gap-2">
-                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Context Sync OK</span>
+        
+        <div class="flex items-center justify-between pt-6 border-t border-slate-700/50">
+            <div class="flex items-center gap-3">
+                <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Enterprise Context Engine</span>
             </div>
-            <div class="flex-1 h-[1px] bg-slate-800"></div>
-            <button onclick="App.closePopup()" class="text-xs font-bold text-slate-400 hover:text-white transition">DISMISS</button>
+            <button onclick="closePopup()" class="text-[10px] font-bold text-slate-400 hover:text-white transition">DISMISS</button>
         </div>
     </div>
 
-    <div id="dashboard-overlay" class="fixed inset-0 z-[9000] bg-slate-950/95 backdrop-blur-2xl hidden flex items-center justify-center p-6">
-        <div class="max-w-5xl w-full glass-card p-10 relative border-t-4 border-indigo-600">
-            <div class="flex justify-between items-center mb-10">
-                <div>
-                    <h2 class="text-4xl font-black italic tracking-tighter text-white">LEARNING <span class="text-indigo-500">INSIGHTS</span></h2>
-                    <p class="text-slate-500 text-xs font-mono">Real-time data synchronization across sessions</p>
-                </div>
-                <button onclick="toggleDashboard()" class="w-12 h-12 bg-slate-800 hover:bg-red-500/20 hover:text-red-500 rounded-2xl transition flex items-center justify-center">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
+    <div id="dashboard-overlay" class="fixed inset-0 z-[2500] bg-slate-950/95 backdrop-blur-2xl hidden flex items-center justify-center p-6">
+        <div class="max-w-5xl w-full glass-card p-10 relative border-t-4 border-indigo-500">
+            <button onclick="toggleDashboard()" class="absolute top-8 right-8 w-12 h-12 flex items-center justify-center bg-slate-800 rounded-full hover:bg-red-500 transition-all text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="mb-12">
+                <h2 class="text-4xl font-black italic tracking-tighter text-white mb-2 underline decoration-indigo-500 underline-offset-8">LEARNING ANALYTICS</h2>
+                <p class="text-slate-500 font-medium uppercase text-[10px] tracking-[0.4em]">Real-time performance monitoring</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                <div class="stat-card p-6 rounded-3xl">
-                    <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-font text-indigo-500"></i>
-                    </div>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Vocab</p>
-                    <h3 id="stat-vocab" class="text-4xl font-black text-white">0</h3>
+                <div class="stat-card p-8 rounded-[32px] text-center">
+                    <p class="hint-text">Lexicon Size</p>
+                    <h3 id="stat-vocab" class="text-6xl font-black text-indigo-500 tabular-nums">0</h3>
                 </div>
-                <div class="stat-card p-6 rounded-3xl">
-                    <div class="w-10 h-10 bg-pink-500/10 rounded-xl flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-bullseye text-pink-500"></i>
-                    </div>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Avg Accuracy</p>
-                    <h3 id="stat-accuracy" class="text-4xl font-black text-white">0%</h3>
+                <div class="stat-card p-8 rounded-[32px] text-center">
+                    <p class="hint-text">Accuracy</p>
+                    <h3 id="stat-accuracy" class="text-6xl font-black text-pink-500 tabular-nums">0%</h3>
                 </div>
-                <div class="stat-card p-6 rounded-3xl">
-                    <div class="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-clock-rotate-left text-amber-500"></i>
-                    </div>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Study Hours</p>
-                    <h3 class="text-4xl font-black text-white">1.2h</h3>
+                <div class="stat-card p-8 rounded-[32px] text-center">
+                    <p class="hint-text">Engagement</p>
+                    <h3 id="stat-sessions" class="text-6xl font-black text-amber-500 tabular-nums">1</h3>
                 </div>
-                <div class="stat-card p-6 rounded-3xl">
-                    <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-fire text-emerald-500"></i>
-                    </div>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Streak</p>
-                    <h3 class="text-4xl font-black text-white">3 Days</h3>
+                <div class="stat-card p-8 rounded-[32px] text-center">
+                    <p class="hint-text">Mastery Level</p>
+                    <h3 class="text-6xl font-black text-emerald-500 tabular-nums">B1</h3>
                 </div>
             </div>
 
-            <div class="bg-slate-900/50 p-8 rounded-3xl border border-slate-800">
+            <div class="bg-slate-900/50 p-8 rounded-[32px] border border-slate-800 shadow-inner">
                 <div class="flex items-center justify-between mb-6">
-                    <h4 class="text-sm font-bold text-slate-400">Progression Velocity</h4>
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vocabulary Acquisition Trend</h4>
                     <div class="flex gap-2">
-                        <span class="w-3 h-3 bg-indigo-500 rounded-full"></span>
-                        <span class="w-3 h-3 bg-pink-500 rounded-full"></span>
+                        <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+                        <span class="text-[9px] font-bold text-slate-500 uppercase">Weekly View</span>
                     </div>
                 </div>
-                <canvas id="learningChart" height="120"></canvas>
+                <canvas id="learningChart" height="140"></canvas>
             </div>
         </div>
     </div>
 
-    <div id="quiz-overlay" class="fixed inset-0 z-[9500] bg-slate-950/98 backdrop-blur-3xl hidden flex items-center justify-center p-4">
+    <div id="quiz-overlay" class="fixed inset-0 z-[2000] bg-slate-950/98 backdrop-blur-3xl hidden flex items-center justify-center p-6">
         <div class="max-w-3xl w-full">
-            <div id="quiz-container" class="glass-card p-12 relative overflow-hidden border-b-8 border-indigo-600">
+            <div id="quiz-container" class="glass-card p-12 relative overflow-hidden border-b-4 border-indigo-500">
                 
                 <div id="quiz-loading" class="text-center py-24">
-                    <div class="w-20 h-20 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mx-auto mb-8"></div>
-                    <p class="font-black text-white text-xl tracking-tighter animate-pulse uppercase">Assembling Dynamic Challenges...</p>
-                    <p class="text-slate-500 text-xs mt-2">Personalizing based on your glossary</p>
+                    <div class="w-20 h-20 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-8 shadow-2xl shadow-indigo-500/20"></div>
+                    <p class="font-black text-slate-400 uppercase tracking-[0.3em] text-xs">Assembling Dynamic Assessment...</p>
                 </div>
 
                 <div id="quiz-main" class="hidden">
                     <div class="flex justify-between items-center mb-12">
-                        <div class="flex items-center gap-3">
-                            <span id="quiz-step" class="text-[10px] font-black bg-indigo-600 text-white px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-indigo-600/30">Question 1/10</span>
-                            <div class="h-1.5 w-32 bg-slate-800 rounded-full overflow-hidden">
-                                <div id="quiz-progress-bar" class="h-full bg-indigo-500 w-0 transition-all duration-500"></div>
-                            </div>
-                        </div>
                         <div class="flex items-center gap-4">
-                            <div class="flex items-center gap-2 text-pink-500 bg-pink-500/10 px-4 py-1.5 rounded-full border border-pink-500/20">
-                                <i class="fa-solid fa-heart animate-bounce"></i>
-                                <span id="quiz-lives" class="font-black text-sm">3</span>
+                            <span id="quiz-step" class="text-[10px] font-black bg-indigo-600 px-4 py-1.5 rounded-full uppercase tracking-widest text-white shadow-lg shadow-indigo-500/20">Step 1/10</span>
+                            <div id="quiz-timer" class="text-[10px] font-black text-slate-500 uppercase">00:00</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex -space-x-2">
+                                <div id="heart-1" class="w-8 h-8 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 border border-pink-500/20"><i class="fa-solid fa-heart"></i></div>
+                                <div id="heart-2" class="w-8 h-8 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 border border-pink-500/20"><i class="fa-solid fa-heart"></i></div>
+                                <div id="heart-3" class="w-8 h-8 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 border border-pink-500/20"><i class="fa-solid fa-heart"></i></div>
                             </div>
+                            <span id="quiz-lives" class="font-black text-pink-500 text-lg tabular-nums">3</span>
                         </div>
                     </div>
                     
-                    <div class="text-center mb-12">
-                        <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-4">Translate this term:</p>
-                        <h2 id="quiz-question" class="text-6xl font-black text-white mb-4 tracking-tighter leading-tight">...</h2>
-                        <div class="w-20 h-1.5 bg-gradient-to-r from-indigo-500 to-pink-500 mx-auto rounded-full"></div>
+                    <div class="text-center mb-12 space-y-4">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Translate the following</p>
+                        <h2 id="quiz-question" class="text-6xl font-black text-white leading-tight tracking-tighter">Term</h2>
                     </div>
                     
-                    <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+                    <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         </div>
+
+                    <div class="mt-12 flex justify-center">
+                        <button onclick="speakText(state.quiz.data[state.quiz.currentStep].q)" class="text-[10px] font-black text-slate-500 hover:text-white uppercase flex items-center gap-2 transition">
+                            <i class="fa-solid fa-volume-high"></i> Listen to prompt
+                        </button>
+                    </div>
                 </div>
 
                 <div id="quiz-finish" class="hidden text-center py-10">
-                    <div class="relative w-32 h-32 mx-auto mb-10">
-                        <div class="absolute inset-0 bg-yellow-500 blur-[60px] opacity-20 animate-pulse"></div>
-                        <div class="w-full h-full bg-gradient-to-br from-yellow-400 to-amber-600 rounded-3xl flex items-center justify-center shadow-2xl relative z-10 rotate-3 group-hover:rotate-0 transition-transform">
-                            <i class="fa-solid fa-trophy text-6xl text-white"></i>
-                        </div>
+                    <div class="w-32 h-32 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-[40px] flex items-center justify-center mx-auto mb-10 shadow-2xl shadow-yellow-500/30">
+                        <i class="fa-solid fa-trophy text-5xl text-white"></i>
                     </div>
-                    <h2 class="text-5xl font-black text-white mb-4 tracking-tighter">STUDY COMPLETE!</h2>
-                    <p id="quiz-final-score" class="text-2xl text-slate-400 mb-12 font-medium">Accuracy Rating: 80%</p>
-                    
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button onclick="QuizController.init()" class="px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black uppercase tracking-widest transition shadow-xl shadow-indigo-600/20 active:scale-95">
-                            Retake Session
-                        </button>
-                        <button onclick="closeQuiz()" class="px-10 py-5 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-black uppercase tracking-widest transition active:scale-95">
-                            Return to Deck
-                        </button>
+                    <h2 class="text-5xl font-black text-white mb-4 tracking-tighter">Assessment Complete</h2>
+                    <p id="quiz-final-score" class="text-2xl text-slate-400 mb-12 font-medium">You mastered <span class="text-indigo-500 font-black">0/10</span> key terms</p>
+                    <div class="flex gap-4 max-w-md mx-auto">
+                        <button onclick="startQuiz()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 py-5 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-xl active:scale-95">RETRAIN</button>
+                        <button onclick="closeQuiz()" class="flex-1 bg-slate-800 hover:bg-slate-700 py-5 rounded-2xl font-black uppercase text-xs tracking-widest transition-all active:scale-95">EXIT</button>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
+    <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
     <script src="https://www.youtube.com/iframe_api"></script>
-    
     <script>
         /**
-         * LINGOPRO SYSTEM CORE v4.0.0
-         * ---------------------------------------------------------------------
-         * This script manages the reactive state, media synchronization,
-         * AI translation bridging, and the dynamic gamification engine.
+         * LINGOPRO ENTERPRISE - ENGINE CORE
+         * Integrated logic for language acquisition and multimedia sync
          */
 
-        /* --- MODULE: STATE MANAGEMENT --- */
-        const AppState = {
-            vocabulary: JSON.parse(localStorage.getItem('lingopro_enterprise_v4')) || [],
+        // Initial State Definition
+        const state = {
+            notebook: JSON.parse(localStorage.getItem('lingopro_vocab')) || [],
             player: null,
-            isInitialized: false,
-            currentWord: { source: '', target: '' },
-            sessionData: {
-                startTime: Date.now(),
-                totalTranslations: 0,
-                quizAttempts: 0,
-                correctAnswers: 0
-            },
-            config: {
-                autoScroll: true,
-                playbackRate: 1.0,
-                theme: 'dark'
-            }
-        };
-
-        /* --- MODULE: CORE APPLICATION --- */
-        const App = {
-            /**
-             * Initialize the application environment
-             */
-            init: function() {
-                console.log("%c LINGOPRO v4.0 INITIALIZED ", "background: #6366f1; color: #fff; font-weight: bold;");
-                
-                // Simulate loading sequence
-                const statuses = ["Loading Neural Network...", "Syncing Vocabulary...", "Optimizing UI...", "Ready!"];
-                let i = 0;
-                const statusEl = document.getElementById('loader-status');
-                
-                const interval = setInterval(() => {
-                    statusEl.innerText = statuses[i++];
-                    if (i >= statuses.length) {
-                        clearInterval(interval);
-                        this.hideLoader();
-                    }
-                }, 400);
-
-                this.bindEvents();
-                this.refreshUI();
-                this.warmupSpeech();
-            },
-
-            hideLoader: function() {
-                gsap.to('#loader', { 
-                    opacity: 0, 
-                    y: -50,
-                    duration: 0.8, 
-                    ease: "expo.out",
-                    onComplete: () => {
-                        document.getElementById('loader').style.display = 'none';
-                        AppState.isInitialized = true;
-                    }
-                });
-            },
-
-            bindEvents: function() {
-                document.getElementById('process-btn').addEventListener('click', () => this.compileSession());
-                document.getElementById('playback-speed').addEventListener('change', (e) => this.updatePlaybackSpeed(e.target.value));
-                document.getElementById('auto-scroll').addEventListener('change', (e) => AppState.config.autoScroll = e.target.checked);
-            },
-
-            /**
-             * Compile input text into interactive segments
-             */
-            compileSession: function() {
-                const btn = document.getElementById('process-btn');
-                const text = document.getElementById('lyric-input').value.trim();
-                const ytUrl = document.getElementById('yt-url').value.trim();
-
-                if (!text) {
-                    this.notify("Please enter content to study", "error");
-                    return;
-                }
-
-                // Loading State
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Processing...`;
-
-                // Video Handling
-                const videoId = this.extractYTId(ytUrl);
-                if (videoId) this.setupVideoPlayer(videoId);
-
-                // Data Parsing
-                setTimeout(() => {
-                    this.renderInteractiveText(text);
-                    btn.disabled = false;
-                    btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Compile Study Session`;
-                    this.notify("Session Ready!", "success");
-                    
-                    // Hide empty state
-                    document.getElementById('empty-state').classList.add('hidden');
-                }, 1000);
-            },
-
-            extractYTId: function(url) {
-                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-                const match = url.match(regExp);
-                return (match && match[2].length === 11) ? match[2] : null;
-            },
-
-            setupVideoPlayer: function(id) {
-                if (AppState.player) {
-                    AppState.player.loadVideoById(id);
-                } else {
-                    AppState.player = new YT.Player('player', {
-                        videoId: id,
-                        width: '100%',
-                        height: '100%',
-                        playerVars: { 'autoplay': 1, 'modestbranding': 1, 'rel': 0 },
-                        events: {
-                            'onReady': (e) => {
-                                document.getElementById('player-placeholder').style.display = 'none';
-                                e.target.setPlaybackRate(AppState.config.playbackRate);
-                            }
-                        }
-                    });
-                }
-            },
-
-            renderInteractiveText: function(text) {
-                const container = document.getElementById('lyric-display');
-                container.innerHTML = ""; // Clear current view
-                
-                const lines = text.split('\n');
-                let wordCount = 0;
-
-                lines.forEach((line, lineIdx) => {
-                    if (!line.trim()) return;
-
-                    const lineDiv = document.createElement('div');
-                    lineDiv.className = 'lyric-line group';
-                    lineDiv.setAttribute('data-index', lineIdx);
-                    
-                    const words = line.split(/(\s+)/);
-                    words.forEach(token => {
-                        if (/\s+/.test(token)) {
-                            lineDiv.appendChild(document.createTextNode(token));
-                        } else {
-                            const span = document.createElement('span');
-                            span.className = 'source-word';
-                            span.innerText = token;
-                            
-                            // Clean word for translation
-                            const clean = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
-                            span.onclick = (e) => {
-                                e.stopPropagation();
-                                this.translateWord(clean);
-                            };
-
-                            lineDiv.appendChild(span);
-                            wordCount++;
-                        }
-                    });
-
-                    container.appendChild(lineDiv);
-                });
-
-                document.getElementById('word-count-badge').innerText = `${wordCount} UNITS`;
-                
-                // Intro Animation
-                gsap.from('.lyric-line', {
-                    opacity: 0,
-                    x: -30,
-                    stagger: 0.03,
-                    duration: 0.6,
-                    ease: "power2.out"
-                });
-            },
-
-            /**
-             * AI TRANSLATION ENGINE BRIDGING
-             */
-            translateWord: async function(text) {
-                if (!text || text.length < 1) return;
-
-                const popup = document.getElementById('translation-popup');
-                const srcEl = document.getElementById('pop-src');
-                const targetEl = document.getElementById('pop-vi');
-                const targetLang = document.getElementById('target-lang').value;
-
-                // Reset and Show
-                srcEl.innerText = text;
-                targetEl.innerText = "Analyzing...";
-                popup.classList.add('active');
-
-                try {
-                    const api = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
-                    const response = await fetch(api);
-                    const data = await response.json();
-                    const result = data[0][0][0];
-
-                    targetEl.innerText = result;
-                    AppState.currentWord = { source: text, target: result };
-                    AppState.sessionData.totalTranslations++;
-                } catch (err) {
-                    targetEl.innerText = "Connection Error";
-                    console.error("Translation failed:", err);
-                }
-            },
-
-            handleSelection: function() {
-                const selection = window.getSelection().toString().trim();
-                if (selection.length > 2 && selection.length < 100) {
-                    this.translateWord(selection);
-                }
-            },
-
-            /**
-             * SPEECH SYSTEM (FIXED FOR PRO PRO-NUNCIATION)
-             */
-            warmupSpeech: function() {
-                // Fix for browsers not loading voices immediately
-                if ('speechSynthesis' in window) {
-                    speechSynthesis.getVoices();
-                    if (speechSynthesis.onvoiceschanged !== undefined) {
-                        speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
-                    }
-                }
-            },
-
-            speakCurrent: function() {
-                const text = AppState.currentWord.source;
-                if (!text) return;
-
-                // Stop any current speech
-                window.speechSynthesis.cancel();
-
-                const utterance = new SpeechSynthesisUtterance(text);
-                const targetLang = document.getElementById('target-lang').value;
-
-                // Map UI language to Speech Language
-                const voiceMap = {
-                    'vi': 'vi-VN',
-                    'en': 'en-US',
-                    'ko': 'ko-KR',
-                    'ja': 'ja-JP',
-                    'zh': 'zh-CN',
-                    'fr': 'fr-FR',
-                    'de': 'de-DE'
-                };
-
-                // CRITICAL FIX: If we are studying a language, we want to hear THAT language, 
-                // not the Vietnamese translation's voice reading English words.
-                utterance.lang = (targetLang === 'vi') ? 'en-US' : voiceMap[targetLang] || 'en-US';
-
-                // Find a high-quality voice
-                const voices = window.speechSynthesis.getVoices();
-                const preferredVoice = voices.find(v => v.lang === utterance.lang && (v.name.includes('Google') || v.name.includes('Premium'))) 
-                                     || voices.find(v => v.lang === utterance.lang);
-
-                if (preferredVoice) utterance.voice = preferredVoice;
-                
-                utterance.rate = AppState.config.playbackRate || 1.0;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-
-                window.speechSynthesis.speak(utterance);
-                
-                // Visual Feedback
-                gsap.to('.fa-volume-high', { scale: 1.5, duration: 0.2, yoyo: true, repeat: 1 });
-            },
-
-            /**
-             * VOCABULARY MANAGEMENT
-             */
-            saveCurrent: function() {
-                const { source, target } = AppState.currentWord;
-                if (!source) return;
-
-                // Check duplicates
-                const isExists = AppState.vocabulary.some(v => v.src.toLowerCase() === source.toLowerCase());
-                if (isExists) {
-                    this.notify("Word already in glossary", "info");
-                    return;
-                }
-
-                const newEntry = {
-                    src: source,
-                    vi: target,
-                    timestamp: Date.now(),
-                    mastery: 0
-                };
-
-                AppState.vocabulary.unshift(newEntry);
-                localStorage.setItem('lingopro_enterprise_v4', JSON.stringify(AppState.vocabulary));
-                
-                this.refreshUI();
-                this.notify("Saved to Glossary", "success");
-                
-                // Sidebar flash effect
-                gsap.fromTo('#notebook-sidebar', 
-                    { backgroundColor: 'rgba(99, 102, 241, 0.2)' }, 
-                    { backgroundColor: 'rgba(30, 41, 59, 0.3)', duration: 0.8 }
-                );
-            },
-
-            refreshUI: function() {
-                const list = document.getElementById('notebook-list');
-                list.innerHTML = "";
-
-                if (AppState.vocabulary.length === 0) {
-                    list.innerHTML = `
-                        <div class="text-center py-10 opacity-30">
-                            <i class="fa-solid fa-inbox text-4xl mb-2"></i>
-                            <p class="text-xs font-bold uppercase tracking-widest">Glossary Empty</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                AppState.vocabulary.forEach((item, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'glass-card p-4 hover:border-indigo-500/50 transition cursor-pointer group relative overflow-hidden';
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start relative z-10">
-                            <div class="space-y-1">
-                                <p class="text-[10px] font-black text-indigo-400 uppercase tracking-tighter">${item.src}</p>
-                                <p class="text-sm font-bold text-white leading-tight">${item.vi}</p>
-                            </div>
-                            <button onclick="App.deleteVocab(${index}, event)" class="opacity-0 group-hover:opacity-100 p-2 text-slate-500 hover:text-red-500 transition">
-                                <i class="fa-solid fa-xmark text-xs"></i>
-                            </button>
-                        </div>
-                        <div class="absolute bottom-0 left-0 h-1 bg-indigo-500/20 w-full">
-                            <div class="h-full bg-indigo-500" style="width: ${item.mastery}%"></div>
-                        </div>
-                    `;
-                    card.onclick = () => this.speakSpecific(item.src);
-                    list.appendChild(card);
-                });
-
-                document.getElementById('stat-vocab').innerText = AppState.vocabulary.length;
-            },
-
-            deleteVocab: function(index, event) {
-                event.stopPropagation();
-                AppState.vocabulary.splice(index, 1);
-                localStorage.setItem('lingopro_enterprise_v4', JSON.stringify(AppState.vocabulary));
-                this.refreshUI();
-            },
-
-            clearNotebook: function() {
-                if (confirm("Reset active glossary? This action cannot be undone.")) {
-                    AppState.vocabulary = [];
-                    localStorage.removeItem('lingopro_enterprise_v4');
-                    this.refreshUI();
-                }
-            },
-
-            speakSpecific: function(text) {
-                AppState.currentWord.source = text;
-                this.speakCurrent();
-            },
-
-            /**
-             * UTILITIES
-             */
-            updatePlaybackSpeed: function(val) {
-                const speed = parseFloat(val);
-                AppState.config.playbackRate = speed;
-                if (AppState.player && AppState.player.setPlaybackRate) {
-                    AppState.player.setPlaybackRate(speed);
-                }
-            },
-
-            closePopup: function() {
-                document.getElementById('translation-popup').classList.remove('active');
-            },
-
-            notify: function(msg, type) {
-                // Custom notification logic could go here
-                console.log(`[Notification] ${type}: ${msg}`);
-            }
-        };
-
-        /* --- MODULE: QUIZ CONTROLLER --- */
-        const QuizController = {
-            state: {
+            currentTranslation: { src: '', vi: '' },
+            isDashboardOpen: false,
+            myChart: null,
+            sessionStartTime: Date.now(),
+            quiz: {
                 currentStep: 0,
                 score: 0,
                 lives: 3,
-                questions: []
+                data: [],
+                timer: 0,
+                timerInterval: null
             },
-
-            init: function() {
-                if (AppState.vocabulary.length < 4) {
-                    alert("Collect at least 4 words to unlock challenges.");
-                    return;
-                }
-
-                this.state = {
-                    currentStep: 0,
-                    score: 0,
-                    lives: 3,
-                    questions: this.generatePool()
-                };
-
-                document.getElementById('quiz-overlay').classList.remove('hidden');
-                document.getElementById('quiz-loading').classList.remove('hidden');
-                document.getElementById('quiz-main').classList.add('hidden');
-                document.getElementById('quiz-finish').classList.add('hidden');
-
-                setTimeout(() => {
-                    document.getElementById('quiz-loading').classList.add('hidden');
-                    document.getElementById('quiz-main').classList.remove('hidden');
-                    this.renderQuestion();
-                }, 1500);
-            },
-
-            generatePool: function() {
-                // Shuffle and pick 10 words
-                const shuffled = [...AppState.vocabulary].sort(() => 0.5 - Math.random());
-                const subset = shuffled.slice(0, 10);
-
-                return subset.map(item => {
-                    // Create distractors (wrong answers)
-                    const distractors = AppState.vocabulary
-                        .filter(v => v.src !== item.src)
-                        .sort(() => 0.5 - Math.random())
-                        .slice(0, 3)
-                        .map(v => v.vi);
-
-                    const options = [item.vi, ...distractors].sort(() => 0.5 - Math.random());
-
-                    return {
-                        question: item.src,
-                        answer: item.vi,
-                        options: options
-                    };
-                });
-            },
-
-            renderQuestion: function() {
-                const qData = this.state.questions[this.state.currentStep];
-                
-                // Update Progress UI
-                document.getElementById('quiz-step').innerText = `Question ${this.state.currentStep + 1}/${this.state.questions.length}`;
-                document.getElementById('quiz-lives').innerText = this.state.lives;
-                document.getElementById('quiz-question').innerText = qData.question;
-                
-                const progressPercent = ((this.state.currentStep) / this.state.questions.length) * 100;
-                document.getElementById('quiz-progress-bar').style.width = `${progressPercent}%`;
-
-                // Render Buttons
-                const container = document.getElementById('quiz-options');
-                container.innerHTML = "";
-
-                qData.options.forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'quiz-option p-6 rounded-2xl font-bold text-lg text-white text-center';
-                    btn.innerText = opt;
-                    btn.onclick = () => this.checkAnswer(opt, btn);
-                    container.appendChild(btn);
-                });
-
-                gsap.from('#quiz-question', { y: 20, opacity: 0, duration: 0.5 });
-                gsap.from('.quiz-option', { scale: 0.9, opacity: 0, stagger: 0.1, duration: 0.4 });
-            },
-
-            checkAnswer: function(selected, btn) {
-                const correct = this.state.questions[this.state.currentStep].answer;
-                const allBtns = document.querySelectorAll('.quiz-option');
-                
-                // Disable all to prevent double clicking
-                allBtns.forEach(b => b.style.pointerEvents = 'none');
-
-                if (selected === correct) {
-                    btn.classList.add('correct');
-                    this.state.score++;
-                    AppState.sessionData.correctAnswers++;
-                } else {
-                    btn.classList.add('wrong');
-                    this.state.lives--;
-                    // Highlight the correct one
-                    allBtns.forEach(b => {
-                        if (b.innerText === correct) b.classList.add('correct');
-                    });
-                }
-
-                setTimeout(() => {
-                    this.state.currentStep++;
-                    if (this.state.lives > 0 && this.state.currentStep < this.state.questions.length) {
-                        this.renderQuestion();
-                    } else {
-                        this.showResults();
-                    }
-                }, 1500);
-            },
-
-            showResults: function() {
-                document.getElementById('quiz-main').classList.add('hidden');
-                document.getElementById('quiz-finish').classList.remove('hidden');
-                
-                const accuracy = Math.round((this.state.score / this.state.questions.length) * 100);
-                document.getElementById('quiz-final-score').innerText = `Performance: ${accuracy}% Accuracy`;
-                
-                document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
-                AppState.sessionData.quizAttempts++;
-            }
+            history: JSON.parse(localStorage.getItem('lingopro_history')) || [0, 0, 0, 0, 0, 0, 0]
         };
 
-        /* --- MODULE: DASHBOARD & CHART --- */
-        let myChart = null;
-        function toggleDashboard() {
-            const overlay = document.getElementById('dashboard-overlay');
-            if (overlay.classList.contains('hidden')) {
-                overlay.classList.remove('hidden');
-                renderAnalytics();
-                gsap.from(overlay.querySelector('.glass-card'), { scale: 0.9, opacity: 0, duration: 0.5, ease: "back.out(1.4)" });
-            } else {
-                overlay.classList.add('hidden');
+        // UI BOOTSTRAP
+        window.addEventListener('DOMContentLoaded', () => {
+            initLoader();
+            setupKeyboardShortcuts();
+        });
+
+        function initLoader() {
+            const statusText = document.getElementById('loader-status');
+            const messages = [
+                "CALIBRATING TRANSLATION MATRIX...",
+                "LOADING NEURAL DICTIONARIES...",
+                "PREPARING INTERACTIVE WORKSPACE...",
+                "READY FOR INPUT."
+            ];
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                statusText.innerText = messages[i];
+                i++;
+                if(i >= messages.length) clearInterval(interval);
+            }, 400);
+
+            setTimeout(() => {
+                gsap.to('#loader', { 
+                    opacity: 0, 
+                    pointerEvents: 'none', 
+                    duration: 1.2, 
+                    ease: "power4.inOut",
+                    onComplete: () => {
+                        updateNotebookUI();
+                        checkEmptyState();
+                        animateEntrance();
+                    }
+                });
+            }, 2000);
+        }
+
+        function animateEntrance() {
+            gsap.from('nav', { y: -50, opacity: 0, duration: 1, ease: "back.out(1.7)" });
+            gsap.from('aside', { x: -100, opacity: 0, duration: 1, delay: 0.2, stagger: 0.2 });
+            gsap.from('main section', { scale: 0.95, opacity: 0, duration: 1, delay: 0.4 });
+        }
+
+        // YOUTUBE ENGINE
+        function onYouTubeIframeAPIReady() {
+            console.log("YouTube API Ready");
+        }
+
+        function extractVideoID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // CONTENT PROCESSOR
+        document.getElementById('process-btn').addEventListener('click', async function() {
+            const rawText = document.getElementById('lyric-input').value.trim();
+            const ytUrl = document.getElementById('yt-url').value.trim();
+            const btn = this;
+
+            if (!rawText) return showError("Input required to generate session.");
+
+            // UI Feedback
+            btn.innerHTML = '<i class="fa-solid fa-atom animate-spin mr-3"></i> ANALYZING CORPUS...';
+            btn.disabled = true;
+
+            // Media Init
+            const videoId = extractVideoID(ytUrl);
+            if (videoId) {
+                document.getElementById('player-placeholder').style.display = 'none';
+                if (state.player) {
+                    state.player.loadVideoById(videoId);
+                } else {
+                    state.player = new YT.Player('player', {
+                        videoId: videoId,
+                        width: '100%',
+                        height: '100%',
+                        playerVars: { 'autoplay': 1, 'modestbranding': 1, 'rel': 0 }
+                    });
+                }
+            }
+
+            // Text Processing & UI Rendering
+            setTimeout(() => {
+                renderLyrics(rawText);
+                btn.innerHTML = 'REGENERATE SESSION';
+                btn.disabled = false;
+                checkEmptyState();
+                
+                // Track Analytics
+                const wordCount = rawText.split(/\s+/).length;
+                updateHistory(Math.min(wordCount / 10, 20)); 
+            }, 1200);
+        });
+
+        function renderLyrics(text) {
+            const container = document.getElementById('lyric-display');
+            container.innerHTML = "";
+            let wordCount = 0;
+
+            const lines = text.split('\n').filter(l => l.trim() !== "");
+            
+            lines.forEach((line, lineIdx) => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'lyric-line group';
+                lineDiv.setAttribute('data-line', lineIdx);
+                
+                const words = line.split(/(\s+)/);
+                words.forEach(token => {
+                    if (/\s+/.test(token)) {
+                        lineDiv.appendChild(document.createTextNode(token));
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'source-word';
+                        span.innerText = token;
+                        
+                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
+                        span.onclick = (e) => {
+                            e.stopPropagation();
+                            if (window.getSelection().toString().length === 0) {
+                                triggerTranslation(cleanWord);
+                            }
+                        };
+                        lineDiv.appendChild(span);
+                        wordCount++;
+                    }
+                });
+
+                container.appendChild(lineDiv);
+            });
+
+            document.getElementById('word-count-badge').innerText = `${wordCount} SEMANTIC UNITS`;
+            gsap.from('.lyric-line', { 
+                opacity: 0, 
+                x: -30, 
+                stagger: 0.03, 
+                duration: 0.8, 
+                ease: "power2.out" 
+            });
+        }
+
+        // TRANSLATION ENGINE
+        async function triggerTranslation(text) {
+            if (!text || text.length < 1) return;
+
+            const pop = document.getElementById('translation-popup');
+            const popSrc = document.getElementById('pop-src');
+            const popVi = document.getElementById('pop-vi');
+            const target = document.getElementById('target-lang').value;
+
+            popSrc.innerText = text;
+            popVi.innerText = "Analyzing...";
+            pop.classList.add('active');
+
+            try {
+                // Enterprise-grade translation endpoint
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(text)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                const result = data[0][0][0];
+                
+                popVi.innerText = result;
+                state.currentTranslation = { src: text, vi: result };
+                
+                // Change badge based on detected source
+                document.getElementById('pop-lang-badge').innerText = data[2] || 'AUTO';
+            } catch (error) {
+                popVi.innerText = "Connection Error";
+                console.error("Translation Failed", error);
             }
         }
 
-        function renderAnalytics() {
-            const ctx = document.getElementById('learningChart').getContext('2d');
-            
-            if (myChart) myChart.destroy();
+        function handleSelection() {
+            const selection = window.getSelection().toString().trim();
+            if (selection.length > 2 && selection.length < 300) {
+                triggerTranslation(selection);
+            }
+        }
 
-            myChart = new Chart(ctx, {
+        // LEXICON MANAGEMENT
+        function saveToNotebook() {
+            const { src, vi } = state.currentTranslation;
+            if (!src || learnedBefore(src)) {
+                gsap.to('#translation-popup', { x: "+=10", yoyo: true, repeat: 5, duration: 0.05 });
+                return;
+            }
+
+            const entry = {
+                src,
+                vi,
+                date: new Date().toISOString(),
+                mastery: 0
+            };
+
+            state.notebook.unshift(entry);
+            saveData();
+            updateNotebookUI();
+            closePopup();
+
+            // Feedback Animation
+            const sidebar = document.getElementById('notebook-sidebar');
+            gsap.fromTo(sidebar, { borderColor: '#ec4899' }, { borderColor: 'rgba(255,255,255,0.1)', duration: 1 });
+        }
+
+        function learnedBefore(word) {
+            return state.notebook.some(item => item.src.toLowerCase() === word.toLowerCase());
+        }
+
+        function updateNotebookUI() {
+            const list = document.getElementById('notebook-list');
+            list.innerHTML = state.notebook.length === 0 
+                ? '<div class="text-center py-10 opacity-30"><i class="fa-solid fa-inbox text-4xl mb-2"></i><p class="text-[10px] font-bold">LEXICON EMPTY</p></div>' 
+                : '';
+
+            state.notebook.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'glass-card p-5 hover:border-indigo-500/50 transition cursor-pointer relative group fade-in';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-black text-indigo-400 uppercase tracking-tighter">${item.src}</p>
+                            <p class="text-sm font-bold text-white">${item.vi}</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <button onclick="removeVocab(event, ${index})" class="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-500 transition-all p-1">
+                                <i class="fa-solid fa-trash-can text-[10px]"></i>
+                            </button>
+                            <span class="text-[8px] text-slate-700 font-bold">${new Date(item.date).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 h-[2px] bg-slate-800 w-full rounded-full overflow-hidden">
+                        <div class="h-full bg-indigo-500" style="width: ${Math.random() * 100}%"></div>
+                    </div>
+                `;
+                div.onclick = () => speakText(item.src);
+                list.appendChild(div);
+            });
+            
+            document.getElementById('stat-vocab').innerText = state.notebook.length;
+        }
+
+        function removeVocab(e, index) {
+            e.stopPropagation();
+            gsap.to(e.target.closest('.glass-card'), { 
+                x: 100, 
+                opacity: 0, 
+                duration: 0.4, 
+                onComplete: () => {
+                    state.notebook.splice(index, 1);
+                    saveData();
+                    updateNotebookUI();
+                } 
+            });
+        }
+
+        function clearNotebook() {
+            if (confirm("System Wipe: Are you sure you want to delete your entire lexicon?")) {
+                state.notebook = [];
+                saveData();
+                updateNotebookUI();
+            }
+        }
+
+        // ASSESSMENT ENGINE (QUIZ)
+        function openQuiz() {
+            if (state.notebook.length < 4) {
+                return alert("Minimum 4 vocabulary items required for dynamic assessment.");
+            }
+            
+            const overlay = document.getElementById('quiz-overlay');
+            overlay.style.display = 'flex';
+            document.getElementById('quiz-loading').style.display = 'block';
+            document.getElementById('quiz-main').style.display = 'none';
+            document.getElementById('quiz-finish').style.display = 'none';
+
+            setTimeout(() => {
+                startQuiz();
+            }, 1500);
+        }
+
+        function startQuiz() {
+            state.quiz.currentStep = 0;
+            state.quiz.score = 0;
+            state.quiz.lives = 3;
+            
+            // Randomize questions from notebook
+            const pool = [...state.notebook].sort(() => 0.5 - Math.random());
+            state.quiz.data = pool.slice(0, 10).map(item => {
+                const distractors = state.notebook
+                    .filter(i => i.vi !== item.vi)
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 3)
+                    .map(i => i.vi);
+                
+                // Add filler if not enough words
+                while(distractors.length < 3) distractors.push("Wrong option " + Math.random());
+
+                return {
+                    q: item.src,
+                    a: item.vi,
+                    options: [item.vi, ...distractors].sort(() => 0.5 - Math.random())
+                };
+            });
+
+            document.getElementById('quiz-loading').style.display = 'none';
+            document.getElementById('quiz-main').style.display = 'block';
+            renderQuestion();
+            startQuizTimer();
+        }
+
+        function startQuizTimer() {
+            state.quiz.timer = 0;
+            if(state.quiz.timerInterval) clearInterval(state.quiz.timerInterval);
+            state.quiz.timerInterval = setInterval(() => {
+                state.quiz.timer++;
+                const mins = Math.floor(state.quiz.timer / 60).toString().padStart(2, '0');
+                const secs = (state.quiz.timer % 60).toString().padStart(2, '0');
+                document.getElementById('quiz-timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function renderQuestion() {
+            const current = state.quiz.data[state.quiz.currentStep];
+            document.getElementById('quiz-step').innerText = `Step ${state.quiz.currentStep + 1}/10`;
+            document.getElementById('quiz-lives').innerText = state.quiz.lives;
+            document.getElementById('quiz-question').innerText = current.q;
+
+            // Animate question entrance
+            gsap.fromTo('#quiz-question', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 });
+
+            const optContainer = document.getElementById('quiz-options');
+            optContainer.innerHTML = "";
+
+            current.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option w-full py-6 px-8 rounded-[24px] font-bold text-lg text-left flex justify-between items-center group';
+                btn.innerHTML = `
+                    <span>${opt}</span>
+                    <span class="text-[10px] opacity-0 group-hover:opacity-40 font-black">SELECT ${idx + 1}</span>
+                `;
+                btn.onclick = () => checkAnswer(opt, btn);
+                optContainer.appendChild(btn);
+                
+                gsap.from(btn, { x: 30, opacity: 0, delay: idx * 0.1 });
+            });
+        }
+
+        function checkAnswer(answer, btn) {
+            const correct = state.quiz.data[state.quiz.currentStep].a;
+            const buttons = document.querySelectorAll('.quiz-option');
+            
+            // Disable all buttons immediately
+            buttons.forEach(b => b.onclick = null);
+
+            if (answer === correct) {
+                btn.classList.add('correct');
+                state.quiz.score++;
+                createParticles(btn);
+            } else {
+                btn.classList.add('wrong');
+                state.quiz.lives--;
+                updateHearts();
+                
+                // Show correct one
+                buttons.forEach(b => {
+                    if (b.innerText.includes(correct)) b.classList.add('correct');
+                });
+            }
+
+            setTimeout(() => {
+                state.quiz.currentStep++;
+                if (state.quiz.currentStep < state.quiz.data.length && state.quiz.lives > 0) {
+                    renderQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 1500);
+        }
+
+        function updateHearts() {
+            const heartId = `heart-${state.quiz.lives + 1}`;
+            const heart = document.getElementById(heartId);
+            if(heart) gsap.to(heart, { scale: 0, opacity: 0, duration: 0.5 });
+        }
+
+        function finishQuiz() {
+            clearInterval(state.quiz.timerInterval);
+            document.getElementById('quiz-main').style.display = 'none';
+            document.getElementById('quiz-finish').style.display = 'block';
+            document.getElementById('quiz-final-score').innerHTML = `You mastered <span class="text-indigo-500 font-black">${state.quiz.score}/10</span> key terms in ${state.quiz.timer}s`;
+            
+            // Update historical accuracy
+            const accuracy = (state.quiz.score / 10) * 100;
+            document.getElementById('stat-accuracy').innerText = accuracy + "%";
+        }
+
+        function closeQuiz() {
+            document.getElementById('quiz-overlay').style.display = 'none';
+        }
+
+        // ANALYTICS & DASHBOARD
+        function toggleDashboard() {
+            const dash = document.getElementById('dashboard-overlay');
+            if (dash.classList.contains('hidden')) {
+                dash.classList.remove('hidden');
+                updateDashboardData();
+                gsap.from(dash.querySelector('.glass-card'), { 
+                    scale: 0.9, 
+                    opacity: 0, 
+                    duration: 0.6, 
+                    ease: "expo.out" 
+                });
+            } else {
+                dash.classList.add('hidden');
+            }
+        }
+
+        function updateDashboardData() {
+            document.getElementById('stat-vocab').innerText = state.notebook.length;
+            document.getElementById('stat-sessions').innerText = Math.floor((Date.now() - state.sessionStartTime) / 60000) + "m";
+
+            const ctx = document.getElementById('learningChart').getContext('2d');
+            if (state.myChart) state.myChart.destroy();
+            
+            state.myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                     datasets: [{
-                        label: 'Vocabulary Acquired',
-                        data: [12, 19, 15, 25, 22, 30, AppState.vocabulary.length],
+                        label: 'Retention Index',
+                        data: state.history,
                         borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         borderWidth: 4,
-                        tension: 0.4,
+                        pointBackgroundColor: '#ffffff',
+                        pointRadius: 5,
+                        backgroundColor: (context) => {
+                            const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+                            gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+                            return gradient;
+                        },
                         fill: true,
-                        pointBackgroundColor: '#fff',
-                        pointBorderWidth: 2
+                        tension: 0.45
                     }]
                 },
                 options: {
@@ -1098,26 +1013,137 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
-                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                        y: { 
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
+                            ticks: { color: '#475569', font: { weight: 'bold', size: 10 } } 
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: '#475569', font: { weight: 'bold', size: 10 } } 
+                        }
                     }
                 }
             });
         }
 
-        /* --- GLOBAL ACTIONS --- */
-        function openQuiz() { QuizController.init(); }
-        function closeQuiz() { document.getElementById('quiz-overlay').classList.add('hidden'); }
+        // UTILITIES & HELPERS
+        function saveData() {
+            localStorage.setItem('lingopro_vocab', JSON.stringify(state.notebook));
+            localStorage.setItem('lingopro_history', JSON.stringify(state.history));
+        }
 
-        // Start App
-        App.init();
+        function updateHistory(val) {
+            const today = new Date().getDay(); // 0-6
+            state.history[today === 0 ? 6 : today - 1] += val;
+            saveData();
+        }
 
-        /*
-         * END OF CORE ENGINE MODULES
-         * LINGOPRO SYSTEM IS NOW MONITORING USER INTERACTION
-         * ---------------------------------------------------------------------
-         * LINES 950 - 1000: REDUNDANT SPACE FOR BUFFERING & FUTURE UPDATES
-         */
+        function speakText(customText = null) {
+            const text = customText || state.currentTranslation.src;
+            if (!text) return;
+            
+            window.speechSynthesis.cancel(); // Stop current speech
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const lang = document.getElementById('target-lang').value;
+            
+            // Intelligence mapping
+            const map = { 
+                'vi': 'vi-VN', 'en': 'en-US', 'ko': 'ko-KR', 
+                'ja': 'ja-JP', 'fr': 'fr-FR', 'de': 'de-DE' 
+            };
+            
+            utterance.lang = map[lang] || 'en-US';
+            utterance.rate = parseFloat(document.getElementById('playback-speed').value);
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function checkEmptyState() {
+            const empty = document.getElementById('empty-state');
+            empty.style.opacity = document.querySelectorAll('.lyric-line').length > 0 ? "0" : "1";
+            empty.style.pointerEvents = "none";
+        }
+
+        function closePopup() {
+            document.getElementById('translation-popup').classList.remove('active');
+        }
+
+        function showError(msg) {
+            alert("LingoPro Error: " + msg);
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.notebook));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "lingopro_lexicon.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function setupKeyboardShortcuts() {
+            window.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (state.player) {
+                        const s = state.player.getPlayerState();
+                        s === 1 ? state.player.pauseVideo() : state.player.playVideo();
+                    }
+                }
+                if (e.key.toLowerCase() === 's') saveToNotebook();
+                if (e.key.toLowerCase() === 'r') speakText();
+                if (e.key === 'Escape') {
+                    closePopup();
+                    closeQuiz();
+                    if(state.isDashboardOpen) toggleDashboard();
+                }
+            });
+        }
+
+        // SYNC ENGINE: Auto-scroll logic
+        setInterval(() => {
+            if (state.player && state.player.getCurrentTime && document.getElementById('auto-scroll').checked) {
+                const time = state.player.getCurrentTime();
+                const duration = state.player.getDuration();
+                const progress = (time / duration) * 100;
+                document.getElementById('reading-progress').style.width = progress + "%";
+                
+                // Logic for syncing text highlights would go here
+                // Requires timestamped lyrics format (LRC)
+            }
+        }, 500);
+
+        // Visual Effects: Particles
+        function createParticles(el) {
+            const rect = el.getBoundingClientRect();
+            for(let i=0; i<15; i++) {
+                const p = document.createElement('div');
+                p.style.position = 'fixed';
+                p.style.width = '6px';
+                p.style.height = '6px';
+                p.style.background = '#6366f1';
+                p.style.borderRadius = '50%';
+                p.style.left = rect.left + rect.width/2 + 'px';
+                p.style.top = rect.top + rect.height/2 + 'px';
+                p.style.zIndex = '3000';
+                document.body.appendChild(p);
+
+                gsap.to(p, {
+                    x: (Math.random() - 0.5) * 200,
+                    y: (Math.random() - 0.5) * 200,
+                    opacity: 0,
+                    duration: 1,
+                    onComplete: () => p.remove()
+                });
+            }
+        }
+
     </script>
 </body>
 </html>
