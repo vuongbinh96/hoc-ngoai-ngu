@@ -521,23 +521,44 @@
                 updateNotebookUI();
             }
         }
+// Audio System - Đã sửa lỗi đọc nhầm giọng Tiếng Việt
+function speakText(customText = null) {
+    const text = customText || state.currentTranslation.src;
+    if (!text) return;
+    
+    // Hủy bỏ các yêu cầu đọc đang chạy để tránh chồng chéo
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    const lang = document.getElementById('target-lang').value;
+    
+    // 1. Cấu hình ngôn ngữ dựa trên lựa chọn
+    const langMap = { 'vi': 'vi-VN', 'en': 'en-US', 'ko': 'ko-KR', 'ja': 'ja-JP' };
+    utterance.lang = langMap[lang] || 'en-US';
 
-        // Audio System
-        function speakText(customText = null) {
-            const text = customText || state.currentTranslation.src;
-            if (!text) return;
-            
-            const utterance = new SpeechSynthesisUtterance(text);
-            const lang = document.getElementById('target-lang').value;
-            
-            // Basic language mapping
-            const map = { 'vi': 'vi-VN', 'en': 'en-US', 'ko': 'ko-KR', 'ja': 'ja-JP' };
-            utterance.lang = map[lang] || 'en-US';
-            utterance.rate = document.getElementById('playback-speed').value;
-            
-            window.speechSynthesis.speak(utterance);
-        }
+    // 2. TÌM GIỌNG ĐỌC CHUẨN (Quan trọng nhất)
+    const voices = window.speechSynthesis.getVoices();
+    
+    // Ưu tiên tìm giọng của Google (thường mượt nhất) hoặc giọng có chứa mã ngôn ngữ chuẩn
+    const selectedVoice = voices.find(v => v.lang === utterance.lang && v.name.includes('Google')) 
+                       || voices.find(v => v.lang === utterance.lang)
+                       || voices.find(v => v.lang.startsWith(utterance.lang.split('-')[0]));
 
+    if (selectedVoice) {
+        utterance.voice = selectedVoice;
+    }
+
+    // 3. Điều chỉnh tốc độ
+    utterance.rate = parseFloat(document.getElementById('playback-speed').value) || 1;
+    utterance.pitch = 1;
+    
+    window.speechSynthesis.speak(utterance);
+}
+
+// Cần thêm dòng này để đảm bảo danh sách giọng nói được tải khi khởi động trình duyệt
+window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+};
         // QUIZ MANAGEMENT
         function openQuiz() {
             if (state.notebook.length < 5) {
@@ -696,3 +717,4 @@
     </script>
 </body>
 </html>
+
