@@ -134,6 +134,11 @@
         </div>
         
         <div class="flex items-center gap-4">
+            <div class="hidden sm:flex items-center gap-3 mr-2 border-r border-slate-700 pr-4">
+                <button onclick="toggleAuthModal('login')" class="text-xs font-bold text-slate-400 hover:text white transition uppercase tracking-widest">Login</button>
+                <button onclick="togglrAuthModal('singup')" class="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 px-4 py-4 rounded-lg transition shadow-lg shadow-indigo-600/20 uppercase">Sign Up</button>
+            <div>
+                
             <div class="hidden md:flex bg-slate-800 rounded-full px-4 py-1.5 items-center gap-3 border border-slate-700">
                 <i class="fa-solid fa-earth-americas text-slate-400 text-sm"></i>
                 <select id="target-lang" class="bg-transparent border-none text-xs font-bold focus:ring-0 cursor-pointer">
@@ -696,3 +701,4 @@
     </script>
 </body>
 </html>
+
