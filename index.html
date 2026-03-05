@@ -762,19 +762,46 @@
                 `;
             }, 1500);
         }
-                
-                    
-                    
-
-                
-            
-    
-
         
-                
+            <div id="auth-overlay" class="fixed inset-0 z-[5000] bg-slate-950/90 backdrop-blur-xl hidden flex items-center justify-center p-4"
+                <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-indigo-500/10 relative">
+                    <button onclick="toggleAuthModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+        
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-4">
+                    <i class="fa-solid fa-shield-halved text-white text-2xl"></i>
+                </div>
+                <h2 id="auth-title" class="text-2xl font-black tracking-tighter uppercase text-white">SYSTEM ACCESS</h2>
+                <p class="text-xs text-slate-500 font-medium mt-1">Please authenticate to continue your session.</p>
+            </div>
 
+            <form onsubmit="handleAuth(event)" class="space-y-4">
+                <div id="signup-fields" class="hidden">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-1 block">Username</label>
+                    <input type="text" placeholder="OPERATIVE_ID" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none transition">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-1 block">Email Address</label>
+                    <input type="email" required placeholder="name@enterprise.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none transition">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-1 block">Access Key</label>
+                    <input type="password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none transition">
+                </div>
+
+                <button type="submit" id="auth-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-600/20 transition uppercase tracking-widest text-sm mt-4">
+                    Establish Connection
+                </button>
+            </form>
+        </div>
+    </div>
     </script>
 </body>
 </html>
+
 
 
