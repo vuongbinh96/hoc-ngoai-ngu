@@ -698,7 +698,83 @@
             }
         }, 1000);
 
+        //Auth State
+        let authMode = 'login';
+
+        function toggleAuthModal(mode = 'login') {
+            const overlay = document.getElementById('auth-overplay');
+            authMode = mode
+
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+                updateAuthUI()
+                gsap.from(overlay.querySelector('.glass-card'), {y: 50, opacity: 0, duration: 0,4});
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function switchAuthMode() {
+            authMode = (authMode === 'login') ? 'signup' : 'login';
+            updateAuthUI();
+        }
+
+        function updateAuthUI() {
+            const title = document.getElementById('auth-title');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const switchText = document.getElementById('auth-switch-text');
+            const switchBtn = document.getElementById('auth-switch-btn');
+            const signupField = document.getElementById('signup-only');
+
+            if (authMode === 'login') {
+                title.innerText = "LOGIN";
+                submitBtn.innerText = "Establish Connection":
+                switchText.innerText = "Don't have an account";
+                switchBtn.innerText = "Create Profile";
+                signupField.classList.remove('hidden');
+            } else {
+                title.innerText = "SIGN UP";
+                submitBtn.innerText = "Initialize Profile";
+                switchText.innerText = "Already a account?";
+                switchBtn.innerText = "Return to Login";
+                signupField.classList.remove('hidden');
+            }
+        }
+
+        function handleAuth(event) {
+            event.preventDefault();
+            const btn = document.getElementById('auth-submit-btn');
+
+            //Giả lập hiệ ứng Loading
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"><i/> Authenticating...';
+
+            setTimeOut(() => {
+                alert(authMode === 'login' ? "Welcome back!" : "Profile Created Successfully!");
+                toggleAuthModal()
+                btn.innerText = authMode === 'login' ? "Establish Connection" : "Initialize Profile";
+
+                // Sau khi login thành công, có thể ẩn nút auth và hiện avatar (tùy chọn)
+                document.getElementById('auth-buttons').innerHTML = `
+                    <div class="flex items-center gap-3 bg-indigo-500/10 px-4 py-2 rounded-full border border-indigo-500/20">
+                        <div class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-[10px] font-bold">U</div>
+                        <span class="text-xs font-bold text-indigo-400">USER</span>
+                    </div>
+                `;
+            }, 1500);
+        }
+                
+                    
+                    
+
+                
+            
+    
+
+        
+                
+
     </script>
 </body>
 </html>
+
 
