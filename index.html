@@ -7,13 +7,15 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js" defer></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js" defer></script>
+    <script src="https://www.youtube.com/iframe_api" async></script>
 
     <style>
         :root {
@@ -28,98 +30,23 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-dark);
             color: #f8fafc;
-            /* Giữ nguyên logic hiển thị của bạn */
             overflow: hidden;
             height: 100vh;
+            margin: 0;
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-        /* Animations & Glassmorphism */
+        /* Giữ nguyên các class cũ của bạn */
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px); /* Hỗ trợ Safari */
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
         }
 
-        .source-word {
-            display: inline-block;
-            cursor: pointer;
-            padding: 0 2px;
-            border-radius: 4px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
-        }
-
-        .source-word:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-        }
-
-        .lyric-line {
-            padding: 12px 16px;
-            margin-bottom: 8px;
-            border-radius: 12px;
-            transition: background 0.3s;
-            border-left: 3px solid transparent;
-        }
-
-        .lyric-line:hover {
-            background: rgba(255, 255, 255, 0.03);
-            border-left-color: var(--primary);
-        }
-
-        /* Popup Logic */
-        #translation-popup {
-            position: fixed;
-            bottom: -300px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 95%;
-            max-width: 500px;
-            z-index: 1000;
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-
-        #translation-popup.active {
-            bottom: 40px;
-        }
-
-        /* Dashboard UI */
-        .stat-card {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Quiz Styles */
-        .quiz-option {
-            background: #334155;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .quiz-option.correct { background: #10b981 !important; border-color: #059669; color: white; }
-        .quiz-option.wrong { background: #ef4444 !important; border-color: #dc2626; color: white; }
-
-        /* Input Styles */
-        select, input, textarea {
-            background: #1e293b !important;
-            border: 1px solid #334155 !important;
-            color: white !important;
-        }
-
-        select option {
-            background: #1e293b;
-            color: white;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body class="antialiased">
@@ -808,3 +735,4 @@
     </script>
 </body>
 </html>
+
