@@ -3,557 +3,696 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro OS v9.5 | Wide Vision Terminal</title>
+    <title>LingoPro Enterprise - Professional Language Learning Platform</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* [DESIGN SYSTEM - WIDE MODE] */
         :root {
-            --primary: #6366f1; --primary-dark: #4338ca;
-            --secondary: #ec4899; --bg: #020617;
-            --surface: #0f172a; --border: rgba(255,255,255,0.08);
-            --text-main: #f8fafc; --text-dim: #64748b;
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #f59e0b;
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); height: 100vh; overflow: hidden; }
-
-        /* [LAYOUT: CANH ĐỀU 2 BÊN] */
-        .app-wrapper {
-            display: grid;
-            grid-template-columns: 20% 55% 25%; /* Căn tỷ lệ rộng cho Terminal chính */
-            height: calc(100vh - 64px);
-            width: 100%;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f8fafc;
+            overflow: hidden;
+            height: 100vh;
         }
 
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(15px);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* [COMPONENTS] */
-        .terminal-scroll {
-            padding: 40px;
-            overflow-y: auto;
-            scroll-behavior: smooth;
-        }
-
-        .word-token {
-            display: inline-block; padding: 0 4px; border-radius: 4px;
-            cursor: pointer; transition: all 0.2s ease;
-            color: var(--text-dim); border-bottom: 1px solid transparent;
-        }
-        .word-token:hover {
-            color: var(--primary); background: rgba(99, 102, 241, 0.1);
-            border-bottom: 1px solid var(--primary); transform: translateY(-1px);
-        }
-
-        .input-glow:focus {
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
-            border-color: var(--primary);
-        }
-
-        #hud-terminal {
-            position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
-            width: 800px; max-width: 90vw; transition: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-            z-index: 1000;
-        }
-        #hud-terminal.active { bottom: 30px; }
-
-        /* [X-50 HARDCORE UI] */
-        #x50-portal {
-            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
-            display: none; opacity: 0;
-        }
-
-        .quiz-input {
-            background: transparent; border-bottom: 4px solid var(--primary);
-            outline: none; font-size: 2.8rem; font-weight: 800; text-align: center;
-            color: var(--secondary); font-family: 'Fira Code', monospace; width: 300px;
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
         /* Animations */
-        @keyframes pulse-border { 0% { border-color: var(--border); } 50% { border-color: var(--primary); } 100% { border-color: var(--border); } }
-        .syncing { animation: pulse-border 2s infinite; }
-        
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+
+        .source-word {
+            display: inline-block;
+            cursor: pointer;
+            padding: 0 2px;
+            border-radius: 4px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .source-word:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .lyric-line {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            transition: background 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .lyric-line:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-left-color: var(--primary);
+        }
+
+        /* Popup Logic */
+        #translation-popup {
+            position: fixed;
+            bottom: -300px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 500px;
+            z-index: 1000;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        #translation-popup.active {
+            bottom: 40px;
+        }
+
+        /* Dashboard UI */
+        .stat-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Quiz Styles */
+        .quiz-option {
+            background: #334155;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .quiz-option.correct { background: #10b981 !important; border-color: #059669; color: white; }
+        .quiz-option.wrong { background: #ef4444 !important; border-color: #dc2626; color: white; }
+
+        /* Input Styles */
+        select, input, textarea {
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: white !important;
+        }
+
+        select option {
+            background: #1e293b;
+            color: white;
+        }
     </style>
 </head>
-<body>
+<body class="antialiased">
 
-    <nav class="h-16 border-b border-white/5 px-8 flex items-center justify-between glass-panel !flex-row">
-        <div class="flex items-center gap-6">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg transform rotate-12">
-                    <i class="fa-solid fa-bolt-lightning text-white text-sm"></i>
-                </div>
-                <span class="text-xl font-extrabold italic tracking-tighter uppercase">LPRO <span class="text-indigo-500">VISION</span></span>
-            </div>
-            <div class="h-6 w-[1px] bg-white/10"></div>
-            <p id="system-clock" class="text-[10px] font-mono text-slate-500 mt-1 uppercase tracking-widest"></p>
+    <div id="loader" class="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-indigo-400 font-bold animate-pulse">LINGOPRO SYSTEM INITIALIZING...</p>
         </div>
+    </div>
 
-        <div class="flex items-center gap-8">
-            <div class="hidden md:flex items-center gap-3">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <p id="user-identity" class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Captain Offline</p>
+    <nav class="h-16 border-b border-slate-800 px-6 flex items-center justify-between bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-bolt text-white"></i>
             </div>
-            <button onclick="System.logout()" class="text-slate-500 hover:text-rose-500 transition-all"><i class="fa-solid fa-power-off text-sm"></i></button>
+            <span class="text-xl font-black tracking-tighter">LINGO<span class="text-indigo-500">PRO</span></span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex bg-slate-800 rounded-full px-4 py-1.5 items-center gap-3 border border-slate-700">
+                <i class="fa-solid fa-earth-americas text-slate-400 text-sm"></i>
+                <select id="target-lang" class="bg-transparent border-none text-xs font-bold focus:ring-0 cursor-pointer">
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="en">English</option>
+                    <option value="ko">Korean</option>
+                    <option value="ja">Japanese</option>
+                    <option value="zh">Chinese</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                </select>
+            </div>
+            <button onclick="toggleDashboard()" class="p-2 hover:bg-slate-800 rounded-full transition"><i class="fa-solid fa-chart-simple text-indigo-400"></i></button>
+            <button onclick="openQuiz()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-indigo-600/20">TEST SKILLS</button>
         </div>
     </nav>
 
-    <div class="app-wrapper">
-        <aside class="glass-panel p-6 space-y-8">
-            <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <label class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Video Signal</label>
-                    <i class="fa-brands fa-youtube text-rose-600 text-xs"></i>
+    <main class="flex h-[calc(100vh-64px)] overflow-hidden">
+        
+        <aside class="w-full md:w-[400px] border-r border-slate-800 overflow-y-auto p-6 space-y-6 hidden md:block">
+            <section class="space-y-4">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-video text-indigo-500"></i> Media Source
+                </h3>
+                <div class="glass-card p-4 space-y-3">
+                    <div id="player-container" class="aspect-video bg-black rounded-xl overflow-hidden shadow-inner">
+                        <div id="player"></div>
+                    </div>
+                    <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
                 </div>
-                <div class="aspect-video bg-black rounded-2xl overflow-hidden border border-white/5" id="video-frame">
-                    <div id="yt-player-core"></div>
-                </div>
-                <input type="text" id="input-url" placeholder="YouTube Neural Link..." class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-xs font-bold outline-none input-glow transition">
-            </div>
+            </section>
 
-            <div class="flex-1 flex flex-col space-y-4">
-                <div class="flex justify-between items-center">
-                    <label class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Raw Transcript</label>
-                    <span id="char-count" class="text-[8px] font-mono text-slate-600">0 CHARS</span>
+            <section class="space-y-4">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-file-lines text-pink-500"></i> Lyrics / Text
+                </h3>
+                <div class="glass-card p-4 space-y-3">
+                    <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here..." class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
+                    <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition active:scale-95 shadow-xl">
+                        Compile Study Session
+                    </button>
                 </div>
-                <textarea id="input-transcript" class="flex-1 bg-slate-900/50 border border-slate-800 rounded-2xl p-5 text-sm outline-none resize-none input-glow transition leading-relaxed text-slate-300" placeholder="Paste English text here..."></textarea>
-                <button onclick="System.compile()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all active:scale-95">Compile Environment</button>
-            </div>
+            </section>
+
+            <section class="space-y-4">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-amber-500"></i> Settings
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="p-3 bg-slate-800/50 rounded-xl text-center">
+                        <p class="text-[10px] text-slate-400 mb-1">SPEED</p>
+                        <select id="playback-speed" class="w-full text-xs font-bold bg-transparent">
+                            <option value="1">1.0x (Normal)</option>
+                            <option value="0.75">0.75x (Slow)</option>
+                            <option value="0.5">0.5x (Super Slow)</option>
+                        </select>
+                    </div>
+                    <div class="p-3 bg-slate-800/50 rounded-xl text-center">
+                        <p class="text-[10px] text-slate-400 mb-1">AUTO-SCROLL</p>
+                        <input type="checkbox" id="auto-scroll" checked class="accent-indigo-500">
+                    </div>
+                </div>
+            </section>
         </aside>
 
-        <main class="flex flex-col relative bg-slate-950">
-            <div class="p-10 flex justify-between items-end border-b border-white/5 glass-panel !bg-transparent !border-r-0">
+        <section class="flex-1 relative flex flex-col overflow-hidden bg-slate-950/30">
+            <div id="reader-header" class="px-8 py-4 bg-slate-900/30 backdrop-blur-sm border-b border-slate-800 flex justify-between items-center">
                 <div>
-                    <div class="flex items-center gap-3 mb-2">
-                        <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 text-[8px] font-black uppercase tracking-tighter">Active Workspace</span>
-                    </div>
-                    <h1 class="text-4xl font-black italic tracking-tighter">Neural <span class="text-slate-700">Display.</span></h1>
-                </div>
-                <button onclick="System.initX50()" class="bg-gradient-to-r from-indigo-600 to-pink-600 px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl">Start X-50 Hardcore</button>
-            </div>
-
-            <div id="terminal-output" class="terminal-scroll flex-1">
-                <div class="h-full flex flex-col items-center justify-center text-slate-800">
-                    <i class="fa-solid fa-microchip text-7xl mb-6 opacity-20"></i>
-                    <p class="text-sm font-bold uppercase tracking-[1em] opacity-20">Standby for Data</p>
-                </div>
-            </div>
-
-            <div id="hud-terminal" class="glass-panel !bg-slate-900/95 !border-none rounded-[30px] p-8 shadow-2xl ring-1 ring-white/10">
-                <div class="flex justify-between items-center">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-4 mb-3">
-                            <span id="hud-type" class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Token</span>
-                            <div class="h-1 w-1 rounded-full bg-slate-700"></div>
-                            <span id="hud-src" class="text-[10px] font-bold text-slate-500 uppercase">Original</span>
-                        </div>
-                        <h2 id="hud-res" class="text-5xl font-black italic tracking-tighter text-white">Analyzing...</h2>
-                    </div>
-                    <div class="flex gap-3">
-                        <button onclick="System.speak()" class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-indigo-600 transition"><i class="fa-solid fa-volume-high"></i></button>
-                        <button onclick="System.saveToVault()" class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-pink-600 transition"><i class="fa-solid fa-plus"></i></button>
-                        <button onclick="System.closeHUD()" class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center hover:text-rose-500 transition"><i class="fa-solid fa-xmark"></i></button>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <aside class="glass-panel p-8 !border-r-0 !border-l">
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Neural Vault</h3>
-                    <p id="vault-status" class="text-[10px] font-bold text-indigo-500 mt-1 uppercase italic">0 Tokens Synced</p>
+                    <h2 id="song-title" class="font-bold text-lg">Untitled Study Session</h2>
+                    <p class="text-xs text-slate-500">Click words to translate. Highlight phrases for context.</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="System.export()" class="w-8 h-8 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 hover:text-indigo-400 transition"><i class="fa-solid fa-download text-[10px]"></i></button>
-                    <button onclick="System.clearVault()" class="w-8 h-8 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 hover:text-rose-500 transition"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    <span id="word-count-badge" class="bg-indigo-500/20 text-indigo-400 text-[10px] font-bold px-3 py-1 rounded-full border border-indigo-500/30">0 WORDS</span>
                 </div>
             </div>
 
-            <div class="relative mb-6">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 text-xs"></i>
-                <input type="text" id="vault-search" placeholder="Filter tokens..." class="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-xs font-bold outline-none focus:border-indigo-500 transition">
+            <div id="lyric-display" class="flex-1 overflow-y-auto px-8 py-10 space-y-4" onmouseup="handleSelection()">
+                <div class="flex flex-col items-center justify-center h-full opacity-20 text-center">
+                    <i class="fa-solid fa-book-open text-8xl mb-6"></i>
+                    <p class="text-2xl font-bold">Your Interactive Classroom</p>
+                    <p class="max-w-md mt-2">Paste a song link and its lyrics on the left to transform this space into an AI-powered learning environment.</p>
+                </div>
             </div>
+        </section>
 
-            <div id="vault-items" class="flex-1 overflow-y-auto space-y-3 pr-2">
-                </div>
-
-            <div class="mt-8 p-6 rounded-3xl bg-indigo-600/5 border border-indigo-500/10 relative overflow-hidden group">
-                <div class="flex items-center justify-between mb-4">
-                    <p class="text-[10px] font-black text-slate-500 uppercase">Mastery Index</p>
-                    <i class="fa-solid fa-chart-line text-indigo-500 text-xs"></i>
-                </div>
-                <div class="h-1.5 bg-slate-900 rounded-full overflow-hidden mb-3">
-                    <div id="mastery-progress" class="h-full bg-indigo-500 transition-all duration-1000" style="width: 0%"></div>
-                </div>
-                <p id="mastery-text" class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest">Level 1 - Neophyte</p>
+        <aside id="notebook-sidebar" class="w-[350px] border-l border-slate-800 overflow-y-auto p-6 hidden xl:block bg-slate-900/20">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Saved Vocab</h3>
+                <button onclick="clearNotebook()" class="text-[10px] text-red-400 hover:underline">Clear All</button>
             </div>
+            <div id="notebook-list" class="space-y-3">
+                </div>
         </aside>
+    </main>
+
+    <div id="translation-popup" class="glass-card shadow-2xl p-6 border-t-4 border-indigo-500">
+        <div class="flex justify-between items-start mb-4">
+            <div class="space-y-1 pr-4">
+                <p id="pop-src" class="text-sm font-bold text-indigo-400 break-words leading-tight"></p>
+                <h2 id="pop-vi" class="text-3xl font-black text-white leading-tight"></h2>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button onclick="speakText()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-indigo-600 text-white flex items-center justify-center transition shadow-lg">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button onclick="saveToNotebook()" class="w-12 h-12 rounded-full bg-slate-800 hover:bg-pink-600 text-white flex items-center justify-center transition shadow-lg">
+                    <i class="fa-solid fa-bookmark"></i>
+                </button>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 pt-4 border-t border-slate-700">
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Context Engine AI</span>
+            <div class="flex-1 h-[1px] bg-slate-700"></div>
+            <button onclick="closePopup()" class="text-xs text-slate-400 hover:text-white">Close</button>
+        </div>
     </div>
 
-    <div id="x50-portal" class="flex flex-col">
-        <header class="h-24 px-12 flex justify-between items-center border-b border-white/5 glass-panel !border-none !bg-slate-900/50">
-            <div class="flex items-center gap-10">
-                <h2 class="text-2xl font-black italic tracking-tighter uppercase">Protocol <span class="text-indigo-500">X-50</span></h2>
-                <div class="h-10 w-[1px] bg-white/10"></div>
-                <div class="space-y-1">
-                    <p id="q-index" class="text-xs font-black text-white uppercase tracking-widest">Token 01/50</p>
-                    <div class="w-32 h-1 bg-slate-800 rounded-full overflow-hidden">
-                        <div id="q-bar" class="h-full bg-indigo-600 transition-all" style="width: 2%"></div>
+    <div id="dashboard-overlay" class="fixed inset-0 z-[2500] bg-slate-950/90 backdrop-blur-xl hidden flex items-center justify-center p-4">
+        <div class="max-w-4xl w-full glass-card p-8 border-t-4 border-indigo-500">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-black italic tracking-tighter"><i class="fa-solid fa-chart-line text-indigo-500 mr-2"></i> LEARNING ANALYTICS</h2>
+                <button onclick="toggleDashboard()" class="w-10 h-10 bg-slate-800 rounded-full hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="stat-card p-6 rounded-3xl text-center">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Total Vocabulary</p>
+                    <h3 id="stat-vocab" class="text-5xl font-black text-indigo-500">0</h3>
+                </div>
+                <div class="stat-card p-6 rounded-3xl text-center">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Quiz Accuracy</p>
+                    <h3 id="stat-accuracy" class="text-5xl font-black text-pink-500">0%</h3>
+                </div>
+                <div class="stat-card p-6 rounded-3xl text-center">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Active Session</p>
+                    <h3 class="text-5xl font-black text-amber-500">1</h3>
+                </div>
+            </div>
+            <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
+                <canvas id="learningChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="quiz-overlay" class="fixed inset-0 z-[2000] bg-slate-950/95 backdrop-blur-xl hidden flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full">
+            <div id="quiz-container" class="glass-card p-10 relative overflow-hidden">
+                <div id="quiz-loading" class="text-center py-20">
+                    <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p class="font-bold text-slate-400">Generating dynamic exam...</p>
+                </div>
+
+                <div id="quiz-main" class="hidden">
+                    <div class="flex justify-between items-center mb-10">
+                        <span id="quiz-step" class="text-xs font-black bg-indigo-500 px-3 py-1 rounded-full uppercase">Question 1/10</span>
+                        <div class="flex items-center gap-2 text-pink-500">
+                            <i class="fa-solid fa-heart"></i>
+                            <span id="quiz-lives" class="font-bold">3</span>
+                        </div>
+                    </div>
+                    
+                    <h2 id="quiz-question" class="text-4xl font-black mb-10 text-center leading-tight">Word</h2>
+                    
+                    <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        </div>
+                </div>
+
+                <div id="quiz-finish" class="hidden text-center">
+                    <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-500/40">
+                        <i class="fa-solid fa-trophy text-4xl"></i>
+                    </div>
+                    <h2 class="text-4xl font-black mb-2">Study Session Complete!</h2>
+                    <p id="quiz-final-score" class="text-xl text-slate-400 mb-8">You mastered 8/10 words</p>
+                    <div class="flex gap-4">
+                        <button onclick="startQuiz()" class="flex-1 bg-indigo-600 py-4 rounded-xl font-bold">Try Again</button>
+                        <button onclick="closeQuiz()" class="flex-1 bg-slate-800 py-4 rounded-xl font-bold">Close</button>
                     </div>
                 </div>
-            </div>
-            <div class="flex items-center gap-12">
-                <div class="text-right">
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Terminal Deadline</p>
-                    <p id="quiz-timer" class="text-4xl font-black italic text-white font-mono tracking-widest">25:00</p>
-                </div>
-                <button onclick="System.exitX50()" class="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition shadow-xl"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-        </header>
-
-        <div class="flex-1 flex flex-col items-center justify-center p-20 relative">
-            <div id="quiz-core" class="max-w-5xl w-full text-center space-y-16">
-                <div class="space-y-6">
-                    <span class="px-4 py-1 rounded bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest">Contextual Analysis</span>
-                    <h3 id="quiz-sen" class="text-4xl font-medium leading-relaxed text-slate-200 px-10"></h3>
-                </div>
-                
-                <div class="space-y-6">
-                    <p id="quiz-hint" class="text-xl text-slate-500 italic"></p>
-                    <div id="quiz-feedback" class="h-8 font-black uppercase text-sm italic tracking-widest"></div>
-                </div>
-
-                <div class="flex justify-center">
-                    <button onclick="System.verifyX50()" class="bg-indigo-600 px-20 py-6 rounded-2xl font-black uppercase tracking-[0.3em] shadow-2xl shadow-indigo-600/20 hover:bg-indigo-500 transition-all active:scale-95">Verify Token</button>
-                </div>
-            </div>
-
-            <div id="quiz-result" class="hidden text-center space-y-10">
-                <div class="w-32 h-32 bg-indigo-600 rounded-[40px] flex items-center justify-center mx-auto shadow-2xl rotate-12 mb-10"><i class="fa-solid fa-trophy text-5xl text-white -rotate-12"></i></div>
-                <h2 class="text-7xl font-black italic tracking-tighter">Mission <span class="text-indigo-500">Log.</span></h2>
-                <div class="grid grid-cols-3 gap-8 max-w-3xl mx-auto">
-                    <div class="glass-panel !border-none p-8 rounded-3xl"><p class="text-[10px] font-black text-slate-500 uppercase mb-2">Accuracy</p><p id="res-score" class="text-4xl font-black">0/50</p></div>
-                    <div class="glass-panel !border-none p-8 rounded-3xl"><p class="text-[10px] font-black text-slate-500 uppercase mb-2">Efficiency</p><p id="res-percent" class="text-4xl font-black">0%</p></div>
-                    <div class="glass-panel !border-none p-8 rounded-3xl"><p class="text-[10px] font-black text-slate-500 uppercase mb-2">Time Remaining</p><p id="res-time" class="text-4xl font-black">00:00</p></div>
-                </div>
-                <button onclick="location.reload()" class="bg-white text-black px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition">Reboot System</button>
             </div>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <script>
+        /**
+         * LINGOPRO ENTERPRISE - CORE LOGIC
+         * Version: 3.5.0
+         * Author: Gemini Adaptive AI
+         */
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDrNb8-wA4hbfIaJtqzvIYN5bh1pKxkLTw",
-            authDomain: "lingopro-app.firebaseapp.com",
-            projectId: "lingopro-app",
-            storageBucket: "lingopro-app.firebasestorage.app",
-            messagingSenderId: "850464589345",
-            appId: "1:850464589345:web:3be41aab2397cefc84c560"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // [SYSTEM ENGINE CORE]
-        window.System = {
-            data: {
-                user: null, vault: [], sentences: [],
-                activeToken: { src: '', res: '' },
-                ytPlayer: null,
-                x50: { running: false, index: 0, score: 0, timer: 1500, pool: [], clock: null }
-            },
-
-            // Initialization Protocol
-            init() {
-                this.updateClock();
-                this.bindEvents();
-                this.listenToAuth();
-                setInterval(() => this.updateClock(), 1000);
-            },
-
-            listenToAuth() {
-                onAuthStateChanged(auth, async (u) => {
-                    if(u) {
-                        this.data.user = u;
-                        document.getElementById('user-identity').innerText = `Captain: ${u.email.split('@')[0]}`;
-                        const snap = await getDoc(doc(db, "users", u.uid));
-                        if(snap.exists()) {
-                            this.data.vault = snap.data().vocab || [];
-                            this.renderVault();
-                        }
-                    } else {
-                        // Redirect or show login if needed
-                        console.log("System Status: Offline");
-                    }
-                });
-            },
-
-            logout() { signOut(auth).then(() => location.reload()); },
-
-            updateClock() {
-                const now = new Date();
-                document.getElementById('system-clock').innerText = `NODE_STABLE // ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')} // ${now.toLocaleDateString()}`;
-            },
-
-            // Translation Core
-            async translate(query) {
-                if(!query) return;
-                const hud = document.getElementById('hud-terminal');
-                document.getElementById('hud-src').innerText = query;
-                document.getElementById('hud-res').innerText = "Analyzing...";
-                hud.classList.add('active');
-
-                try {
-                    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURIComponent(query)}`);
-                    const data = await res.json();
-                    const output = data[0][0][0];
-                    document.getElementById('hud-res').innerText = output;
-                    this.data.activeToken = { src: query, res: output };
-                    
-                    const tags = ["Noun", "Verb", "Adj", "Adv", "Phrase"];
-                    document.getElementById('hud-type').innerText = tags[Math.floor(Math.random() * tags.length)];
-                } catch (e) {
-                    document.getElementById('hud-res').innerText = "ERROR_SIGNAL_LOST";
-                }
-            },
-
-            async saveToVault() {
-                const { src, res } = this.data.activeToken;
-                if(!src || this.data.vault.some(v => v.src.toLowerCase() === src.toLowerCase())) return;
-                
-                this.data.vault.unshift({ src, res, timestamp: Date.now() });
-                this.renderVault();
-                this.closeHUD();
-                
-                // Firestore Sync
-                if(this.data.user) {
-                    await updateDoc(doc(db, "users", this.data.user.uid), { vocab: this.data.vault });
-                }
-            },
-
-            renderVault(filter = '') {
-                const list = document.getElementById('vault-items');
-                list.innerHTML = "";
-                const filtered = this.data.vault.filter(v => v.src.toLowerCase().includes(filter.toLowerCase()));
-                
-                filtered.forEach((item, idx) => {
-                    const card = document.createElement('div');
-                    card.className = "p-4 rounded-2xl bg-slate-900 border border-white/5 flex justify-between items-center group hover:border-indigo-500/30 transition-all cursor-pointer";
-                    card.onclick = () => this.translate(item.src);
-                    card.innerHTML = `
-                        <div>
-                            <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 italic">${item.src}</p>
-                            <p class="text-xs font-bold text-white tracking-tight">${item.res}</p>
-                        </div>
-                        <button onclick="System.deleteToken(event, ${idx})" class="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-500 transition"><i class="fa-solid fa-xmark text-xs"></i></button>
-                    `;
-                    list.appendChild(card);
-                });
-
-                const count = this.data.vault.length;
-                document.getElementById('vault-status').innerText = `${count} Tokens Synced`;
-                const progress = Math.min(100, count * 2);
-                document.getElementById('mastery-progress').style.width = progress + "%";
-                
-                const levels = ["Neophyte", "Novice", "Advanced", "Neural Pilot", "Architect", "Master AI"];
-                document.getElementById('mastery-text').innerText = `Level ${Math.floor(progress/20) + 1} - ${levels[Math.floor(progress/17)]}`;
-            },
-
-            deleteToken(e, idx) {
-                e.stopPropagation();
-                this.data.vault.splice(idx, 1);
-                this.renderVault();
-                if(this.data.user) updateDoc(doc(db, "users", this.data.user.uid), { vocab: this.data.vault });
-            },
-
-            speak() {
-                const utterance = new SpeechSynthesisUtterance(this.data.activeToken.src);
-                utterance.rate = 0.8;
-                window.speechSynthesis.speak(utterance);
-            },
-
-            closeHUD() { document.getElementById('hud-terminal').classList.remove('active'); },
-
-            // Compiler Engine
-            compile() {
-                const text = document.getElementById('input-transcript').value.trim();
-                const url = document.getElementById('input-url').value.trim();
-                
-                if(!text) return;
-                
-                if(url) {
-                    const vid = url.split('v=')[1]?.split('&')[0];
-                    if(vid) {
-                        if(this.data.ytPlayer) this.data.ytPlayer.loadVideoById(vid);
-                        else this.data.ytPlayer = new YT.Player('yt-player-core', { videoId: vid, width: '100%', height: '100%' });
-                    }
-                }
-
-                this.data.sentences = text.split(/[.!?]\s+/).filter(s => s.length > 5);
-                const output = document.getElementById('terminal-output');
-                output.innerHTML = "";
-                
-                text.split('\n').forEach(line => {
-                    if(!line.trim()) return;
-                    const div = document.createElement('div');
-                    div.className = "mb-6 leading-relaxed text-lg";
-                    line.split(/\s+/).forEach(word => {
-                        const span = document.createElement('span');
-                        span.className = "word-token";
-                        span.innerText = word + " ";
-                        const clean = word.replace(/[^\w\s]/gi, '');
-                        span.onclick = (e) => { e.stopPropagation(); this.translate(clean); };
-                        div.appendChild(span);
-                    });
-                    output.appendChild(div);
-                });
-                
-                gsap.from(".word-token", { opacity: 0, y: 5, stagger: 0.001, duration: 0.4 });
-                document.getElementById('char-count').innerText = `${text.length} CHARS`;
-            },
-
-            // X-50 Protocol Engine
-            initX50() {
-                if(this.data.vault.length < 10 || this.data.sentences.length < 5) {
-                    alert("PROTOCOL ERROR: Insufficient Data Nodes (Need 10 words in vault).");
-                    return;
-                }
-
-                let pool = [];
-                for(let i=0; i<50; i++) {
-                    const word = this.data.vault[Math.floor(Math.random() * this.data.vault.length)];
-                    const sentence = this.data.sentences.filter(s => s.toLowerCase().includes(word.src.toLowerCase()))[0] 
-                                    || `Context missing for the following token: ${word.src}`;
-                    pool.push({ q: sentence, a: word.src, h: word.res });
-                }
-
-                this.data.x50 = { running: true, index: 0, score: 0, timer: 1500, pool: pool };
-                const portal = document.getElementById('x50-portal');
-                portal.style.display = 'flex';
-                gsap.to(portal, { opacity: 1, duration: 0.5 });
-                
-                document.getElementById('quiz-core').classList.remove('hidden');
-                document.getElementById('quiz-result').classList.add('hidden');
-                
-                this.startTimer();
-                this.renderQuizStep();
-            },
-
-            startTimer() {
-                if(this.data.x50.clock) clearInterval(this.data.x50.clock);
-                this.data.x50.clock = setInterval(() => {
-                    this.data.x50.timer--;
-                    const m = Math.floor(this.data.x50.timer / 60);
-                    const s = this.data.x50.timer % 60;
-                    const display = document.getElementById('quiz-timer');
-                    display.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                    if(this.data.x50.timer < 300) display.classList.add('text-rose-500');
-                    if(this.data.x50.timer <= 0) this.finishX50();
-                }, 1000);
-            },
-
-            renderQuizStep() {
-                const { index, pool } = this.data.x50;
-                const data = pool[index];
-                document.getElementById('q-index').innerText = `Token ${(index + 1).toString().padStart(2,'0')}/50`;
-                document.getElementById('q-bar').style.width = `${((index + 1) / 50) * 100}%`;
-                
-                const regex = new RegExp(`\\b${data.a}\\b`, 'gi');
-                const html = data.q.replace(regex, `<input type="text" id="quiz-input-field" class="quiz-input" autocomplete="off">`);
-                
-                document.getElementById('quiz-sen').innerHTML = html;
-                document.getElementById('quiz-hint').innerText = `Meaning: "${data.h}"`;
-                document.getElementById('quiz-feedback').innerText = "";
-                
-                setTimeout(() => document.getElementById('quiz-input-field').focus(), 100);
-            },
-
-            verifyX50() {
-                const input = document.getElementById('quiz-input-field').value.trim().toLowerCase();
-                const answer = this.data.x50.pool[this.data.x50.index].a.toLowerCase();
-                const fb = document.getElementById('quiz-feedback');
-
-                if(input === answer) {
-                    this.data.x50.score++;
-                    fb.innerText = "TOKEN_AUTHENTICATED";
-                    fb.className = "h-8 font-black uppercase text-sm italic tracking-widest text-emerald-500";
-                    setTimeout(() => {
-                        this.data.x50.index++;
-                        if(this.data.x50.index < 50) this.renderQuizStep();
-                        else this.finishX50();
-                    }, 800);
-                } else {
-                    fb.innerText = "ACCESS_DENIED_MISMATCH";
-                    fb.className = "h-8 font-black uppercase text-sm italic tracking-widest text-rose-500";
-                    gsap.to("#quiz-core", { x: [-10, 10, -10, 10, 0], duration: 0.4 });
-                }
-            },
-
-            finishX50() {
-                clearInterval(this.data.x50.clock);
-                document.getElementById('quiz-core').classList.add('hidden');
-                document.getElementById('quiz-result').classList.remove('hidden');
-                
-                const { score, timer } = this.data.x50;
-                document.getElementById('res-score').innerText = `${score}/50`;
-                document.getElementById('res-percent').innerText = `${(score/50*100).toFixed(0)}%`;
-                document.getElementById('res-time').innerText = `${Math.floor(timer/60)}:${(timer%60).toString().padStart(2,'0')}`;
-            },
-
-            exitX50() {
-                clearInterval(this.data.x50.clock);
-                gsap.to("#x50-portal", { opacity: 0, duration: 0.4, onComplete: () => document.getElementById('x50-portal').style.display = 'none' });
-            },
-
-            // Utility
-            bindEvents() {
-                document.getElementById('vault-search').oninput = (e) => this.renderVault(e.target.value);
-                window.onkeydown = (e) => {
-                    if(e.key === 'Enter' && this.data.x50.running) this.verifyX50();
-                    if(e.key === 'Escape') this.exitX50();
-                };
-            },
-
-            export() {
-                const blob = new Blob([JSON.stringify(this.data.vault)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `lingopro_backup_${Date.now()}.json`;
-                a.click();
-            },
-
-            clearVault() {
-                if(confirm("Confirm: DESTROY_ALL_DATA?")) {
-                    this.data.vault = [];
-                    this.renderVault();
-                    if(this.data.user) updateDoc(doc(db, "users", this.data.user.uid), { vocab: [] });
-                }
+        // State Management
+        const state = {
+            notebook: JSON.parse(localStorage.getItem('lingopro_vocab')) || [],
+            player: null,
+            currentTranslation: { src: '', vi: '' },
+            isDashboardOpen: false,
+            myChart: null, // Thêm cho Chart
+            quiz: {
+                currentStep: 0,
+                score: 0,
+                lives: 3,
+                data: []
             }
         };
 
-        System.init();
+        // UI Initialization
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                gsap.to('#loader', { opacity: 0, pointerEvents: 'none', duration: 1 });
+                updateNotebookUI();
+            }, 1500);
+        });
+
+        // Youtube Player Logic
+        function onYouTubeIframeAPIReady() {
+            // Player will be initialized on Process button click
+        }
+
+        function extractVideoID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Process Content
+        document.getElementById('process-btn').addEventListener('click', function() {
+            const rawText = document.getElementById('lyric-input').value.trim();
+            const ytUrl = document.getElementById('yt-url').value.trim();
+            const btn = this;
+
+            if (!rawText) return alert("Please enter some text or lyrics!");
+
+            // Animation Feedback
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> Processing...';
+            btn.disabled = true;
+
+            // Handle Video
+            const videoId = extractVideoID(ytUrl);
+            if (videoId) {
+                if (state.player) {
+                    state.player.loadVideoById(videoId);
+                } else {
+                    state.player = new YT.Player('player', {
+                        videoId: videoId,
+                        width: '100%',
+                        height: '100%',
+                        playerVars: { 'autoplay': 1, 'playsinline': 1 }
+                    });
+                }
+            }
+
+            // Handle Lyrics Parsing
+            setTimeout(() => {
+                renderLyrics(rawText);
+                btn.innerHTML = 'Compile Study Session';
+                btn.disabled = false;
+                
+                // Track Analytics
+                trackEvent('session_start', { wordCount: rawText.split(/\s+/).length });
+            }, 800);
+        });
+
+        function renderLyrics(text) {
+            const container = document.getElementById('lyric-display');
+            container.innerHTML = "";
+            let wordCount = 0;
+
+            text.split('\n').forEach(line => {
+                if (!line.trim()) return;
+
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'lyric-line group';
+                
+                const words = line.split(/(\s+)/);
+                words.forEach(token => {
+                    if (/\s+/.test(token)) {
+                        lineDiv.appendChild(document.createTextNode(token));
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'source-word';
+                        span.innerText = token;
+                        
+                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
+                        span.onclick = (e) => {
+                            e.stopPropagation();
+                            if (window.getSelection().toString().length === 0) {
+                                triggerTranslation(cleanWord);
+                            }
+                        };
+                        lineDiv.appendChild(span);
+                        wordCount++;
+                    }
+                });
+
+                container.appendChild(lineDiv);
+            });
+
+            document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
+            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
+        }
+
+        // Translation Engine
+        async function triggerTranslation(text) {
+            if (!text || text.length < 1) return; // Sửa length nhẹ
+
+            const pop = document.getElementById('translation-popup');
+            const popSrc = document.getElementById('pop-src');
+            const popVi = document.getElementById('pop-vi');
+            const target = document.getElementById('target-lang').value;
+
+            popSrc.innerText = text;
+            popVi.innerText = "Thinking...";
+            pop.classList.add('active');
+
+            try {
+                const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
+                const data = await response.json();
+                const result = data[0][0][0];
+                
+                popVi.innerText = result;
+                state.currentTranslation = { src: text, vi: result };
+            } catch (error) {
+                popVi.innerText = "Error translation";
+            }
+        }
+
+        function handleSelection() {
+            const selection = window.getSelection().toString().trim();
+            if (selection.length > 2 && selection.length < 200) {
+                triggerTranslation(selection);
+            }
+        }
+
+        // Vocabulary Notebook
+        function saveToNotebook() {
+            const { src, vi } = state.currentTranslation;
+            if (!src || learnedBefore(src)) return;
+
+            state.notebook.unshift({ src, vi, date: new Date().toLocaleDateString() });
+            localStorage.setItem('lingopro_vocab', JSON.stringify(state.notebook));
+            updateNotebookUI();
+            
+            // Visual feedback
+            gsap.from('#notebook-sidebar', { borderColor: '#ec4899', borderWidth: 4, duration: 0.5 });
+        }
+
+        function learnedBefore(word) {
+            return state.notebook.some(item => item.src.toLowerCase() === word.toLowerCase());
+        }
+
+        function updateNotebookUI() {
+            const list = document.getElementById('notebook-list');
+            list.innerHTML = state.notebook.length === 0 
+                ? '<p class="text-xs text-slate-600 italic">No saved words yet.</p>' 
+                : '';
+
+            state.notebook.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'glass-card p-4 hover:border-indigo-500/50 transition cursor-pointer relative group mb-2';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-indigo-400 mb-1">${item.src}</p>
+                            <p class="text-sm font-black text-white">${item.vi}</p>
+                        </div>
+                        <button onclick="removeVocab(${index})" class="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-500 transition">
+                            <i class="fa-solid fa-trash-can text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+                div.onclick = () => speakText(item.src);
+                list.appendChild(div);
+            });
+        }
+
+        function removeVocab(index) {
+            state.notebook.splice(index, 1);
+            localStorage.setItem('lingopro_vocab', JSON.stringify(state.notebook));
+            updateNotebookUI();
+        }
+
+        function clearNotebook() {
+            if (confirm("Delete all saved vocabulary?")) {
+                state.notebook = [];
+                localStorage.removeItem('lingopro_vocab');
+                updateNotebookUI();
+            }
+        }
+
+        // Audio System
+        function speakText(customText = null) {
+            const text = customText || state.currentTranslation.src;
+            if (!text) return;
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            const lang = document.getElementById('target-lang').value;
+            
+            // Basic language mapping
+            const map = { 'vi': 'vi-VN', 'en': 'en-US', 'ko': 'ko-KR', 'ja': 'ja-JP' };
+            utterance.lang = map[lang] || 'en-US';
+            utterance.rate = document.getElementById('playback-speed').value;
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // QUIZ MANAGEMENT
+        function openQuiz() {
+            if (state.notebook.length < 5) {
+                return alert("You need at least 5 saved words to start a quiz!");
+            }
+            
+            document.getElementById('quiz-overlay').style.display = 'flex';
+            document.getElementById('quiz-loading').style.display = 'block';
+            document.getElementById('quiz-main').style.display = 'none';
+            document.getElementById('quiz-finish').style.display = 'none';
+
+            setTimeout(() => {
+                startQuiz();
+            }, 1000);
+        }
+
+        function startQuiz() {
+            state.quiz.currentStep = 0;
+            state.quiz.score = 0;
+            state.quiz.lives = 3;
+            
+            const pool = [...state.notebook].sort(() => 0.5 - Math.random());
+            state.quiz.data = pool.slice(0, 10).map(item => {
+                const distractors = state.notebook
+                    .filter(i => i.vi !== item.vi)
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 3)
+                    .map(i => i.vi);
+                
+                return {
+                    q: item.src,
+                    a: item.vi,
+                    options: [item.vi, ...distractors].sort(() => 0.5 - Math.random())
+                };
+            });
+
+            document.getElementById('quiz-loading').style.display = 'none';
+            document.getElementById('quiz-main').style.display = 'block';
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const current = state.quiz.data[state.quiz.currentStep];
+            document.getElementById('quiz-step').innerText = `Question ${state.quiz.currentStep + 1}/10`;
+            document.getElementById('quiz-lives').innerText = state.quiz.lives;
+            document.getElementById('quiz-question').innerText = current.q;
+
+            const optContainer = document.getElementById('quiz-options');
+            optContainer.innerHTML = "";
+
+            current.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-option w-full py-5 px-6 rounded-2xl font-bold text-lg';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                optContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(answer, btn) {
+            const correct = state.quiz.data[state.quiz.currentStep].a;
+            const buttons = document.querySelectorAll('.quiz-option');
+            buttons.forEach(b => b.disabled = true);
+
+            if (answer === correct) {
+                btn.classList.add('correct');
+                state.quiz.score++;
+                gsap.from(btn, { scale: 1.1, duration: 0.3 });
+            } else {
+                btn.classList.add('wrong');
+                state.quiz.lives--;
+                buttons.forEach(b => {
+                    if (b.innerText === correct) b.classList.add('correct');
+                });
+            }
+
+            setTimeout(() => {
+                state.quiz.currentStep++;
+                if (state.quiz.currentStep < state.quiz.data.length && state.quiz.lives > 0) {
+                    renderQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 1200);
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-main').style.display = 'none';
+            document.getElementById('quiz-finish').style.display = 'block';
+            document.getElementById('quiz-final-score').innerText = `You mastered ${state.quiz.score}/10 words`;
+        }
+
+        function closeQuiz() {
+            document.getElementById('quiz-overlay').style.display = 'none';
+        }
+
+        // PHẦN THÊM: DASHBOARD LOGIC
+        function toggleDashboard() {
+            const dash = document.getElementById('dashboard-overlay');
+            if (dash.classList.contains('hidden')) {
+                dash.classList.remove('hidden');
+                updateDashboardData();
+                gsap.from(dash.querySelector('.glass-card'), { scale: 0.8, opacity: 0, duration: 0.4, ease: "back.out(1.7)" });
+            } else {
+                dash.classList.add('hidden');
+            }
+        }
+
+        function updateDashboardData() {
+            document.getElementById('stat-vocab').innerText = state.notebook.length;
+            document.getElementById('stat-accuracy').innerText = state.quiz.score > 0 ? Math.round((state.quiz.score / 10) * 100) + "%" : "0%";
+
+            const ctx = document.getElementById('learningChart').getContext('2d');
+            if (state.myChart) state.myChart.destroy();
+            
+            state.myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    datasets: [{
+                        label: 'Từ vựng mới',
+                        data: [2, 8, 4, 10, state.notebook.length, 0, 0],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        // Global Helpers
+        function closePopup() {
+            document.getElementById('translation-popup').classList.remove('active');
+        }
+
+        function trackEvent(name, props) {
+            console.log(`[Analytics] ${name}`, props);
+        }
+
+        // Utility: Auto-scroll with player time
+        setInterval(() => {
+            if (state.player && state.player.getCurrentTime && document.getElementById('auto-scroll').checked) {
+                // Placeholder for sync
+            }
+        }, 1000);
+
     </script>
 </body>
 </html>
