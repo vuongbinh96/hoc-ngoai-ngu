@@ -3,385 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro OS v9.0 | Ultimate Hardcore Training Protocol</title>
+    <title>LingoPro OS v9.5 | Wide Vision Terminal</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
-        /* [CSS ARCHITECTURE - LAYER 1: DESIGN TOKENS]
-           Sử dụng hơn 100 dòng CSS để định nghĩa hệ thống Design System chuẩn Enterprise.
-        */
+        /* [DESIGN SYSTEM - WIDE MODE] */
         :root {
-            --primary: #6366f1; --primary-hover: #4f46e5;
-            --secondary: #ec4899; --accent: #f59e0b;
-            --background: #030712; --surface: #111827;
-            --surface-light: #1f2937; --border: rgba(255,255,255,0.06);
-            --text-main: #f8fafc; --text-muted: #94a3b8;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-            --font-main: 'Plus Jakarta Sans', sans-serif;
-            --font-mono: 'Space Grotesk', sans-serif;
-            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.2);
+            --primary: #6366f1; --primary-dark: #4338ca;
+            --secondary: #ec4899; --bg: #020617;
+            --surface: #0f172a; --border: rgba(255,255,255,0.08);
+            --text-main: #f8fafc; --text-dim: #64748b;
         }
 
-        /* [RESET & SCROLLBAR] */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-main); }
-        body { background-color: var(--background); color: var(--text-main); height: 100vh; overflow: hidden; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: var(--background); }
-        ::-webkit-scrollbar-thumb { background: var(--surface-light); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); height: 100vh; overflow: hidden; }
 
-        /* [UTILITY CLASSES - GLASSMORPHISM] */
-        .glass { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(12px); border: 1px solid var(--border); }
-        .glass-heavy { background: rgba(3, 7, 18, 0.95); backdrop-filter: blur(25px); }
-        .neon-border { border: 1px solid var(--primary); box-shadow: var(--shadow-glow); }
+        /* [LAYOUT: CANH ĐỀU 2 BÊN] */
+        .app-wrapper {
+            display: grid;
+            grid-template-columns: 20% 55% 25%; /* Căn tỷ lệ rộng cho Terminal chính */
+            height: calc(100vh - 64px);
+            width: 100%;
+        }
 
-        /* [LAYOUT GRID] */
-        .main-layout { display: grid; grid-template-columns: 380px 1fr 420px; height: calc(100vh - 64px); }
-        
-        /* [ANIMATIONS] */
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        @keyframes pulse-danger { 0%, 100% { color: var(--danger); opacity: 1; } 50% { opacity: 0.3; } }
-        .timer-critical { animation: pulse-danger 1s infinite; font-weight: 900; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); } 20%, 40%, 60%, 80% { transform: translateX(5px); } }
-        .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
 
         /* [COMPONENTS] */
-        .word-node {
-            display: inline-block; padding: 2px 6px; margin: 0 2px; border-radius: 6px;
-            cursor: pointer; transition: var(--transition-smooth); border: 1px solid transparent;
+        .terminal-scroll {
+            padding: 40px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
         }
-        .word-node:hover { background: var(--primary); color: white; transform: scale(1.05); box-shadow: var(--shadow-glow); }
+
+        .word-token {
+            display: inline-block; padding: 0 4px; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s ease;
+            color: var(--text-dim); border-bottom: 1px solid transparent;
+        }
+        .word-token:hover {
+            color: var(--primary); background: rgba(99, 102, 241, 0.1);
+            border-bottom: 1px solid var(--primary); transform: translateY(-1px);
+        }
+
+        .input-glow:focus {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+            border-color: var(--primary);
+        }
+
+        #hud-terminal {
+            position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%);
+            width: 800px; max-width: 90vw; transition: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 1000;
+        }
+        #hud-terminal.active { bottom: 30px; }
+
+        /* [X-50 HARDCORE UI] */
+        #x50-portal {
+            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+            display: none; opacity: 0;
+        }
+
+        .quiz-input {
+            background: transparent; border-bottom: 4px solid var(--primary);
+            outline: none; font-size: 2.8rem; font-weight: 800; text-align: center;
+            color: var(--secondary); font-family: 'Fira Code', monospace; width: 300px;
+        }
+
+        /* Animations */
+        @keyframes pulse-border { 0% { border-color: var(--border); } 50% { border-color: var(--primary); } 100% { border-color: var(--border); } }
+        .syncing { animation: pulse-border 2s infinite; }
         
-        #hud-card {
-            position: fixed; bottom: -600px; left: 50%; transform: translateX(-50%);
-            width: 600px; z-index: 1000; transition: bottom 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        #hud-card.active { bottom: 40px; }
-
-        .training-input {
-            background: transparent; border-bottom: 4px solid var(--primary); outline: none;
-            text-align: center; color: var(--secondary); font-weight: 800; font-size: 2.2rem;
-            min-width: 160px; margin: 0 15px; font-family: var(--font-mono);
-        }
-
-        #training-screen {
-            position: fixed; inset: 0; background: var(--background); z-index: 9999;
-            display: none; opacity: 0; flex-direction: column;
-        }
-
-        /* [VAULT STYLING] */
-        .vault-item {
-            padding: 1.25rem; border-radius: 1.5rem; background: var(--surface);
-            border: 1px solid var(--border); transition: var(--transition-smooth);
-            cursor: pointer; position: relative; overflow: hidden;
-        }
-        .vault-item:hover { transform: translateX(5px); border-color: var(--primary); }
-        .vault-item::before {
-            content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px;
-            background: var(--primary); opacity: 0; transition: 0.3s;
-        }
-        .vault-item:hover::before { opacity: 1; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
     </style>
 </head>
 <body>
 
-    <div id="loader-overlay" class="fixed inset-0 z-[10000] bg-black flex flex-col items-center justify-center">
-        <div class="relative w-32 h-32 mb-12">
-            <div class="absolute inset-0 border-4 border-indigo-500/10 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-            <div class="absolute inset-4 border-2 border-pink-500 border-b-transparent rounded-full animate-spin" style="animation-direction: reverse; animation-duration: 2s;"></div>
-            <i class="fa-solid fa-brain absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-3xl text-indigo-500"></i>
-        </div>
-        <div class="text-center">
-            <h2 class="text-2xl font-black italic tracking-widest text-white mb-2 uppercase">LingoPro OS Core</h2>
-            <div class="w-64 h-1 bg-white/5 rounded-full overflow-hidden mx-auto">
-                <div id="boot-progress" class="h-full bg-indigo-500 transition-all duration-300" style="width: 0%"></div>
-            </div>
-            <p id="boot-status" class="mt-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.5em]">Initializing Neural Handshake...</p>
-        </div>
-    </div>
-
-    <div id="auth-screen" class="fixed inset-0 z-[9000] bg-slate-950 flex items-center justify-center p-8">
-        <div class="glass max-w-xl w-full p-16 rounded-[60px] shadow-2xl relative">
-            <div class="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/10 blur-[100px] rounded-full"></div>
-            <div class="relative z-10 text-center">
-                <div class="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center shadow-2xl mb-10 transform -rotate-12">
-                    <i class="fa-solid fa-shield-halved text-white text-3xl"></i>
-                </div>
-                <h1 class="text-6xl font-black italic tracking-tighter mb-4">Neural<br><span class="text-indigo-500">Uplink.</span></h1>
-                <p class="text-slate-400 font-medium mb-12">Authorized Personnel Only - Node Access</p>
-                <div class="space-y-4 mb-10">
-                    <div class="relative">
-                        <i class="fa-solid fa-envelope absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                        <input type="email" id="auth-email" class="w-full bg-slate-900 border border-slate-800 rounded-3xl py-6 pl-14 pr-8 outline-none focus:border-indigo-500 transition font-bold" placeholder="Registry Email">
-                    </div>
-                    <div class="relative">
-                        <i class="fa-solid fa-key absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                        <input type="password" id="auth-pass" class="w-full bg-slate-900 border border-slate-800 rounded-3xl py-6 pl-14 pr-8 outline-none focus:border-indigo-500 transition font-bold" placeholder="Master Key">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="SystemCore.auth('login')" class="bg-indigo-600 hover:bg-indigo-500 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/20 active:scale-95 transition">Login</button>
-                    <button onclick="SystemCore.auth('register')" class="bg-slate-800 hover:bg-slate-700 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-widest active:scale-95 transition">Register</button>
-                </div>
-                <p id="auth-feedback" class="mt-8 text-[10px] font-black uppercase text-rose-500 italic h-4 tracking-widest"></p>
-            </div>
-        </div>
-    </div>
-
-    <nav class="h-16 border-b border-white/5 glass-heavy flex items-center justify-between px-12 relative z-50">
-        <div class="flex items-center gap-8">
+    <nav class="h-16 border-b border-white/5 px-8 flex items-center justify-between glass-panel !flex-row">
+        <div class="flex items-center gap-6">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3">
-                    <i class="fa-solid fa-bolt text-white text-sm"></i>
+                <div class="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg transform rotate-12">
+                    <i class="fa-solid fa-bolt-lightning text-white text-sm"></i>
                 </div>
-                <span class="font-black text-2xl tracking-tighter italic uppercase">Lingo<span class="text-indigo-500 not-italic">Pro</span> <span class="text-[10px] ml-1 opacity-50">v9.0</span></span>
+                <span class="text-xl font-extrabold italic tracking-tighter uppercase">LPRO <span class="text-indigo-500">VISION</span></span>
             </div>
-            <div class="h-6 w-[1px] bg-white/10 mx-2"></div>
-            <div class="hidden md:flex items-center gap-6">
-                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Sync Active
-                </span>
-            </div>
+            <div class="h-6 w-[1px] bg-white/10"></div>
+            <p id="system-clock" class="text-[10px] font-mono text-slate-500 mt-1 uppercase tracking-widest"></p>
         </div>
+
         <div class="flex items-center gap-8">
-            <div class="flex items-center gap-3 bg-slate-900/50 border border-white/5 px-6 py-2 rounded-full">
-                <i class="fa-solid fa-earth-americas text-indigo-500 text-xs"></i>
-                <select id="target-lang" class="bg-transparent text-[10px] font-black uppercase outline-none cursor-pointer">
-                    <option value="vi">Vietnamese (Default)</option>
-                    <option value="en">English (US)</option>
-                    <option value="ja">Japanese</option>
-                    <option value="fr">French</option>
-                </select>
+            <div class="hidden md:flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <p id="user-identity" class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Captain Offline</p>
             </div>
-            <div class="flex items-center gap-4 border-l border-white/10 pl-8">
-                <div class="text-right">
-                    <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Authenticated As</p>
-                    <p id="user-display" class="text-xs font-bold text-white uppercase italic tracking-tighter">Captain</p>
-                </div>
-                <button onclick="SystemCore.logout()" class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center hover:text-rose-500 transition">
-                    <i class="fa-solid fa-power-off text-xs"></i>
-                </button>
-            </div>
+            <button onclick="System.logout()" class="text-slate-500 hover:text-rose-500 transition-all"><i class="fa-solid fa-power-off text-sm"></i></button>
         </div>
     </nav>
 
-    <div class="main-layout">
-        <aside class="glass border-r-0 p-8 space-y-10 overflow-y-auto">
-            <section class="space-y-6">
+    <div class="app-wrapper">
+        <aside class="glass-panel p-6 space-y-8">
+            <div class="space-y-4">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Video Feed</h3>
-                    <i class="fa-brands fa-youtube text-rose-600 animate-pulse"></i>
+                    <label class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Video Signal</label>
+                    <i class="fa-brands fa-youtube text-rose-600 text-xs"></i>
                 </div>
-                <div class="aspect-video bg-black rounded-[40px] overflow-hidden shadow-2xl border border-white/5 relative group">
-                    <div id="yt-player"></div>
-                    <div id="yt-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900">
-                        <i class="fa-solid fa-play text-4xl text-slate-700"></i>
-                        <p class="text-[9px] font-black uppercase text-slate-600 mt-4">Standby for Signal</p>
-                    </div>
+                <div class="aspect-video bg-black rounded-2xl overflow-hidden border border-white/5" id="video-frame">
+                    <div id="yt-player-core"></div>
                 </div>
-                <div class="relative group">
-                    <input type="text" id="yt-input" placeholder="Paste Neural URL..." class="w-full bg-slate-900/50 border border-slate-800 rounded-3xl py-5 px-8 text-xs font-bold outline-none focus:border-indigo-500 transition-all placeholder:text-slate-600">
-                </div>
-            </section>
+                <input type="text" id="input-url" placeholder="YouTube Neural Link..." class="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 px-4 text-xs font-bold outline-none input-glow transition">
+            </div>
 
-            <section class="space-y-6">
+            <div class="flex-1 flex flex-col space-y-4">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Raw Data Buffer</h3>
-                    <span id="buffer-size" class="text-[9px] font-bold text-slate-600 uppercase">0 Tokens</span>
+                    <label class="text-[9px] font-black uppercase tracking-[0.3em] text-slate-500">Raw Transcript</label>
+                    <span id="char-count" class="text-[8px] font-mono text-slate-600">0 CHARS</span>
                 </div>
-                <div class="glass p-3 rounded-[40px] bg-slate-950/40">
-                    <textarea id="raw-buffer" rows="14" placeholder="Inject academic or technical text data here..." class="w-full bg-transparent border-none rounded-[32px] p-6 text-sm font-medium resize-none focus:ring-0 leading-relaxed scrollbar-hide text-slate-300"></textarea>
-                    <button id="cmd-compile" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-5 rounded-3xl font-black text-[11px] uppercase tracking-[0.3em] transition-all mt-4 shadow-xl shadow-indigo-600/20 active:scale-95">
-                        Compile Environment
-                    </button>
-                </div>
-            </section>
+                <textarea id="input-transcript" class="flex-1 bg-slate-900/50 border border-slate-800 rounded-2xl p-5 text-sm outline-none resize-none input-glow transition leading-relaxed text-slate-300" placeholder="Paste English text here..."></textarea>
+                <button onclick="System.compile()" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all active:scale-95">Compile Environment</button>
+            </div>
         </aside>
 
-        <main class="relative bg-[#02040a] flex flex-col border-x border-white/5">
-            <header class="px-14 py-10 flex justify-between items-end glass-heavy sticky top-0 z-40">
+        <main class="flex flex-col relative bg-slate-950">
+            <div class="p-10 flex justify-between items-end border-b border-white/5 glass-panel !bg-transparent !border-r-0">
                 <div>
-                    <div class="flex items-center gap-3 mb-3">
-                        <span class="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-[9px] font-black uppercase tracking-widest border border-indigo-500/10">Workspace Alpha</span>
-                        <span id="stat-words" class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[9px] font-black uppercase tracking-widest border border-emerald-500/10">0 Words Loaded</span>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 text-[8px] font-black uppercase tracking-tighter">Active Workspace</span>
                     </div>
-                    <h1 class="text-5xl font-black italic tracking-tighter italic">LPRO <span class="text-slate-700">Terminal.</span></h1>
+                    <h1 class="text-4xl font-black italic tracking-tighter">Neural <span class="text-slate-700">Display.</span></h1>
                 </div>
-                <button onclick="SystemCore.initX50()" class="bg-indigo-600 hover:bg-pink-600 px-10 py-4 rounded-full text-[11px] font-black uppercase tracking-[0.3em] transition-all hover:scale-105 shadow-2xl shadow-indigo-600/20 group">
-                    <i class="fa-solid fa-bolt mr-2 group-hover:animate-bounce"></i> X-50 Protocol
-                </button>
-            </header>
+                <button onclick="System.initX50()" class="bg-gradient-to-r from-indigo-600 to-pink-600 px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl">Start X-50 Hardcore</button>
+            </div>
 
-            <div id="neural-view" class="flex-1 overflow-y-auto px-16 py-16 space-y-12">
-                <div class="opacity-10 text-center py-48 grayscale">
-                    <i class="fa-solid fa-satellite-dish text-[160px] mb-12 animate-pulse"></i>
-                    <p class="text-4xl font-black uppercase tracking-tighter italic">Ready for Data Injection</p>
-                    <p class="text-xs font-bold text-slate-500 mt-4 uppercase tracking-[1em]">Core v9.0 Stable</p>
+            <div id="terminal-output" class="terminal-scroll flex-1">
+                <div class="h-full flex flex-col items-center justify-center text-slate-800">
+                    <i class="fa-solid fa-microchip text-7xl mb-6 opacity-20"></i>
+                    <p class="text-sm font-bold uppercase tracking-[1em] opacity-20">Standby for Data</p>
                 </div>
             </div>
 
-            <div id="hud-card" class="glass-heavy rounded-[60px] p-12 shadow-2xl border-t-4 border-indigo-600">
-                <div class="flex justify-between items-start mb-12">
+            <div id="hud-terminal" class="glass-panel !bg-slate-900/95 !border-none rounded-[30px] p-8 shadow-2xl ring-1 ring-white/10">
+                <div class="flex justify-between items-center">
                     <div class="flex-1">
-                        <div class="flex items-center gap-4 mb-5">
-                            <span class="px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[10px] font-black uppercase tracking-widest">Neural Definition</span>
-                            <span id="pos-type" class="px-4 py-1.5 rounded-full bg-pink-500/10 text-pink-500 text-[10px] font-black uppercase tracking-widest italic">Token</span>
+                        <div class="flex items-center gap-4 mb-3">
+                            <span id="hud-type" class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Token</span>
+                            <div class="h-1 w-1 rounded-full bg-slate-700"></div>
+                            <span id="hud-src" class="text-[10px] font-bold text-slate-500 uppercase">Original</span>
                         </div>
-                        <h3 id="target-token" class="text-xs font-black text-slate-500 uppercase tracking-[0.5em] mb-3">Source Data</h3>
-                        <h2 id="neural-output" class="text-6xl font-black text-white italic tracking-tighter leading-tight">Analyzing...</h2>
+                        <h2 id="hud-res" class="text-5xl font-black italic tracking-tighter text-white">Analyzing...</h2>
                     </div>
-                    <div class="flex flex-col gap-5">
-                        <button onclick="SystemCore.audioSynth()" class="w-16 h-16 rounded-3xl bg-slate-900 border border-white/5 hover:bg-indigo-600 flex items-center justify-center transition shadow-2xl group">
-                            <i class="fa-solid fa-volume-high text-xl group-hover:scale-125 transition"></i>
-                        </button>
-                        <button onclick="SystemCore.saveToVault()" class="w-16 h-16 rounded-3xl bg-slate-900 border border-white/5 hover:bg-pink-600 flex items-center justify-center transition shadow-2xl group">
-                            <i class="fa-solid fa-plus text-xl group-hover:scale-125 transition"></i>
-                        </button>
+                    <div class="flex gap-3">
+                        <button onclick="System.speak()" class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-indigo-600 transition"><i class="fa-solid fa-volume-high"></i></button>
+                        <button onclick="System.saveToVault()" class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center hover:bg-pink-600 transition"><i class="fa-solid fa-plus"></i></button>
+                        <button onclick="System.closeHUD()" class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center hover:text-rose-500 transition"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                </div>
-                <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em]">
-                    <div class="flex items-center gap-3 text-emerald-500">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                        Neural Connection Stable
-                    </div>
-                    <button onclick="SystemCore.closeHUD()" class="text-slate-500 hover:text-white transition">Dismiss Interface</button>
                 </div>
             </div>
         </main>
 
-        <aside class="glass border-l-0 p-10 flex flex-col">
-            <div class="flex items-center justify-between mb-12">
+        <aside class="glass-panel p-8 !border-r-0 !border-l">
+            <div class="flex justify-between items-center mb-8">
                 <div>
-                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em]">Neural Vault</h3>
-                    <p id="vault-stat" class="text-[10px] font-bold text-indigo-500 mt-2 uppercase tracking-widest italic">0 Tokens Synced</p>
+                    <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Neural Vault</h3>
+                    <p id="vault-status" class="text-[10px] font-bold text-indigo-500 mt-1 uppercase italic">0 Tokens Synced</p>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="SystemCore.exportData()" class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center hover:text-indigo-400 transition"><i class="fa-solid fa-download text-[10px]"></i></button>
-                    <button onclick="SystemCore.clearVault()" class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center hover:text-rose-500 transition"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+                <div class="flex gap-2">
+                    <button onclick="System.export()" class="w-8 h-8 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 hover:text-indigo-400 transition"><i class="fa-solid fa-download text-[10px]"></i></button>
+                    <button onclick="System.clearVault()" class="w-8 h-8 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 hover:text-rose-500 transition"><i class="fa-solid fa-trash text-[10px]"></i></button>
                 </div>
             </div>
 
-            <div id="vault-list" class="flex-1 space-y-5 overflow-y-auto pr-3 scrollbar-hide">
+            <div class="relative mb-6">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 text-xs"></i>
+                <input type="text" id="vault-search" placeholder="Filter tokens..." class="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-xs font-bold outline-none focus:border-indigo-500 transition">
+            </div>
+
+            <div id="vault-items" class="flex-1 overflow-y-auto space-y-3 pr-2">
                 </div>
 
-            <div class="mt-12 p-10 rounded-[48px] bg-slate-900/50 border border-white/5 relative overflow-hidden group">
-                <div class="absolute -bottom-12 -right-12 w-40 h-40 bg-indigo-600/10 blur-[60px] rounded-full group-hover:bg-indigo-600/20 transition-all"></div>
-                <div class="relative z-10">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                            <i class="fa-solid fa-chart-line text-indigo-500 text-xs"></i>
-                        </div>
-                        <p class="text-[11px] font-black uppercase tracking-widest text-white italic">Mastery Engine</p>
-                    </div>
-                    <div class="h-2.5 bg-slate-950 rounded-full overflow-hidden mb-5 shadow-inner">
-                        <div id="mastery-progress" class="h-full bg-gradient-to-r from-indigo-600 via-pink-500 to-indigo-600 transition-all duration-1000 bg-[length:200%_auto] animate-gradient" style="width: 0%"></div>
-                    </div>
-                    <div class="flex justify-between items-center text-[10px] font-black uppercase text-slate-500 tracking-widest">
-                        <span id="mastery-percent">0% Optimized</span>
-                        <span id="rank-display">Neophyte Node</span>
-                    </div>
+            <div class="mt-8 p-6 rounded-3xl bg-indigo-600/5 border border-indigo-500/10 relative overflow-hidden group">
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-[10px] font-black text-slate-500 uppercase">Mastery Index</p>
+                    <i class="fa-solid fa-chart-line text-indigo-500 text-xs"></i>
                 </div>
+                <div class="h-1.5 bg-slate-900 rounded-full overflow-hidden mb-3">
+                    <div id="mastery-progress" class="h-full bg-indigo-500 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <p id="mastery-text" class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest">Level 1 - Neophyte</p>
             </div>
         </aside>
     </div>
 
-    <div id="training-screen">
-        <div class="h-28 glass-heavy flex items-center justify-between px-20 border-b border-white/5">
-            <div class="flex items-center gap-12">
-                <div class="flex flex-col">
-                    <h2 class="text-3xl font-black italic tracking-tighter uppercase">Protocol <span class="text-indigo-500">X-50</span></h2>
-                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.5em] mt-1">Maximum Hardcore Mode</p>
-                </div>
-                <div class="h-12 w-[1px] bg-white/10"></div>
-                <div class="flex flex-col">
-                    <p id="q-counter" class="text-xs font-black text-white uppercase tracking-[0.3em]">Token 01 / 50</p>
-                    <div class="w-32 h-1 bg-slate-800 rounded-full mt-2 overflow-hidden">
-                        <div id="q-progress-bar" class="h-full bg-indigo-500 transition-all" style="width: 2%"></div>
+    <div id="x50-portal" class="flex flex-col">
+        <header class="h-24 px-12 flex justify-between items-center border-b border-white/5 glass-panel !border-none !bg-slate-900/50">
+            <div class="flex items-center gap-10">
+                <h2 class="text-2xl font-black italic tracking-tighter uppercase">Protocol <span class="text-indigo-500">X-50</span></h2>
+                <div class="h-10 w-[1px] bg-white/10"></div>
+                <div class="space-y-1">
+                    <p id="q-index" class="text-xs font-black text-white uppercase tracking-widest">Token 01/50</p>
+                    <div class="w-32 h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div id="q-bar" class="h-full bg-indigo-600 transition-all" style="width: 2%"></div>
                     </div>
                 </div>
             </div>
             <div class="flex items-center gap-12">
                 <div class="text-right">
-                    <p class="text-[9px] font-black uppercase text-slate-500 tracking-widest mb-1">Time to Terminal</p>
-                    <p id="countdown-timer" class="text-4xl font-black italic tracking-widest text-white font-mono">25:00</p>
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Terminal Deadline</p>
+                    <p id="quiz-timer" class="text-4xl font-black italic text-white font-mono tracking-widest">25:00</p>
                 </div>
-                <button onclick="SystemCore.abortX50()" class="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition shadow-2xl">
-                    <i class="fa-solid fa-power-off text-lg"></i>
-                </button>
+                <button onclick="System.exitX50()" class="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition shadow-xl"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-        </div>
+        </header>
 
-        <div class="h-1.5 bg-slate-950">
-            <div id="global-sync-bar" class="h-full bg-gradient-to-r from-indigo-600 to-pink-600 transition-all" style="width: 0%"></div>
-        </div>
-
-        <div class="flex-1 flex flex-col items-center justify-center p-24 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/10 via-background to-background">
-            <div id="challenge-box" class="max-w-6xl w-full text-center space-y-24">
-                <div class="space-y-8">
-                    <span class="px-6 py-2 rounded-full bg-indigo-500/10 text-indigo-400 text-[11px] font-black uppercase tracking-[0.5em] border border-indigo-500/10">Neural Gap Analysis</span>
-                    <h3 id="q-text" class="text-5xl font-medium leading-[1.4] tracking-tight text-slate-200 px-12">
-                        </h3>
+        <div class="flex-1 flex flex-col items-center justify-center p-20 relative">
+            <div id="quiz-core" class="max-w-5xl w-full text-center space-y-16">
+                <div class="space-y-6">
+                    <span class="px-4 py-1 rounded bg-indigo-500/10 text-indigo-500 text-[10px] font-black uppercase tracking-widest">Contextual Analysis</span>
+                    <h3 id="quiz-sen" class="text-4xl font-medium leading-relaxed text-slate-200 px-10"></h3>
                 </div>
-
-                <div class="space-y-8">
-                    <p id="q-hint" class="text-2xl text-slate-500 italic font-light tracking-wide"></p>
-                    <div id="feedback-msg" class="h-12 font-black uppercase text-sm tracking-[0.5em] flex items-center justify-center italic"></div>
+                
+                <div class="space-y-6">
+                    <p id="quiz-hint" class="text-xl text-slate-500 italic"></p>
+                    <div id="quiz-feedback" class="h-8 font-black uppercase text-sm italic tracking-widest"></div>
                 </div>
 
                 <div class="flex justify-center">
-                    <button id="btn-verify" onclick="SystemCore.verifyAnswer()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-20 py-7 rounded-[40px] font-black uppercase tracking-[0.4em] shadow-[0_20px_50px_rgba(99,102,241,0.3)] transition-all active:scale-95 group">
-                        Verify Authentication <i class="fa-solid fa-arrow-right ml-4 group-hover:translate-x-2 transition"></i>
-                    </button>
+                    <button onclick="System.verifyX50()" class="bg-indigo-600 px-20 py-6 rounded-2xl font-black uppercase tracking-[0.3em] shadow-2xl shadow-indigo-600/20 hover:bg-indigo-500 transition-all active:scale-95">Verify Token</button>
                 </div>
             </div>
 
-            <div id="result-screen" class="hidden text-center space-y-16">
-                <div class="relative inline-block">
-                    <div class="w-48 h-48 bg-indigo-600/10 rounded-[60px] flex items-center justify-center border-4 border-indigo-600 shadow-2xl mb-12 transform rotate-12">
-                        <i class="fa-solid fa-trophy text-7xl text-indigo-500 transform -rotate-12"></i>
-                    </div>
-                    <div class="absolute -top-4 -right-4 w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                        <i class="fa-solid fa-star text-white"></i>
-                    </div>
+            <div id="quiz-result" class="hidden text-center space-y-10">
+                <div class="w-32 h-32 bg-indigo-600 rounded-[40px] flex items-center justify-center mx-auto shadow-2xl rotate-12 mb-10"><i class="fa-solid fa-trophy text-5xl text-white -rotate-12"></i></div>
+                <h2 class="text-7xl font-black italic tracking-tighter">Mission <span class="text-indigo-500">Log.</span></h2>
+                <div class="grid grid-cols-3 gap-8 max-w-3xl mx-auto">
+                    <div class="glass-panel !border-none p-8 rounded-3xl"><p class="text-[10px] font-black text-slate-500 uppercase mb-2">Accuracy</p><p id="res-score" class="text-4xl font-black">0/50</p></div>
+                    <div class="glass-panel !border-none p-8 rounded-3xl"><p class="text-[10px] font-black text-slate-500 uppercase mb-2">Efficiency</p><p id="res-percent" class="text-4xl font-black">0%</p></div>
+                    <div class="glass-panel !border-none p-8 rounded-3xl"><p class="text-[10px] font-black text-slate-500 uppercase mb-2">Time Remaining</p><p id="res-time" class="text-4xl font-black">00:00</p></div>
                 </div>
-                <h2 class="text-8xl font-black italic tracking-tighter">Mission <span class="text-indigo-500">Report.</span></h2>
-                <div class="grid grid-cols-3 gap-12 max-w-5xl mx-auto">
-                    <div class="glass p-10 rounded-[48px]">
-                        <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4">Neural Accuracy</p>
-                        <p id="res-score" class="text-5xl font-black text-white italic">0/50</p>
-                    </div>
-                    <div class="glass p-10 rounded-[48px]">
-                        <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4">Sync Efficiency</p>
-                        <p id="res-percent" class="text-5xl font-black text-white italic">0%</p>
-                    </div>
-                    <div class="glass p-10 rounded-[48px]">
-                        <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-4">Time Remaining</p>
-                        <p id="res-time" class="text-5xl font-black text-white italic italic">00:00</p>
-                    </div>
-                </div>
-                <div class="flex gap-6 justify-center">
-                    <button onclick="SystemCore.initX50()" class="bg-indigo-600 text-white px-16 py-6 rounded-[32px] font-black uppercase tracking-widest hover:bg-indigo-500 shadow-xl transition">Restart Protocol</button>
-                    <button onclick="SystemCore.abortX50()" class="bg-slate-800 text-white px-16 py-6 rounded-[32px] font-black uppercase tracking-widest hover:bg-slate-700 transition">Return to Base</button>
-                </div>
+                <button onclick="location.reload()" class="bg-white text-black px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition">Reboot System</button>
             </div>
         </div>
     </div>
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script type="module">
-        /* [CORE PERSISTENCE LAYER] */
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDrNb8-wA4hbfIaJtqzvIYN5bh1pKxkLTw",
@@ -389,404 +268,292 @@
             projectId: "lingopro-app",
             storageBucket: "lingopro-app.firebasestorage.app",
             messagingSenderId: "850464589345",
-            appId: "1:850464589345:web:3be41aab2397cefc84c560",
-            measurementId: "G-TG37H2YQ12"
+            appId: "1:850464589345:web:3be41aab2397cefc84c560"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        /* [SYSTEM CORE OBJECT]
-           Chứa toàn bộ logic vận hành của LingoPro OS v9.0.
-        */
-        window.SystemCore = {
-            state: {
-                user: null,
-                vault: [],
-                sentences: [],
+        // [SYSTEM ENGINE CORE]
+        window.System = {
+            data: {
+                user: null, vault: [], sentences: [],
                 activeToken: { src: '', res: '' },
-                config: { lang: 'vi', autoSpeak: false },
-                training: {
-                    active: false,
-                    index: 0,
-                    score: 0,
-                    timer: 1500, // 25 Minutes
-                    pool: [],
-                    clock: null,
-                    startTime: null
-                }
+                ytPlayer: null,
+                x50: { running: false, index: 0, score: 0, timer: 1500, pool: [], clock: null }
             },
 
-            // [INIT PROTOCOL]
+            // Initialization Protocol
             init() {
-                console.log("SystemCore: Initializing Neural Protocol v9.0...");
+                this.updateClock();
                 this.bindEvents();
-                this.checkAuthStatus();
-                this.animateBoot();
+                this.listenToAuth();
+                setInterval(() => this.updateClock(), 1000);
             },
 
-            animateBoot() {
-                let p = 0;
-                const bar = document.getElementById('boot-progress');
-                const status = document.getElementById('boot-status');
-                const steps = ["Scanning Neural Pathways...", "Synchronizing Cloud Vault...", "Optimizing UI Engine...", "Protocol v9.0 Ready"];
-                
-                const interval = setInterval(() => {
-                    p += Math.random() * 15;
-                    if(p >= 100) {
-                        p = 100;
-                        clearInterval(interval);
-                        gsap.to("#loader-overlay", { opacity: 0, duration: 1.2, delay: 0.5, onComplete: () => {
-                            document.getElementById('loader-overlay').style.display = 'none';
-                        }});
-                    }
-                    bar.style.width = p + "%";
-                    status.innerText = steps[Math.floor(p/26)] || steps[3];
-                }, 150);
-            },
-
-            // [AUTH SERVICES]
-            async auth(mode) {
-                const email = document.getElementById('auth-email').value;
-                const pass = document.getElementById('auth-pass').value;
-                const feedback = document.getElementById('auth-feedback');
-                
-                if(!email || !pass) { feedback.innerText = "Error: Credentials Null"; return; }
-
-                try {
-                    feedback.innerText = "Requesting Uplink...";
-                    if(mode === 'register') {
-                        const res = await createUserWithEmailAndPassword(auth, email, pass);
-                        await setDoc(doc(db, "users", res.user.uid), { vocab: [], stats: { mastery: 0, level: 1 } });
+            listenToAuth() {
+                onAuthStateChanged(auth, async (u) => {
+                    if(u) {
+                        this.data.user = u;
+                        document.getElementById('user-identity').innerText = `Captain: ${u.email.split('@')[0]}`;
+                        const snap = await getDoc(doc(db, "users", u.uid));
+                        if(snap.exists()) {
+                            this.data.vault = snap.data().vocab || [];
+                            this.renderVault();
+                        }
                     } else {
-                        await signInWithEmailAndPassword(auth, email, pass);
-                    }
-                } catch (e) {
-                    feedback.innerText = `Denied: ${e.code.replace('auth/', '').replace('-', ' ')}`;
-                }
-            },
-
-            checkAuthStatus() {
-                onAuthStateChanged(auth, async (user) => {
-                    if(user) {
-                        this.state.user = user;
-                        document.getElementById('user-display').innerText = user.email.split('@')[0];
-                        document.getElementById('auth-screen').style.display = 'none';
-                        this.fetchVault();
-                    } else {
-                        document.getElementById('auth-screen').style.display = 'flex';
+                        // Redirect or show login if needed
+                        console.log("System Status: Offline");
                     }
                 });
             },
 
-            logout() { signOut(auth); },
+            logout() { signOut(auth).then(() => location.reload()); },
 
-            // [DATA SERVICES]
-            async fetchVault() {
-                if(!this.state.user) return;
-                const docSnap = await getDoc(doc(db, "users", this.state.user.uid));
-                if(docSnap.exists()) {
-                    this.state.vault = docSnap.data().vocab || [];
-                    this.renderVault();
+            updateClock() {
+                const now = new Date();
+                document.getElementById('system-clock').innerText = `NODE_STABLE // ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')} // ${now.toLocaleDateString()}`;
+            },
+
+            // Translation Core
+            async translate(query) {
+                if(!query) return;
+                const hud = document.getElementById('hud-terminal');
+                document.getElementById('hud-src').innerText = query;
+                document.getElementById('hud-res').innerText = "Analyzing...";
+                hud.classList.add('active');
+
+                try {
+                    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    const output = data[0][0][0];
+                    document.getElementById('hud-res').innerText = output;
+                    this.data.activeToken = { src: query, res: output };
+                    
+                    const tags = ["Noun", "Verb", "Adj", "Adv", "Phrase"];
+                    document.getElementById('hud-type').innerText = tags[Math.floor(Math.random() * tags.length)];
+                } catch (e) {
+                    document.getElementById('hud-res').innerText = "ERROR_SIGNAL_LOST";
                 }
             },
 
-            async syncVault() {
-                if(!this.state.user) return;
-                await updateDoc(doc(db, "users", this.state.user.uid), { vocab: this.state.vault });
+            async saveToVault() {
+                const { src, res } = this.data.activeToken;
+                if(!src || this.data.vault.some(v => v.src.toLowerCase() === src.toLowerCase())) return;
+                
+                this.data.vault.unshift({ src, res, timestamp: Date.now() });
+                this.renderVault();
+                this.closeHUD();
+                
+                // Firestore Sync
+                if(this.data.user) {
+                    await updateDoc(doc(db, "users", this.data.user.uid), { vocab: this.data.vault });
+                }
             },
 
-            // [UI RENDERERS]
-            renderVault() {
-                const list = document.getElementById('vault-list');
+            renderVault(filter = '') {
+                const list = document.getElementById('vault-items');
                 list.innerHTML = "";
-                this.state.vault.forEach((item, idx) => {
+                const filtered = this.data.vault.filter(v => v.src.toLowerCase().includes(filter.toLowerCase()));
+                
+                filtered.forEach((item, idx) => {
                     const card = document.createElement('div');
-                    card.className = "vault-item";
+                    card.className = "p-4 rounded-2xl bg-slate-900 border border-white/5 flex justify-between items-center group hover:border-indigo-500/30 transition-all cursor-pointer";
                     card.onclick = () => this.translate(item.src);
                     card.innerHTML = `
-                        <div class="flex justify-between items-center relative z-10">
-                            <div>
-                                <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">${item.src}</p>
-                                <p class="text-sm font-bold text-white tracking-tight">${item.res}</p>
-                            </div>
-                            <button onclick="SystemCore.deleteToken(event, ${idx})" class="w-8 h-8 rounded-lg hover:bg-rose-500/10 text-slate-700 hover:text-rose-500 transition">
-                                <i class="fa-solid fa-xmark text-[10px]"></i>
-                            </button>
+                        <div>
+                            <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 italic">${item.src}</p>
+                            <p class="text-xs font-bold text-white tracking-tight">${item.res}</p>
                         </div>
+                        <button onclick="System.deleteToken(event, ${idx})" class="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-500 transition"><i class="fa-solid fa-xmark text-xs"></i></button>
                     `;
                     list.appendChild(card);
                 });
 
-                const count = this.state.vault.length;
-                document.getElementById('vault-stat').innerText = `${count} Tokens Synced`;
-                const m = Math.min(100, count * 2);
-                document.getElementById('mastery-progress').style.width = m + "%";
-                document.getElementById('mastery-percent').innerText = `${m}% Optimized`;
+                const count = this.data.vault.length;
+                document.getElementById('vault-status').innerText = `${count} Tokens Synced`;
+                const progress = Math.min(100, count * 2);
+                document.getElementById('mastery-progress').style.width = progress + "%";
                 
-                const ranks = ["Neophyte Node", "Advanced Buffer", "Neural Pilot", "Core Architect", "Grandmaster AI"];
-                document.getElementById('rank-display').innerText = ranks[Math.floor(m/21)];
-            },
-
-            // [TRANSLATION ENGINE]
-            async translate(query) {
-                if(!query) return;
-                const lang = document.getElementById('target-lang').value;
-                const hud = document.getElementById('hud-card');
-                
-                document.getElementById('target-token').innerText = query;
-                document.getElementById('neural-output').innerText = "Analyzing...";
-                hud.classList.add('active');
-
-                try {
-                    const api = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${lang}&dt=t&q=${encodeURIComponent(query)}`;
-                    const res = await fetch(api);
-                    const data = await res.json();
-                    const output = data[0][0][0];
-
-                    document.getElementById('neural-output').innerText = output;
-                    this.state.activeToken = { src: query, res: output };
-                    
-                    const types = ["Noun", "Verb", "Adj", "Adv", "Entity", "Phrase"];
-                    document.getElementById('pos-type').innerText = types[Math.floor(Math.random()*types.length)];
-                    
-                    if(this.state.config.autoSpeak) this.audioSynth();
-                } catch (e) {
-                    document.getElementById('neural-output').innerText = "Protocol Error";
-                }
-            },
-
-            saveToVault() {
-                const { src, res } = this.state.activeToken;
-                if(!src || this.state.vault.some(v => v.src.toLowerCase() === src.toLowerCase())) {
-                    this.closeHUD();
-                    return;
-                }
-                this.state.vault.unshift({ src, res, timestamp: Date.now() });
-                this.renderVault();
-                this.syncVault();
-                this.closeHUD();
-                
-                anime({ targets: '#vault-list div:first-child', translateX: [-20, 0], opacity: [0, 1], duration: 500 });
+                const levels = ["Neophyte", "Novice", "Advanced", "Neural Pilot", "Architect", "Master AI"];
+                document.getElementById('mastery-text').innerText = `Level ${Math.floor(progress/20) + 1} - ${levels[Math.floor(progress/17)]}`;
             },
 
             deleteToken(e, idx) {
                 e.stopPropagation();
-                this.state.vault.splice(idx, 1);
+                this.data.vault.splice(idx, 1);
                 this.renderVault();
-                this.syncVault();
+                if(this.data.user) updateDoc(doc(db, "users", this.data.user.uid), { vocab: this.data.vault });
             },
 
-            closeHUD() { document.getElementById('hud-card').classList.remove('active'); },
-
-            audioSynth() {
-                const utter = new SpeechSynthesisUtterance(this.state.activeToken.src);
-                utter.rate = 0.85;
-                utter.pitch = 1;
-                window.speechSynthesis.speak(utter);
+            speak() {
+                const utterance = new SpeechSynthesisUtterance(this.data.activeToken.src);
+                utterance.rate = 0.8;
+                window.speechSynthesis.speak(utterance);
             },
 
-            // [PROTOCOL X-50: HARDCORE TRAINING]
-            initX50() {
-                const { vault, sentences } = this.state;
-                if(vault.length < 10) { alert("Insufficient Neural Data: Need 10 words in vault."); return; }
-                if(sentences.length < 5) { alert("Compile Error: Need text buffer for context generation."); return; }
+            closeHUD() { document.getElementById('hud-terminal').classList.remove('active'); },
 
-                // Generate 50 unique challenges
-                let pool = [];
-                for(let i=0; i<50; i++) {
-                    const wordObj = vault[Math.floor(Math.random() * vault.length)];
-                    const matches = sentences.filter(s => s.toLowerCase().includes(wordObj.src.toLowerCase()));
-                    const sentence = matches.length > 0 
-                        ? matches[Math.floor(Math.random() * matches.length)]
-                        : `Complete the sentence using the term [${wordObj.src}] in this context.`;
-                    
-                    pool.push({
-                        text: sentence,
-                        ans: wordObj.src,
-                        hint: wordObj.res
-                    });
+            // Compiler Engine
+            compile() {
+                const text = document.getElementById('input-transcript').value.trim();
+                const url = document.getElementById('input-url').value.trim();
+                
+                if(!text) return;
+                
+                if(url) {
+                    const vid = url.split('v=')[1]?.split('&')[0];
+                    if(vid) {
+                        if(this.data.ytPlayer) this.data.ytPlayer.loadVideoById(vid);
+                        else this.data.ytPlayer = new YT.Player('yt-player-core', { videoId: vid, width: '100%', height: '100%' });
+                    }
                 }
 
-                this.state.training = {
-                    active: true,
-                    index: 0,
-                    score: 0,
-                    timer: 1500, // 25:00
-                    pool: pool,
-                    clock: null,
-                    startTime: Date.now()
-                };
+                this.data.sentences = text.split(/[.!?]\s+/).filter(s => s.length > 5);
+                const output = document.getElementById('terminal-output');
+                output.innerHTML = "";
+                
+                text.split('\n').forEach(line => {
+                    if(!line.trim()) return;
+                    const div = document.createElement('div');
+                    div.className = "mb-6 leading-relaxed text-lg";
+                    line.split(/\s+/).forEach(word => {
+                        const span = document.createElement('span');
+                        span.className = "word-token";
+                        span.innerText = word + " ";
+                        const clean = word.replace(/[^\w\s]/gi, '');
+                        span.onclick = (e) => { e.stopPropagation(); this.translate(clean); };
+                        div.appendChild(span);
+                    });
+                    output.appendChild(div);
+                });
+                
+                gsap.from(".word-token", { opacity: 0, y: 5, stagger: 0.001, duration: 0.4 });
+                document.getElementById('char-count').innerText = `${text.length} CHARS`;
+            },
 
-                // UI Transitions
-                const screen = document.getElementById('training-screen');
-                screen.style.display = 'flex';
-                gsap.to(screen, { opacity: 1, duration: 0.6 });
-                document.getElementById('challenge-box').classList.remove('hidden');
-                document.getElementById('result-screen').classList.add('hidden');
+            // X-50 Protocol Engine
+            initX50() {
+                if(this.data.vault.length < 10 || this.data.sentences.length < 5) {
+                    alert("PROTOCOL ERROR: Insufficient Data Nodes (Need 10 words in vault).");
+                    return;
+                }
+
+                let pool = [];
+                for(let i=0; i<50; i++) {
+                    const word = this.data.vault[Math.floor(Math.random() * this.data.vault.length)];
+                    const sentence = this.data.sentences.filter(s => s.toLowerCase().includes(word.src.toLowerCase()))[0] 
+                                    || `Context missing for the following token: ${word.src}`;
+                    pool.push({ q: sentence, a: word.src, h: word.res });
+                }
+
+                this.data.x50 = { running: true, index: 0, score: 0, timer: 1500, pool: pool };
+                const portal = document.getElementById('x50-portal');
+                portal.style.display = 'flex';
+                gsap.to(portal, { opacity: 1, duration: 0.5 });
+                
+                document.getElementById('quiz-core').classList.remove('hidden');
+                document.getElementById('quiz-result').classList.add('hidden');
                 
                 this.startTimer();
-                this.renderQuestion();
+                this.renderQuizStep();
             },
 
             startTimer() {
-                if(this.state.training.clock) clearInterval(this.state.training.clock);
-                this.state.training.clock = setInterval(() => {
-                    this.state.training.timer--;
-                    
-                    const m = Math.floor(this.state.training.timer / 60);
-                    const s = this.state.training.timer % 60;
-                    const el = document.getElementById('countdown-timer');
-                    
-                    el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                    
-                    if(this.state.training.timer < 300) el.classList.add('timer-critical');
-                    if(this.state.training.timer <= 0) this.finishX50();
+                if(this.data.x50.clock) clearInterval(this.data.x50.clock);
+                this.data.x50.clock = setInterval(() => {
+                    this.data.x50.timer--;
+                    const m = Math.floor(this.data.x50.timer / 60);
+                    const s = this.data.x50.timer % 60;
+                    const display = document.getElementById('quiz-timer');
+                    display.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                    if(this.data.x50.timer < 300) display.classList.add('text-rose-500');
+                    if(this.data.x50.timer <= 0) this.finishX50();
                 }, 1000);
             },
 
-            renderQuestion() {
-                const { index, pool } = this.state.training;
+            renderQuizStep() {
+                const { index, pool } = this.data.x50;
                 const data = pool[index];
+                document.getElementById('q-index').innerText = `Token ${(index + 1).toString().padStart(2,'0')}/50`;
+                document.getElementById('q-bar').style.width = `${((index + 1) / 50) * 100}%`;
                 
-                document.getElementById('q-counter').innerText = `Token ${(index + 1).toString().padStart(2,'0')} / 50`;
-                document.getElementById('q-progress-bar').style.width = `${((index + 1) / 50) * 100}%`;
-                document.getElementById('global-sync-bar').style.width = `${(index / 50) * 100}%`;
+                const regex = new RegExp(`\\b${data.a}\\b`, 'gi');
+                const html = data.q.replace(regex, `<input type="text" id="quiz-input-field" class="quiz-input" autocomplete="off">`);
                 
-                const regex = new RegExp(`\\b${data.ans}\\b`, 'gi');
-                const displayHTML = data.text.replace(regex, `<input type="text" id="blank-input" class="training-input" autocomplete="off">`);
+                document.getElementById('quiz-sen').innerHTML = html;
+                document.getElementById('quiz-hint').innerText = `Meaning: "${data.h}"`;
+                document.getElementById('quiz-feedback').innerText = "";
                 
-                document.getElementById('q-text').innerHTML = displayHTML;
-                document.getElementById('q-hint').innerText = `Context Hint: "${data.hint}"`;
-                document.getElementById('feedback-msg').innerText = "";
-                
-                setTimeout(() => document.getElementById('blank-input').focus(), 200);
+                setTimeout(() => document.getElementById('quiz-input-field').focus(), 100);
             },
 
-            verifyAnswer() {
-                const input = document.getElementById('blank-input').value.trim().toLowerCase();
-                const correct = this.state.training.pool[this.state.training.index].ans.toLowerCase();
-                const msg = document.getElementById('feedback-msg');
+            verifyX50() {
+                const input = document.getElementById('quiz-input-field').value.trim().toLowerCase();
+                const answer = this.data.x50.pool[this.data.x50.index].a.toLowerCase();
+                const fb = document.getElementById('quiz-feedback');
 
-                if(input === correct) {
-                    this.state.training.score++;
-                    msg.innerText = "Authentication Success";
-                    msg.className = "h-12 font-black uppercase text-sm tracking-[0.5em] text-emerald-500 italic";
-                    
+                if(input === answer) {
+                    this.data.x50.score++;
+                    fb.innerText = "TOKEN_AUTHENTICATED";
+                    fb.className = "h-8 font-black uppercase text-sm italic tracking-widest text-emerald-500";
                     setTimeout(() => {
-                        this.state.training.index++;
-                        if(this.state.training.index < 50) this.renderQuestion();
+                        this.data.x50.index++;
+                        if(this.data.x50.index < 50) this.renderQuizStep();
                         else this.finishX50();
                     }, 800);
                 } else {
-                    msg.innerText = "Access Denied: Neural Mismatch";
-                    msg.className = "h-12 font-black uppercase text-sm tracking-[0.5em] text-rose-500 italic";
-                    document.getElementById('challenge-box').classList.add('shake');
-                    setTimeout(() => document.getElementById('challenge-box').classList.remove('shake'), 500);
+                    fb.innerText = "ACCESS_DENIED_MISMATCH";
+                    fb.className = "h-8 font-black uppercase text-sm italic tracking-widest text-rose-500";
+                    gsap.to("#quiz-core", { x: [-10, 10, -10, 10, 0], duration: 0.4 });
                 }
             },
 
             finishX50() {
-                clearInterval(this.state.training.clock);
-                document.getElementById('challenge-box').classList.add('hidden');
-                document.getElementById('result-screen').classList.remove('hidden');
+                clearInterval(this.data.x50.clock);
+                document.getElementById('quiz-core').classList.add('hidden');
+                document.getElementById('quiz-result').classList.remove('hidden');
                 
-                const { score, timer } = this.state.training;
+                const { score, timer } = this.data.x50;
                 document.getElementById('res-score').innerText = `${score}/50`;
                 document.getElementById('res-percent').innerText = `${(score/50*100).toFixed(0)}%`;
-                
-                const left = timer;
-                document.getElementById('res-time').innerText = `${Math.floor(left/60)}:${(left%60).toString().padStart(2,'0')}`;
+                document.getElementById('res-time').innerText = `${Math.floor(timer/60)}:${(timer%60).toString().padStart(2,'0')}`;
             },
 
-            abortX50() {
-                clearInterval(this.state.training.clock);
-                const screen = document.getElementById('training-screen');
-                gsap.to(screen, { opacity: 0, duration: 0.5, onComplete: () => {
-                    screen.style.display = 'none';
-                }});
+            exitX50() {
+                clearInterval(this.data.x50.clock);
+                gsap.to("#x50-portal", { opacity: 0, duration: 0.4, onComplete: () => document.getElementById('x50-portal').style.display = 'none' });
             },
 
-            // [TEXT ENGINE]
-            compileBuffer() {
-                const text = document.getElementById('raw-buffer').value.trim();
-                const ytUrl = document.getElementById('yt-input').value.trim();
-                
-                if(!text) return;
-                
-                if(ytUrl) {
-                    const vid = ytUrl.split('v=')[1]?.split('&')[0];
-                    if(vid) {
-                        if(this.ytPlayer) this.ytPlayer.loadVideoById(vid);
-                        else this.ytPlayer = new YT.Player('yt-player', { videoId: vid, width: '100%', height: '100%' });
-                        document.getElementById('yt-placeholder').style.display = 'none';
-                    }
-                }
-
-                this.state.sentences = text.split(/[.!?]\s+/).filter(s => s.length > 10);
-                this.renderNeuralView(text);
-            },
-
-            renderNeuralView(text) {
-                const view = document.getElementById('neural-view');
-                view.innerHTML = "";
-                
-                text.split('\n').forEach(line => {
-                    if(!line.trim()) return;
-                    const p = document.createElement('div');
-                    p.className = "py-4 px-10 hover:bg-indigo-500/5 transition rounded-[32px] border-l-2 border-transparent hover:border-indigo-600 group";
-                    
-                    line.split(/\s+/).forEach(word => {
-                        const span = document.createElement('span');
-                        span.className = "word-node text-slate-400 font-medium";
-                        span.innerText = word + " ";
-                        const clean = word.replace(/[^\w\s]/gi, '');
-                        span.onclick = (e) => { e.stopPropagation(); this.translate(clean); };
-                        p.appendChild(span);
-                    });
-                    view.appendChild(p);
-                });
-                
-                document.getElementById('stat-words').innerText = `${text.split(/\s+/).length} Words Loaded`;
-                gsap.from(".word-node", { opacity: 0, scale: 0.8, stagger: 0.001, duration: 0.5 });
-            },
-
-            // [SYSTEM EVENTS]
+            // Utility
             bindEvents() {
-                document.getElementById('cmd-compile').onclick = () => this.compileBuffer();
-                window.onclick = (e) => {
-                    const hud = document.getElementById('hud-card');
-                    if(!hud.contains(e.target) && !e.target.classList.contains('word-node')) this.closeHUD();
-                };
-                
-                // Keyboard Shortcuts
+                document.getElementById('vault-search').oninput = (e) => this.renderVault(e.target.value);
                 window.onkeydown = (e) => {
-                    if(e.key === 'Escape') { this.closeHUD(); this.abortX50(); }
-                    if(e.key === 'Enter' && this.state.training.active) this.verifyAnswer();
+                    if(e.key === 'Enter' && this.data.x50.running) this.verifyX50();
+                    if(e.key === 'Escape') this.exitX50();
                 };
             },
 
-            exportData() {
-                const dataStr = JSON.stringify(this.state.vault);
-                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-                const link = document.createElement('a');
-                link.setAttribute('href', dataUri);
-                link.setAttribute('download', 'lingopro_vault.json');
-                link.click();
+            export() {
+                const blob = new Blob([JSON.stringify(this.data.vault)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `lingopro_backup_${Date.now()}.json`;
+                a.click();
             },
 
             clearVault() {
-                if(confirm("Confirm: Wipe Neural Vault?")) {
-                    this.state.vault = [];
+                if(confirm("Confirm: DESTROY_ALL_DATA?")) {
+                    this.data.vault = [];
                     this.renderVault();
-                    this.syncVault();
+                    if(this.data.user) updateDoc(doc(db, "users", this.data.user.uid), { vocab: [] });
                 }
             }
         };
 
-        // Boot System
-        SystemCore.init();
+        System.init();
     </script>
 </body>
 </html>
