@@ -5,17 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LingoPro Enterprise - Professional Language Learning Platform</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js" defer></script>
-    <script src="https://www.youtube.com/iframe_api" async></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -32,21 +26,94 @@
             color: #f8fafc;
             overflow: hidden;
             height: 100vh;
-            margin: 0;
         }
 
-        /* Giữ nguyên các class cũ của bạn */
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Animations */
         .glass-card {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
         }
 
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .source-word {
+            display: inline-block;
+            cursor: pointer;
+            padding: 0 2px;
+            border-radius: 4px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .source-word:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .lyric-line {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            transition: background 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .lyric-line:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-left-color: var(--primary);
+        }
+
+        /* Popup Logic */
+        #translation-popup {
+            position: fixed;
+            bottom: -300px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 500px;
+            z-index: 1000;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        #translation-popup.active {
+            bottom: 40px;
+        }
+
+        /* Dashboard UI */
+        .stat-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Quiz Styles */
+        .quiz-option {
+            background: #334155;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .quiz-option.correct { background: #10b981 !important; border-color: #059669; color: white; }
+        .quiz-option.wrong { background: #ef4444 !important; border-color: #dc2626; color: white; }
+
+        /* Input Styles */
+        select, input, textarea {
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: white !important;
+        }
+
+        select option {
+            background: #1e293b;
+            color: white;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -67,11 +134,6 @@
         </div>
         
         <div class="flex items-center gap-4">
-            <div class="hidden sm:flex items-center gap-3 mr-2 border-r border-slate-700 pr-4">
-                <button onclick="toggleAuthModal('login')" class="text-xs font-bold text-slate-400 hover:text white transition uppercase tracking-widest">Login</button>
-                <button onclick="togglrAuthModal('singup')" class="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 px-4 py-4 rounded-lg transition shadow-lg shadow-indigo-600/20 uppercase">Sign Up</button>
-            <div>
-                
             <div class="hidden md:flex bg-slate-800 rounded-full px-4 py-1.5 items-center gap-3 border border-slate-700">
                 <i class="fa-solid fa-earth-americas text-slate-400 text-sm"></i>
                 <select id="target-lang" class="bg-transparent border-none text-xs font-bold focus:ring-0 cursor-pointer">
@@ -631,108 +693,6 @@
             }
         }, 1000);
 
-        //Auth State
-        let authMode = 'login';
-
-        function toggleAuthModal(mode = 'login') {
-            const overlay = document.getElementById('auth-overplay');
-            authMode = mode
-
-            if (overlay.classList.contains('hidden')) {
-                overlay.classList.remove('hidden');
-                updateAuthUI()
-                gsap.from(overlay.querySelector('.glass-card'), {y: 50, opacity: 0, duration: 0,4});
-            } else {
-                overlay.classList.add('hidden');
-            }
-        }
-
-        function switchAuthMode() {
-            authMode = (authMode === 'login') ? 'signup' : 'login';
-            updateAuthUI();
-        }
-
-        function updateAuthUI() {
-            const title = document.getElementById('auth-title');
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const switchText = document.getElementById('auth-switch-text');
-            const switchBtn = document.getElementById('auth-switch-btn');
-            const signupField = document.getElementById('signup-only');
-
-            if (authMode === 'login') {
-                title.innerText = "LOGIN";
-                submitBtn.innerText = "Establish Connection":
-                switchText.innerText = "Don't have an account";
-                switchBtn.innerText = "Create Profile";
-                signupField.classList.remove('hidden');
-            } else {
-                title.innerText = "SIGN UP";
-                submitBtn.innerText = "Initialize Profile";
-                switchText.innerText = "Already a account?";
-                switchBtn.innerText = "Return to Login";
-                signupField.classList.remove('hidden');
-            }
-        }
-
-        function handleAuth(event) {
-            event.preventDefault();
-            const btn = document.getElementById('auth-submit-btn');
-
-            //Giả lập hiệ ứng Loading
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"><i/> Authenticating...';
-
-            setTimeOut(() => {
-                alert(authMode === 'login' ? "Welcome back!" : "Profile Created Successfully!");
-                toggleAuthModal()
-                btn.innerText = authMode === 'login' ? "Establish Connection" : "Initialize Profile";
-
-                // Sau khi login thành công, có thể ẩn nút auth và hiện avatar (tùy chọn)
-                document.getElementById('auth-buttons').innerHTML = `
-                    <div class="flex items-center gap-3 bg-indigo-500/10 px-4 py-2 rounded-full border border-indigo-500/20">
-                        <div class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-[10px] font-bold">U</div>
-                        <span class="text-xs font-bold text-indigo-400">USER</span>
-                    </div>
-                `;
-            }, 1500);
-        }
-        
-            <div id="auth-overlay" class="fixed inset-0 z-[5000] bg-slate-950/90 backdrop-blur-xl hidden flex items-center justify-center p-4"
-                <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl shadow-indigo-500/10 relative">
-                    <button onclick="toggleAuthModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-        
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/20 mb-4">
-                    <i class="fa-solid fa-shield-halved text-white text-2xl"></i>
-                </div>
-                <h2 id="auth-title" class="text-2xl font-black tracking-tighter uppercase text-white">SYSTEM ACCESS</h2>
-                <p class="text-xs text-slate-500 font-medium mt-1">Please authenticate to continue your session.</p>
-            </div>
-
-            <form onsubmit="handleAuth(event)" class="space-y-4">
-                <div id="signup-fields" class="hidden">
-                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-1 block">Username</label>
-                    <input type="text" placeholder="OPERATIVE_ID" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none transition">
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-1 block">Email Address</label>
-                    <input type="email" required placeholder="name@enterprise.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none transition">
-                </div>
-
-                <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase ml-2 mb-1 block">Access Key</label>
-                    <input type="password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-indigo-500 outline-none transition">
-                </div>
-
-                <button type="submit" id="auth-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-600/20 transition uppercase tracking-widest text-sm mt-4">
-                    Establish Connection
-                </button>
-            </form>
-        </div>
-    </div>
     </script>
 </body>
 </html>
-
