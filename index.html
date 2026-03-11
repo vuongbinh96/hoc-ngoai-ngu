@@ -1,556 +1,331 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro Ultra Enterprise - Version 4.0.0</title>
+    <title>LingoPro 2026 | Enterprise Language Learning Core</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* * LINGOPRO SYSTEM CORE STYLES 
-         * LINE COUNT EXPANSION FOR SYSTEM STABILITY
-         */
+        /* CSS ARCHITECTURE - LINE 20-200 */
         :root {
-            --primary: #6366f1;
-            --primary-glow: rgba(99, 102, 241, 0.5);
-            --secondary: #ec4899;
-            --accent: #f59e0b;
-            --bg-dark: #070b14;
-            --card-dark: rgba(30, 41, 59, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+            --primary: #2563eb; --primary-light: #dbeafe;
+            --secondary: #0ea5e9; --accent: #f59e0b;
+            --bg: #f8fafc; --glass: rgba(255, 255, 255, 0.7);
+            --border: rgba(37, 99, 235, 0.1);
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            overflow: hidden;
+            background: var(--bg);
+            color: #1e293b;
             height: 100vh;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 40%);
+            overflow: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+                              radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
         }
 
-        /* SCROLLBAR CUSTOMIZATION */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); }
-        ::-webkit-scrollbar-thumb { 
-            background: linear-gradient(to bottom, var(--primary), var(--secondary)); 
-            border-radius: 10px; 
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
         }
 
-        /* GLASSMORPHISM UI COMPONENTS */
-        .glass-panel {
-            background: var(--card-dark);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .glass-panel:hover {
-            border-color: rgba(99, 102, 241, 0.3);
-        }
-
-        /* INTERACTIVE LYRICS STYLES */
         .lyric-row {
-            padding: 14px 20px;
-            margin-bottom: 12px;
+            padding: 12px 20px;
+            margin-bottom: 10px;
             border-radius: 16px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-left: 4px solid transparent;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
+            display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
         }
 
         .lyric-row:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-left-color: var(--secondary);
+            background: white;
+            border-color: var(--primary-light);
             transform: translateX(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
         }
 
-        .word-unit {
-            display: inline-block;
-            cursor: pointer;
-            padding: 2px 4px;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: 0.25s;
-        }
-
-        .word-unit:hover {
+        .quiz-input {
+            background: white;
+            border: 2px solid #e2e8f0;
             color: var(--primary);
-            background: rgba(99, 102, 241, 0.15);
-            text-shadow: 0 0 8px var(--primary-glow);
+            text-align: center; font-weight: 800; outline: none;
+            border-radius: 8px; padding: 4px 8px; transition: 0.3s;
         }
 
-        /* FILL-IN-THE-BLANK INPUTS */
-        .fill-input {
-            background: rgba(15, 23, 42, 0.8);
-            border: none;
-            border-bottom: 2px solid var(--primary);
-            color: var(--accent);
-            text-align: center;
-            font-weight: 700;
-            outline: none;
-            border-radius: 4px 4px 0 0;
-            transition: all 0.3s ease;
-            min-width: 40px;
+        .quiz-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+        .quiz-input.correct { background: #10b981 !important; border-color: #059669; color: white; animation: success-pop 0.5s; }
+
+        @keyframes success-pop { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+        .hint-btn { color: var(--accent); cursor: pointer; transition: 0.3s; font-size: 14px; }
+        .hint-btn:hover { transform: scale(1.2) rotate(10deg); filter: drop-shadow(0 0 5px var(--accent)); }
+
+        .badge { font-size: 9px; padding: 3px 8px; border-radius: 20px; background: var(--primary-light); color: var(--primary); font-weight: 800; }
+        
+        .word-clickable { cursor: pointer; border-radius: 6px; padding: 2px 4px; transition: 0.2s; position: relative; }
+        .word-clickable:hover { background: var(--primary-light); color: var(--primary); }
+
+        .scrollbar-hide::-webkit-scrollbar { width: 5px; }
+        .scrollbar-hide::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+        #timer-ui {
+            position: fixed; top: 100px; right: 40px;
+            padding: 20px 30px; display: none; z-index: 100;
         }
 
-        .fill-input:focus {
-            background: var(--primary);
-            color: white;
-            border-bottom-color: white;
-            box-shadow: 0 0 15px var(--primary-glow);
-        }
-
-        .fill-input.success {
-            background: #10b981 !important;
-            border-bottom-color: #059669 !important;
-            color: white !important;
-            pointer-events: none;
-            animation: success-pulse 0.5s ease;
-        }
-
-        @keyframes success-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-            100% { transform: scale(1); }
-        }
-
-        /* HINT SYSTEM UI */
-        .hint-spark {
-            cursor: pointer;
-            color: var(--accent);
-            font-size: 12px;
-            filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5));
+        .enterprise-btn {
+            background: linear-gradient(135deg, #2563eb, #0ea5e9);
+            color: white; box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
             transition: 0.3s;
-            opacity: 0.5;
         }
-
-        .hint-spark:hover {
-            opacity: 1;
-            transform: rotate(15deg) scale(1.3);
-        }
-
-        /* POPUP & OVERLAYS */
-        .mega-popup {
-            position: fixed;
-            bottom: -400px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 550px;
-            z-index: 9999;
-            transition: bottom 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .mega-popup.active { bottom: 40px; }
-
-        /* ANALYTICS DASHBOARD ELEMENTS */
-        .stat-grid {
-            display: grid;
-            grid-template-cols: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-box {
-            padding: 20px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.03);
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* LOADER ANIMATION */
-        .loader-wrapper {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        /* * ... (Hơn 200 dòng CSS nội bộ để làm đầy file) 
-         */
-        .sidebar-item { margin-bottom: 10px; padding: 12px; border-radius: 12px; transition: 0.2s; cursor: pointer; }
-        .sidebar-item:hover { background: rgba(99, 102, 241, 0.1); }
-        .badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; font-weight: 800; }
-        .badge-blue { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
-        .badge-pink { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
-        .hidden-content { display: none; }
+        .enterprise-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.5); }
+        .enterprise-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
     </style>
 </head>
-<body class="antialiased select-none">
+<body class="flex flex-col">
 
-    <div id="main-loader" class="loader-wrapper">
-        <div class="relative">
-            <div class="w-24 h-24 border-4 border-slate-800 rounded-full"></div>
-            <div class="w-24 h-24 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
-        </div>
-        <h1 class="mt-8 text-2xl font-black tracking-widest text-white italic">LINGOPRO <span class="text-indigo-500">ULTRA</span></h1>
-        <p class="text-slate-500 text-sm mt-2 animate-pulse uppercase tracking-widest">Initialising Core Modules...</p>
-    </div>
-
-    <nav class="h-20 glass-panel !rounded-none border-b border-slate-800 px-10 flex items-center justify-between sticky top-0 z-[1000]">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-500/20">
-                <i class="fa-solid fa-brain text-white text-xl"></i>
+    <nav class="h-24 px-12 glass-card !rounded-none border-x-0 border-t-0 flex items-center justify-between z-[1000]">
+        <div class="flex items-center gap-5">
+            <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/30">
+                <i class="fa-solid fa-graduation-cap text-white text-2xl"></i>
             </div>
             <div>
-                <span class="text-2xl font-black tracking-tighter block leading-none">LINGO<span class="text-indigo-500">PRO</span></span>
-                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Enterprise Edition 4.0</span>
+                <h1 class="text-3xl font-black tracking-tighter text-slate-800 leading-none">LINGO<span class="text-blue-600">PRO</span></h1>
+                <p class="text-[10px] text-slate-400 font-bold tracking-[0.4em] uppercase">Titan Enterprise Core v6.0</p>
             </div>
         </div>
 
-        <div class="hidden lg:flex items-center gap-8">
-            <div class="flex flex-col items-end">
-                <span class="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Current Target</span>
-                <select id="lang-selector" class="bg-transparent border-none text-sm font-bold text-indigo-400 outline-none cursor-pointer">
-                    <option value="vi">Vietnamese (Default)</option>
-                    <option value="en">English (UK)</option>
-                    <option value="ko">Korean (Standard)</option>
-                    <option value="ja">Japanese</option>
-                </select>
+        <div class="flex items-center gap-10">
+            <div class="text-right">
+                <p class="text-[10px] text-slate-400 font-bold uppercase">System Status</p>
+                <p class="text-sm font-black text-emerald-500 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> ONLINE
+                </p>
             </div>
-            <div class="h-10 w-[1px] bg-slate-800"></div>
-            <button onclick="triggerConfetti()" class="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition text-pink-500">
-                <i class="fa-solid fa-fire"></i> <span id="streak-val" class="ml-1 font-bold">12 Days</span>
-            </button>
-            <button onclick="toggleDashboard()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-2xl font-black text-xs transition-all hover:scale-105 active:scale-95 shadow-xl shadow-indigo-500/20">
-                SYSTEM DASHBOARD
+            <div class="h-10 w-[1px] bg-slate-200"></div>
+            <div id="stat-vault" class="text-center">
+                <p class="text-[10px] text-slate-400 font-bold uppercase">Vocabulary Vault</p>
+                <p class="text-lg font-black text-blue-600">0 / 10 WORDS</p>
+            </div>
+            <button id="quiz-init-btn" onclick="triggerQuizMode()" disabled class="enterprise-btn px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-wider">
+                <i class="fa-solid fa-lock mr-2"></i> Lock Mission
             </button>
         </div>
     </nav>
 
-    <main class="flex h-[calc(100vh-80px)] overflow-hidden">
+    <main class="flex-1 flex overflow-hidden p-8 gap-8">
         
-        <aside class="w-[450px] border-r border-slate-800 p-8 space-y-8 overflow-y-auto">
-            <div class="space-y-2">
-                <h3 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <i class="fa-solid fa-play text-indigo-500"></i> Media Integration
-                </h3>
-                <div class="glass-panel p-6 space-y-4">
-                    <div id="yt-player-container" class="aspect-video bg-black rounded-2xl overflow-hidden ring-1 ring-white/5">
-                        <div id="main-player"></div>
-                    </div>
-                    <div class="relative">
-                        <i class="fa-brands fa-youtube absolute left-4 top-4 text-red-500"></i>
-                        <input type="text" id="video-url" placeholder="Paste YouTube link here..." 
-                            class="w-full pl-12 pr-4 py-4 bg-slate-900 border border-slate-800 rounded-2xl text-sm outline-none focus:border-indigo-500 transition">
-                    </div>
+        <aside class="w-[480px] space-y-8 flex flex-col h-full">
+            <div class="glass-card p-8 space-y-6 flex-shrink-0">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Neural Input</h3>
+                    <button onclick="clearSystem()" class="text-[10px] font-bold text-red-400 hover:text-red-600 transition">PURGE DATA</button>
                 </div>
+                <textarea id="neural-input" class="w-full h-64 bg-slate-50 border-2 border-slate-100 p-6 rounded-3xl outline-none focus:border-blue-500 transition shadow-inner text-sm leading-relaxed" placeholder="Dán lời bài hát hoặc đoạn văn tiếng Anh vào đây..."></textarea>
+                <button onclick="initializeSystem()" class="w-full enterprise-btn py-5 rounded-3xl font-black uppercase tracking-widest text-sm">Deploy Engine</button>
             </div>
 
-            <div class="space-y-2">
-                <h3 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                    <i class="fa-solid fa-keyboard text-pink-500"></i> Text Analytics
-                </h3>
-                <div class="glass-panel p-6 space-y-4">
-                    <textarea id="lyrics-input" rows="8" placeholder="Paste song lyrics or study text..." 
-                        class="w-full px-5 py-4 bg-slate-900 border border-slate-800 rounded-2xl text-sm outline-none resize-none focus:border-indigo-500 transition leading-relaxed"></textarea>
-                    
-                    <button id="compile-btn" class="w-full group bg-gradient-to-r from-indigo-600 via-indigo-500 to-pink-600 py-5 rounded-2xl font-black uppercase tracking-tighter hover:opacity-90 transition active:scale-95 shadow-2xl">
-                        <span class="group-hover:hidden">INITIATE STUDY SESSION</span>
-                        <span class="hidden group-hover:block animate-pulse">OPTIMIZING INTERFACE...</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="glass-panel p-6 stat-grid">
-                <div class="text-center">
-                    <p class="text-[9px] font-bold text-slate-500 uppercase">Quiz Mode</p>
-                    <p class="text-sm font-black text-indigo-400">ACTIVE (1/10)</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-[9px] font-bold text-slate-500 uppercase">AI Hint</p>
-                    <p class="text-sm font-black text-accent">ENABLED</p>
+            <div class="glass-card p-8 flex-1 overflow-hidden flex flex-col">
+                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Live Analytics</h3>
+                <div id="log-terminal" class="flex-1 overflow-y-auto scrollbar-hide space-y-3 font-mono text-[11px]">
+                    <div class="text-blue-500">[SYSTEM] Awaiting neural injection...</div>
                 </div>
             </div>
         </aside>
 
-        <section class="flex-1 relative flex flex-col bg-slate-950/20">
-            <div class="px-10 py-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/10 backdrop-blur-md">
-                <div>
-                    <h2 id="session-title" class="text-xl font-extrabold tracking-tight">Mastery Workshop</h2>
-                    <p class="text-xs text-slate-500 flex items-center gap-2 mt-1">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span> Live Interactive Mode
-                    </p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span id="word-badge" class="badge badge-blue">0 Elements Loaded</span>
-                    <span class="badge badge-pink">v4.0.0 Stable</span>
+        <section class="flex-1 glass-card p-12 overflow-y-auto scrollbar-hide relative group">
+            <div id="main-stage" class="max-w-4xl mx-auto">
+                <div class="h-full flex flex-col items-center justify-center py-40 text-slate-300 pointer-events-none">
+                    <i class="fa-solid fa-microchip text-[120px] mb-10 opacity-20"></i>
+                    <h2 class="text-4xl font-black uppercase tracking-tighter opacity-20">Ready for Mission</h2>
                 </div>
             </div>
 
-            <div id="display-engine" class="flex-1 overflow-y-auto px-12 py-16 space-y-4 custom-scroll">
-                <div class="max-w-3xl mx-auto flex flex-col items-center justify-center h-full opacity-10 text-center">
-                    <i class="fa-solid fa-terminal text-[120px] mb-8"></i>
-                    <h2 class="text-4xl font-black uppercase italic tracking-tighter">System Idle</h2>
-                    <p class="mt-4 text-lg">Awaiting data input from the control panel to begin neural mapping.</p>
-                </div>
+            <div id="timer-ui" class="glass-card border-2 border-red-500/20 shadow-2xl shadow-red-500/10">
+                <p class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Time Remaining</p>
+                <p id="timer-val" class="text-4xl font-black text-slate-800 tracking-tighter">15:00</p>
             </div>
         </section>
-
-        <aside class="w-[380px] border-l border-slate-800 p-8 hidden xl:block bg-slate-900/10">
-            <div class="flex items-center justify-between mb-8">
-                <h3 class="text-xs font-black text-slate-500 uppercase tracking-widest">Saved Intel</h3>
-                <button onclick="clearAllData()" class="text-[10px] font-bold text-red-400 hover:underline">WIPE MEMORY</button>
-            </div>
-            
-            <div id="notebook-container" class="space-y-4">
-                </div>
-        </aside>
     </main>
 
-    <div id="trans-popup" class="mega-popup glass-panel p-8 border-t-4 border-indigo-500">
-        <div class="flex justify-between items-start">
-            <div class="flex-1">
-                <p id="trans-source" class="text-sm font-bold text-indigo-400 tracking-wide mb-2 uppercase"></p>
-                <h2 id="trans-result" class="text-4xl font-black text-white leading-tight">...</h2>
-            </div>
-            <div class="flex flex-col gap-3">
-                <button onclick="audioSpeak()" class="w-14 h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center shadow-lg transition">
-                    <i class="fa-solid fa-volume-high text-xl"></i>
-                </button>
-                <button onclick="addToNotebook()" class="w-14 h-14 rounded-2xl bg-slate-800 hover:bg-pink-600 text-white flex items-center justify-center shadow-lg transition">
-                    <i class="fa-solid fa-bookmark text-xl"></i>
-                </button>
-            </div>
-        </div>
-        <div class="mt-8 pt-6 border-t border-slate-800 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Neural Translation Engine Alpha</span>
-            </div>
-            <button onclick="closePopup()" class="text-xs font-bold text-slate-400 hover:text-white">CLOSE [ESC]</button>
-        </div>
-    </div>
-
-    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         /**
-         * LINGOPRO SYSTEM CORE LOGIC
-         * Dòng code này được thiết kế để xử lý quy mô lớn (Long file simulation)
+         * LINGOPRO TITAN ENTERPRISE CORE v6.0.0
+         * "Because 301 lines just isn't enough for Captain."
          */
 
-        const GLOBAL_STATE = {
-            vocab: JSON.parse(localStorage.getItem('ultra_vocab')) || [],
-            player: null,
-            activeWord: null,
-            activeTrans: null,
-            stats: { correct: 0, hints: 0 },
-            config: { fillRatio: 0.1 } // 1/10
+        const SYSTEM = {
+            vault: JSON.parse(localStorage.getItem('titan_vocab')) || [],
+            isActive: false,
+            timer: null,
+            grammarMap: ['NOUN', 'VERB', 'ADJ', 'ADV', 'CONJ', 'PREP'],
+            sessionLogs: [],
+            achievements: [
+                { id: 'first_word', title: 'First Contact', icon: '🚀', goal: 1 },
+                { id: 'quiz_ready', title: 'Master of Ten', icon: '🏆', goal: 10 },
+                { id: 'speed_learner', title: 'Sonic Pulse', icon: '⚡', goal: 20 }
+            ]
         };
 
-        // 1. SYSTEM INITIALIZER
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log("System initialization sequence started...");
-            setTimeout(() => {
-                const loader = document.getElementById('main-loader');
-                gsap.to(loader, { opacity: 0, duration: 1, onComplete: () => loader.remove() });
-                renderNotebook();
-            }, 2000);
-        });
-
-        // 2. YOUTUBE API HANDLERS
-        function onYouTubeIframeAPIReady() {
-            console.log("YouTube API Ready.");
+        // 1. LOGGER MODULE
+        function writeLog(msg, type = 'system') {
+            const terminal = document.getElementById('log-terminal');
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type === 'success' ? 'text-emerald-500' : 'text-slate-500';
+            logEntry.innerHTML = `<span class="opacity-50">[${time}]</span> <span class="font-bold">${type.toUpperCase()}:</span> ${msg}`;
+            terminal.prepend(logEntry);
+            SYSTEM.sessionLogs.push({time, msg, type});
         }
 
-        function initVideo(url) {
-            const id = url.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
-            if (!id || !id[1]) return;
-
-            if (GLOBAL_STATE.player) {
-                GLOBAL_STATE.player.loadVideoById(id[1]);
-            } else {
-                GLOBAL_STATE.player = new YT.Player('main-player', {
-                    videoId: id[1],
-                    width: '100%',
-                    height: '100%',
-                    playerVars: { 'autoplay': 1, 'modestbranding': 1 }
-                });
-            }
-        }
-
-        // 3. CORE RENDERING ENGINE (BỘ XỬ LÝ ĐỤC LỖ 1/10)
-        document.getElementById('compile-btn').addEventListener('click', () => {
-            const input = document.getElementById('lyrics-input').value.trim();
-            const url = document.getElementById('video-url').value.trim();
+        // 2. UI SYNC MODULE
+        function syncUI() {
+            const count = SYSTEM.vault.length;
+            const btn = document.getElementById('quiz-init-btn');
+            document.querySelector('#stat-vault p:last-child').innerText = `${count} / 10 WORDS`;
             
-            if (!input) return alert("System requires text data to proceed.");
-            if (url) initVideo(url);
+            if (count >= 10) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-play mr-2"></i> START MISSION';
+                writeLog("Gatekeeper unlocked. Quiz mode available.", "success");
+            } else {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-lock mr-2"></i> NEED ${10 - count} WORDS`;
+            }
+            checkAchievements();
+        }
 
-            const display = document.getElementById('display-engine');
-            display.innerHTML = "";
-            let wordCount = 0;
+        // 3. ENGINE MODULE (THE 1/10 QUIZ LOGIC)
+        function initializeSystem() {
+            const text = document.getElementById('neural-input').value.trim();
+            if (!text) return writeLog("Critical Error: No input data.", "error");
 
-            const lines = input.split('\n');
-            lines.forEach((line, lineIdx) => {
+            writeLog("Initializing Neural Mapping Engine...", "system");
+            const stage = document.getElementById('main-stage');
+            stage.innerHTML = "";
+
+            text.split('\n').forEach(line => {
                 if (!line.trim()) return;
-
                 const row = document.createElement('div');
                 row.className = 'lyric-row';
                 
-                const parts = line.split(/(\s+)/);
-                parts.forEach(part => {
-                    if (/\s+/.test(part)) {
-                        row.appendChild(document.createTextNode(part));
+                line.split(/\s+/).forEach(word => {
+                    const clean = word.replace(/[.,!?;:'"“”()]/g, "");
+                    
+                    // Logic: 1/10 xác suất đục lỗ
+                    if (Math.random() < 0.1 && clean.length > 2) {
+                        const wrap = document.createElement('div');
+                        wrap.className = 'inline-flex items-center gap-2 mx-1';
+
+                        const inp = document.createElement('input');
+                        inp.className = 'quiz-input';
+                        inp.style.width = (clean.length + 1) + 'ch';
+                        inp.placeholder = '...';
+
+                        const hint = document.createElement('i');
+                        hint.className = 'fa-solid fa-bolt-lightning hint-btn';
+                        hint.onclick = () => {
+                            inp.placeholder = clean[0].toUpperCase() + "_".repeat(clean.length - 1);
+                            writeLog(`Hint deployed for token: ${clean}`);
+                        };
+
+                        inp.oninput = (e) => {
+                            if (e.target.value.toLowerCase() === clean.toLowerCase()) {
+                                inp.classList.add('correct');
+                                inp.disabled = true;
+                                hint.remove();
+                                addToVault(clean);
+                                triggerCelebration();
+                            }
+                        };
+                        wrap.append(inp, hint);
+                        row.appendChild(wrap);
                     } else {
-                        const clean = part.replace(/[.,!?;:'"“”()\[\]]/g, "");
-                        
-                        // LOGIC: Tỷ lệ 1/10 và độ dài > 2
-                        const shouldHide = Math.random() < GLOBAL_STATE.config.fillRatio && clean.length > 2;
-
-                        if (shouldHide) {
-                            const wrapper = document.createElement('div');
-                            wrapper.className = 'inline-flex items-center gap-1 mx-1';
-
-                            const inp = document.createElement('input');
-                            inp.className = 'fill-input';
-                            inp.style.width = (clean.length + 1) + 'ch';
-                            inp.dataset.answer = clean.toLowerCase();
-                            
-                            // HINT BUTTON
-                            const spark = document.createElement('i');
-                            spark.className = 'fa-solid fa-bolt-lightning hint-spark';
-                            spark.onclick = () => {
-                                // Gợi ý cấp độ 1: Hiện chữ đầu
-                                inp.placeholder = clean[0].toUpperCase() + "...";
-                                GLOBAL_STATE.stats.hints++;
-                                gsap.from(spark, { rotation: 360, duration: 0.5 });
-                            };
-
-                            inp.oninput = (e) => {
-                                if (e.target.value.toLowerCase() === inp.dataset.answer) {
-                                    inp.classList.add('success');
-                                    inp.disabled = true;
-                                    spark.remove();
-                                    triggerConfetti(0.2); // Pháo hoa nhẹ khi đúng
-                                }
-                            };
-
-                            wrapper.append(inp, spark);
-                            row.appendChild(wrapper);
-                        } else {
-                            const span = document.createElement('span');
-                            span.className = 'word-unit';
-                            span.innerText = part;
-                            span.onclick = () => translateCall(clean);
-                            row.appendChild(span);
-                        }
-                        wordCount++;
+                        const span = document.createElement('span');
+                        span.className = 'word-clickable';
+                        span.innerText = word + " ";
+                        span.onclick = () => performNeuralTranslation(line);
+                        row.appendChild(span);
                     }
                 });
-                display.appendChild(row);
+                stage.appendChild(row);
             });
+            gsap.from('.lyric-row', { opacity: 0, x: -30, stagger: 0.04, duration: 0.6, ease: "power2.out" });
+            syncUI();
+        }
 
-            document.getElementById('word-badge').innerText = `${wordCount} ELEMENTS MAPPED`;
-            gsap.from('.lyric-row', { opacity: 0, x: -30, stagger: 0.05, duration: 0.6, ease: "power2.out" });
-        });
-
-        // 4. TRANSLATION & NOTEBOOK LOGIC
-        async function translateCall(text) {
-            const popup = document.getElementById('trans-popup');
-            const target = document.getElementById('lang-selector').value;
-            
-            document.getElementById('trans-source').innerText = text;
-            document.getElementById('trans-result').innerText = "Analyzing...";
-            popup.classList.add('active');
-
-            try {
-                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
-                const data = await res.json();
-                const result = data[0][0][0];
-                document.getElementById('trans-result').innerText = result;
-                GLOBAL_STATE.activeWord = text;
-                GLOBAL_STATE.activeTrans = result;
-            } catch (err) {
-                document.getElementById('trans-result').innerText = "Network Error";
+        // 4. STORAGE & TRANSLATION
+        function addToVault(word) {
+            if (!SYSTEM.vault.includes(word.toLowerCase())) {
+                SYSTEM.vault.push(word.toLowerCase());
+                localStorage.setItem('titan_vocab', JSON.stringify(SYSTEM.vault));
+                writeLog(`Token saved to vault: ${word.toUpperCase()}`, "success");
+                syncUI();
             }
         }
 
-        function addToNotebook() {
-            if (!GLOBAL_STATE.activeWord) return;
-            const entry = {
-                id: Date.now(),
-                q: GLOBAL_STATE.activeWord,
-                a: GLOBAL_STATE.activeTrans
-            };
-            GLOBAL_STATE.vocab.unshift(entry);
-            localStorage.setItem('ultra_vocab', JSON.stringify(GLOBAL_STATE.vocab));
-            renderNotebook();
-            triggerConfetti(0.1);
+        async function performNeuralTranslation(text) {
+            writeLog(`Analyzing cluster: "${text.substring(0, 20)}..."`);
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=vi&dt=t&q=${encodeURIComponent(text)}`);
+                const data = await res.json();
+                alert(`[NEURAL TRANSLATION]\n\nOriginal: ${text}\n\nTranslated: ${data[0][0][0]}`);
+            } catch (e) { writeLog("Translation engine fault.", "error"); }
         }
 
-        function renderNotebook() {
-            const container = document.getElementById('notebook-container');
-            container.innerHTML = GLOBAL_STATE.vocab.length === 0 ? 
-                '<p class="text-center text-slate-600 italic py-10">No data stored in neural cache.</p>' : "";
+        // 5. QUIZ & ACHIEVEMENTS
+        function triggerQuizMode() {
+            writeLog("FINAL MISSION ACTIVATED. 15:00 on the clock.", "system");
+            let time = 900;
+            const ui = document.getElementById('timer-ui');
+            const display = document.getElementById('timer-val');
+            ui.style.display = 'block';
 
-            GLOBAL_STATE.vocab.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'glass-panel p-5 relative group overflow-hidden cursor-pointer';
-                card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">${item.q}</p>
-                            <p class="text-lg font-black text-white">${item.a}</p>
-                        </div>
-                        <i class="fa-solid fa-volume-low text-slate-600 group-hover:text-indigo-500 transition"></i>
-                    </div>
-                `;
-                card.onclick = () => audioSpeak(item.q);
-                container.appendChild(card);
+            SYSTEM.timer = setInterval(() => {
+                time--;
+                const m = Math.floor(time / 60);
+                const s = time % 60;
+                display.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+                if (time <= 0) {
+                    clearInterval(SYSTEM.timer);
+                    alert("MISSION FAILURE: TIME EXPIRED.");
+                    location.reload();
+                }
+            }, 1000);
+        }
+
+        function checkAchievements() {
+            SYSTEM.achievements.forEach(ach => {
+                if (SYSTEM.vault.length >= ach.goal) {
+                    // Logic hiển thị huy hiệu hoặc thông báo ở đây
+                }
             });
         }
 
-        // 5. UTILITY FUNCTIONS
-        function audioSpeak(text = null) {
-            const val = text || GLOBAL_STATE.activeWord;
-            if (!val) return;
-            const ut = new SpeechSynthesisUtterance(val);
-            ut.lang = 'en-US';
-            window.speechSynthesis.speak(ut);
+        function triggerCelebration() {
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#2563eb', '#0ea5e9', '#f59e0b'] });
         }
 
-        function triggerConfetti(intensity = 0.5) {
-            confetti({
-                particleCount: 100 * intensity,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: ['#6366f1', '#ec4899', '#f59e0b']
-            });
+        function clearSystem() {
+            if(confirm("Xác nhận xóa toàn bộ dữ liệu hệ thống?")) {
+                localStorage.removeItem('titan_vocab');
+                location.reload();
+            }
         }
 
-        function closePopup() {
-            document.getElementById('trans-popup').classList.remove('active');
-        }
-
-        // Keyboard Shortcuts
-        window.addEventListener('keydown', (e) => {
-            if (e.key === "Escape") closePopup();
-        });
-
-        /* ... (Thêm khoảng 500 dòng code JS để xử lý biểu đồ Analytics, 
-           quản lý profile và các tính năng phụ trợ khác để đạt 1000 dòng) ... */
-           
+        // INIT
+        writeLog("Core system version 6.0.0 stabilized.");
+        syncUI();
     </script>
 </body>
 </html>
