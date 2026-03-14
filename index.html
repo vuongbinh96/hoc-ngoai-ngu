@@ -553,14 +553,19 @@
                 startQuiz();
             }, 1000);
         }
-
+        
         function startQuiz() {
             state.quiz.currentStep = 0;
             state.quiz.score = 0;
             state.quiz.lives = 3;
-            
             const pool = [...state.notebook].sort(() => 0.5 - Math.random());
             state.quiz.data = pool.slice(0, 10).map(item => {
+                // Tách từ bằng khoảng trắng và lọc các khoảng trắng thừa
+                const wordCount = item.src.trim().split(/\s+/).length;
+                
+                // Nếu có đúng 3 từ thì ưu tiên làm dạng điền vào chỗ trống
+                const isFillInBlank = (wordCount === 3);
+        
                 const distractors = state.notebook
                     .filter(i => i.vi !== item.vi)
                     .sort(() => 0.5 - Math.random())
@@ -568,12 +573,12 @@
                     .map(i => i.vi);
                 
                 return {
-                    q: item.src,
+                    q: item.src.trim(),
                     a: item.vi,
+                    type: isFillInBlank ? 'fill' : 'choice',
                     options: [item.vi, ...distractors].sort(() => 0.5 - Math.random())
                 };
             });
-
             document.getElementById('quiz-loading').style.display = 'none';
             document.getElementById('quiz-main').style.display = 'block';
             renderQuestion();
@@ -583,18 +588,56 @@
             const current = state.quiz.data[state.quiz.currentStep];
             document.getElementById('quiz-step').innerText = `Question ${state.quiz.currentStep + 1}/10`;
             document.getElementById('quiz-lives').innerText = state.quiz.lives;
-            document.getElementById('quiz-question').innerText = current.q;
-
+    
+            const qElement = document.getElementById('quiz-question');
             const optContainer = document.getElementById('quiz-options');
             optContainer.innerHTML = "";
 
-            current.options.forEach(opt => {
+            if (current.type === 'fill') {
+                const words = current.q.split(/\s+/);
+                // Hiển thị dạng: Từ1 [___] Từ3
+                const displayPrompt = `${words[0]} <span class="text-indigo-500 underline">?</span> ${words[2]}`;
+        
+                qElement.innerHTML = `
+                <div class="space-y-4">
+                    <p class="text-sm text-pink-400 uppercase font-bold tracking-widest">Complete the Phrase</p>
+                    <div class="text-5xl mb-4 font-black text-white italic">"${displayPrompt}"</div>
+                    <p class="text-xl text-slate-400">${current.a}</p>
+                </div>
+            `;
+
+            const input = document.createElement('input');
+            input.type = "text";
+            input.placeholder = "Missing word...";
+            input.className = "w-full py-5 px-6 rounded-2xl font-bold text-2xl text-center bg-slate-800 border-2 border-indigo-500 focus:border-pink-500 outline-none transition-all shadow-2xl shadow-indigo-500/10";
+            input.id = "quiz-fill-input";
+    
+                setTimeout(() => input.focus(), 100);
+
+                input.onkeypress = (e) => {
+                    if (e.key === 'Enter') checkFillAnswer(input.value, input);
+                };
+                
+                optContainer.appendChild(input);
+                
                 const btn = document.createElement('button');
-                btn.className = 'quiz-option w-full py-5 px-6 rounded-2xl font-bold text-lg';
-                btn.innerText = opt;
-                btn.onclick = () => checkAnswer(opt, btn);
+                btn.className = "w-full mt-4 py-4 bg-gradient-to-r from-indigo-600 to-pink-600 rounded-xl font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all";
+                btn.innerText = "Check Answer";
+                btn.onclick = () => checkFillAnswer(input.value, input);
+                
                 optContainer.appendChild(btn);
-            });
+
+            } else {
+                // Trắc nghiệm cho các từ đơn hoặc câu có độ dài khác 3 từ
+                qElement.innerText = current.q;
+                current.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-option w-full py-5 px-6 rounded-2xl font-bold text-lg hover:bg-slate-700 active:scale-95';
+                    btn.innerText = opt;
+                    btn.onclick = () => checkAnswer(opt, btn);
+                    optContainer.appendChild(btn);
+                });
+            }
         }
 
         function checkAnswer(answer, btn) {
@@ -622,6 +665,34 @@
                     finishQuiz();
                 }
             }, 1200);
+        }
+
+        function checkFillAnswer(userValue, inputElement) {
+            const current = state.quiz.data[state.quiz.currentStep];
+            const words = current.q.toLowerCase().split(/\s+/);
+            const correctAnswer = words[1]; // Lấy từ ở giữa
+    
+            const isCorrect = userValue.toLowerCase().trim() === correctAnswer;
+            inputElement.disabled = true;
+
+            if (isCorrect) {
+                inputElement.classList.add('!bg-emerald-500', '!border-emerald-400', 'text-white');
+                state.quiz.score++;
+                gsap.to(inputElement, { x: [-10, 10, -10, 10, 0], duration: 0.4 });
+            } else {
+                inputElement.classList.add('!bg-rose-500', '!border-rose-400', 'text-white');
+                inputElement.value = `Wrong! Answer: ${correctAnswer}`;
+                state.quiz.lives--;
+            }
+
+            setTimeout(() => {
+                state.quiz.currentStep++;
+                if (state.quiz.currentStep < state.quiz.data.length && state.quiz.lives > 0) {
+                    renderQuestion();
+                } else {
+                    finishQuiz();
+                }
+            }, 1800);
         }
 
         function finishQuiz() {
