@@ -539,100 +539,94 @@
         }
 
         // QUIZ MANAGEMENT
-        function openQuiz() {
-            if (state.notebook.length < 5) {
-                return alert("You need at least 5 saved words to start a quiz!");
-            }
-            
-            document.getElementById('quiz-overlay').style.display = 'flex';
-            document.getElementById('quiz-loading').style.display = 'block';
-            document.getElementById('quiz-main').style.display = 'none';
-            document.getElementById('quiz-finish').style.display = 'none';
+       // --- KHỐI LOGIC QUIZ MỚI (COPY ĐOẠN NÀY DÁN ĐÈ VÀO FILE 1000 DÒNG CỦA BẠN) ---
 
-            setTimeout(() => {
-                startQuiz();
-            }, 1000);
-        }
+function openQuizMenu() {
+    const filtered = notebook.filter(item => item.src.trim().length > 3);
+    if (filtered.length < 5) return alert("Cần tối thiểu 5 cụm từ!");
+    document.getElementById('quiz-overlay').classList.remove('hidden');
+    document.getElementById('quiz-menu').classList.remove('hidden');
+    document.getElementById('quiz-main').classList.add('hidden');
+    document.getElementById('quiz-result').classList.add('hidden');
+}
 
-        function startQuiz() {
-            state.quiz.currentStep = 0;
-            state.quiz.score = 0;
-            state.quiz.lives = 3;
-            
-            const pool = [...state.notebook].sort(() => 0.5 - Math.random());
-            state.quiz.data = pool.slice(0, 10).map(item => {
-                const distractors = state.notebook
-                    .filter(i => i.vi !== item.vi)
-                    .sort(() => 0.5 - Math.random())
-                    .slice(0, 3)
-                    .map(i => i.vi);
-                
-                return {
-                    q: item.src,
-                    a: item.vi,
-                    options: [item.vi, ...distractors].sort(() => 0.5 - Math.random())
-                };
-            });
+function startQuiz(total, mode60) {
+    window.is60Mode = mode60;
+    quizData = notebook.filter(i => i.src.trim().length > 3).sort(() => 0.5 - Math.random()).slice(0, total);
+    currentStep = 0; score = 0;
+    document.getElementById('quiz-menu').classList.add('hidden');
+    document.getElementById('quiz-main').classList.remove('hidden');
+    showQuestion();
+}
 
-            document.getElementById('quiz-loading').style.display = 'none';
-            document.getElementById('quiz-main').style.display = 'block';
-            renderQuestion();
-        }
+function showQuestion() {
+    const item = quizData[currentStep];
+    isProcessing = false;
+    document.getElementById('quiz-step').innerText = `${currentStep + 1}/${quizData.length}`;
+    const isGap = window.is60Mode ? ((currentStep + 1) % 10 === 0) : false;
+    isGap ? setupInputQuestion(item) : setupChoiceQuestion(item);
+}
 
-        function renderQuestion() {
-            const current = state.quiz.data[state.quiz.currentStep];
-            document.getElementById('quiz-step').innerText = `Question ${state.quiz.currentStep + 1}/10`;
-            document.getElementById('quiz-lives').innerText = state.quiz.lives;
-            document.getElementById('quiz-question').innerText = current.q;
+function setupChoiceQuestion(item) {
+    document.getElementById('quiz-question').innerText = `"${item.vi}" là từ nào?`;
+    document.getElementById('choice-area').classList.remove('hidden');
+    document.getElementById('input-area').classList.add('hidden');
+    
+    let choices = [item.src, ...notebook.filter(i => i.src !== item.src).sort(() => 0.5 - Math.random()).slice(0,3)].sort(() => 0.5 - Math.random());
+    const container = document.getElementById('choice-area');
+    container.innerHTML = "";
+    
+    choices.forEach(c => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn'; // Giữ nguyên tên class CSS cũ của bạn
+        btn.innerText = c;
+        btn.onclick = function() {
+            if(isProcessing) return;
+            isProcessing = true;
+            if(c === item.src) { btn.classList.add('correct'); score++; }
+            else { btn.classList.add('wrong'); Array.from(container.children).forEach(b => { if(b.innerText === item.src) b.classList.add('correct'); }); }
+            setTimeout(nextStep, 1500); // Tốc độ 1.5s
+        };
+        container.appendChild(btn);
+    });
+}
 
-            const optContainer = document.getElementById('quiz-options');
-            optContainer.innerHTML = "";
+function setupInputQuestion(item) {
+    currentTargetWord = item.src.toLowerCase().replace(/[.,!?;:]/g, "");
+    document.getElementById('quiz-question').innerText = `Điền từ: ${item.src.replace(/[a-zA-Z]/g, "_")}`;
+    document.getElementById('choice-area').classList.add('hidden');
+    document.getElementById('input-area').classList.remove('hidden');
+    const input = document.getElementById('quiz-input');
+    input.value = ""; input.disabled = false; input.focus();
+}
 
-            current.options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = 'quiz-option w-full py-5 px-6 rounded-2xl font-bold text-lg';
-                btn.innerText = opt;
-                btn.onclick = () => checkAnswer(opt, btn);
-                optContainer.appendChild(btn);
-            });
-        }
+function handleInputAnswer() {
+    if(isProcessing) return;
+    isProcessing = true;
+    const input = document.getElementById('quiz-input');
+    if(input.value.trim().toLowerCase() === currentTargetWord) {
+        input.style.borderColor = "#10b981";
+        score++;
+    } else {
+        input.style.borderColor = "#ef4444";
+        input.value = `Đúng: ${currentTargetWord}`;
+    }
+    input.disabled = true;
+    setTimeout(nextStep, 1500); // Tốc độ 1.5s
+}
 
-        function checkAnswer(answer, btn) {
-            const correct = state.quiz.data[state.quiz.currentStep].a;
-            const buttons = document.querySelectorAll('.quiz-option');
-            buttons.forEach(b => b.disabled = true);
+function nextStep() {
+    currentStep++;
+    if(currentStep < quizData.length) showQuestion();
+    else {
+        document.getElementById('quiz-main').classList.add('hidden');
+        document.getElementById('quiz-result').classList.remove('hidden');
+        document.getElementById('final-score').innerText = `Kết quả: ${score}/${quizData.length}`;
+    }
+}
 
-            if (answer === correct) {
-                btn.classList.add('correct');
-                state.quiz.score++;
-                gsap.from(btn, { scale: 1.1, duration: 0.3 });
-            } else {
-                btn.classList.add('wrong');
-                state.quiz.lives--;
-                buttons.forEach(b => {
-                    if (b.innerText === correct) b.classList.add('correct');
-                });
-            }
-
-            setTimeout(() => {
-                state.quiz.currentStep++;
-                if (state.quiz.currentStep < state.quiz.data.length && state.quiz.lives > 0) {
-                    renderQuestion();
-                } else {
-                    finishQuiz();
-                }
-            }, 1200);
-        }
-
-        function finishQuiz() {
-            document.getElementById('quiz-main').style.display = 'none';
-            document.getElementById('quiz-finish').style.display = 'block';
-            document.getElementById('quiz-final-score').innerText = `You mastered ${state.quiz.score}/10 words`;
-        }
-
-        function closeQuiz() {
-            document.getElementById('quiz-overlay').style.display = 'none';
-        }
+function closeQuiz() { document.getElementById('quiz-overlay').classList.add('hidden'); }
+// --- KẾT THÚC KHỐI CODE THAY THẾ ---
 
         // PHẦN THÊM: DASHBOARD LOGIC
         function toggleDashboard() {
