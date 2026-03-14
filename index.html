@@ -83,6 +83,18 @@
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
 
+        .blank-input {
+            background: #0f172a !important;
+            border: none;
+            border-bottom: 2px solid #6366f1;
+            color: #6366f1;
+            font-weight: 700;
+            width: 100px;
+            text-align: center;
+            padding: 0 5px;
+            outline: none;
+        }
+
         #translation-popup.active {
             bottom: 40px;
         }
@@ -399,41 +411,47 @@
             const container = document.getElementById('lyric-display');
             container.innerHTML = "";
             let wordCount = 0;
-
+            
             text.split('\n').forEach(line => {
                 if (!line.trim()) return;
-
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'lyric-line group';
-                
-                const words = line.split(/(\s+)/);
-                words.forEach(token => {
-                    if (/\s+/.test(token)) {
-                        lineDiv.appendChild(document.createTextNode(token));
+                // Logic mới: Chuyển đổi ngẫu nhiên cụm 3 từ thành chỗ trống
+                const words = line.split(' ');
+                for (let i = 0; i < words.length; i++) {
+                    // Xác suất 10% biến 3 từ thành ô trống (nếu còn đủ từ)
+                    if (i < words.length - 3 && Math.random() < 0.1) {
+                        const blank = document.createElement('input');
+                        blank.className = 'blank-input';
+                        blank.placeholder = "___";
+                        blank.dataset.answer = words.slice(i, i + 3).join(' ');
+                        blank.onchange = (e) => {
+                            if (e.target.value.trim().toLowerCase() === e.target.dataset.answer.toLowerCase()) {
+                                e.target.style.color = "#10b981"; // Màu xanh nếu đúng
+                            } else {
+                                e.target.style.color = "#ef4444"; // Màu đỏ nếu sai
+                            }
+                        };
+                        lineDiv.appendChild(blank);
+                        i += 2; // Bỏ qua 3 từ đã làm input
                     } else {
                         const span = document.createElement('span');
                         span.className = 'source-word';
-                        span.innerText = token;
-                        
-                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
+                        span.innerText = words[i] + " ";
+                        const cleanWord = words[i].replace(/[.,!?;:'"“”()\[\]]/g, "");
                         span.onclick = (e) => {
                             e.stopPropagation();
-                            if (window.getSelection().toString().length === 0) {
-                                triggerTranslation(cleanWord);
-                            }
+                            if (window.getSelection().toString().length === 0) triggerTranslation(cleanWord);
                         };
                         lineDiv.appendChild(span);
-                        wordCount++;
                     }
-                });
-
+                    wordCount++;
+                }
                 container.appendChild(lineDiv);
             });
-
+            
             document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
-            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
         }
-
         // Translation Engine
         async function triggerTranslation(text) {
             if (!text || text.length < 1) return; // Sửa length nhẹ
