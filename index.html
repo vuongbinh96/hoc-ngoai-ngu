@@ -401,40 +401,45 @@
         function renderLyrics(text) {
             const container = document.getElementById('lyric-display');
             container.innerHTML = "";
-            let wordCount = 0;
-
+            currentQuizData = []; // Reset dữ liệu mỗi khi compile mới
+            
             text.split('\n').forEach(line => {
-                if (!line.trim()) return;
-
+                if (!line.trim()) return; // Bỏ qua dòng trống
                 const lineDiv = document.createElement('div');
-                lineDiv.className = 'lyric-line group';
+                lineDiv.className = 'lyric-line';
                 
-                const words = line.split(/(\s+)/);
-                words.forEach(token => {
-                    if (/\s+/.test(token)) {
-                        lineDiv.appendChild(document.createTextNode(token));
+                const words = line.split(/\s+/);
+                for (let i = 0; i < words.length; i++) {
+                    // Kiểm tra điều kiện tạo ô trống
+                    if (i < words.length - 3 && Math.random() < 0.2) {
+                        const answer = words.slice(i, i + 3).join(' ');
+                        currentQuizData.push(answer);
+                        
+                        // --- PHẦN CODE TẠO INPUT ---//
+                        const input = document.createElement('input');
+                        input.className = 'blank-input';
+                        input.placeholder = "___";
+                        input.dataset.answer = answer.toLowerCase();
+                       
+                        // Xử lý sự kiện khi gõ vào ô trốn//
+                        input.onchange = (e) => {
+                            const val = e.target.value.toLowerCase().trim();
+                            e.target.className = (val === e.target.dataset.answer) ? 'blank-input correct' : 'blank-input wrong';
+                        };
+                        lineDiv.appendChild(input);
+                        i += 2; // Nhảy qua 2 từ tiếp theo để tránh trùng
                     } else {
+                        // --- PHẦN CODE HIỂN THỊ TỪ ---//
                         const span = document.createElement('span');
                         span.className = 'source-word';
-                        span.innerText = token;
-                        
-                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
-                        span.onclick = (e) => {
-                            e.stopPropagation();
-                            if (window.getSelection().toString().length === 0) {
-                                triggerTranslation(cleanWord);
-                            }
-                        };
+                        span.innerText = words[i] + " ";
+                        // Thêm sự kiện để tra từ điển khi click vào từ
+                        span.onclick = () => triggerTranslation(words[i].replace(/[.,!?;:'"“”()\[\]]/g, ""));
                         lineDiv.appendChild(span);
-                        wordCount++;
                     }
-                });
-
+                }
                 container.appendChild(lineDiv);
             });
-
-            document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
-            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
         }
 
         // Translation Engine
