@@ -83,24 +83,6 @@
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
 
-        /* Style cho ô điền từ */
-        .blank-input {
-            background: #0f172a !important;
-            border: none;
-            border-bottom: 2px solid #6366f1;
-            color: #6366f1;
-            font-weight: 700;
-            width: 100px;
-            text-align: center;
-            padding: 0 5px;
-            outline: none;
-            margin: 0 4px;
-            border-radius: 4px;
-        }
-        .blank-input:focus { border-bottom-color: #ec4899; }
-        .blank-input.correct { border-bottom-color: #10b981; color: #10b981; }
-        .blank-input.wrong { border-bottom-color: #ef4444; color: #ef4444; }
-        
         #translation-popup.active {
             bottom: 40px;
         }
@@ -413,40 +395,45 @@
             }, 800);
         });
 
-       function renderLyrics(text) {
-           const container = document.getElementById('lyric-display');
-           container.innerHTML = "";
-           const lines = text.split('\n');
-           lines.forEach(line => {
-               if (!line.trim()) return;
-               const lineDiv = document.createElement('div')
-                   lineDiv.className = 'lyric-line';
-               const words = line.split(/\s+/);
-               for (let i = 0; i < words.length; i++) {
-                   // Logic: Nếu cụm từ dài hơn 3 từ và xác suất ngẫu nhiên 20%
-                   if (i < words.length - 3 && Math.random() < 0.2) {
-                       const input = document.createElement('input');
-                       input.className = 'blank-input';
-                       input.placeholder = "___";
-                       const answer = words.slice(i, i + 3).join(' ');
-                       input.dataset.answer = answer.toLowerCase();
-                       input.onchange = (e) => {
-                           e.target.className = (e.target.value.toLowerCase().trim() === e.target.dataset.answer) 
-                               ? 'blank-input correct' : 'blank-input wrong';
-                       };
-                       lineDiv.appendChild(input);
-                       i += 2; // Nhảy qua các từ đã gộp
-                   } else {
-                       const span = document.createElement('span');
-                       span.className = 'source-word';
-                       span.innerText = words[i] + " ";
-                       span.onclick = () => triggerTranslation(words[i].replace(/[.,!?;:'"“”()\[\]]/g, ""));
-                       lineDiv.appendChild(span);
-                   }
-               }
-               container.appendChild(lineDiv);
-           });
-       }
+        function renderLyrics(text) {
+            const container = document.getElementById('lyric-display');
+            container.innerHTML = "";
+            let wordCount = 0;
+
+            text.split('\n').forEach(line => {
+                if (!line.trim()) return;
+
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'lyric-line group';
+                
+                const words = line.split(/(\s+)/);
+                words.forEach(token => {
+                    if (/\s+/.test(token)) {
+                        lineDiv.appendChild(document.createTextNode(token));
+                    } else {
+                        const span = document.createElement('span');
+                        span.className = 'source-word';
+                        span.innerText = token;
+                        
+                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
+                        span.onclick = (e) => {
+                            e.stopPropagation();
+                            if (window.getSelection().toString().length === 0) {
+                                triggerTranslation(cleanWord);
+                            }
+                        };
+                        lineDiv.appendChild(span);
+                        wordCount++;
+                    }
+                });
+
+                container.appendChild(lineDiv);
+            });
+
+            document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
+            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
+        }
+
         // Translation Engine
         async function triggerTranslation(text) {
             if (!text || text.length < 1) return; // Sửa length nhẹ
