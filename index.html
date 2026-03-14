@@ -322,6 +322,9 @@
          * Version: 3.5.0
          * Author: Gemini Adaptive AI
          */
+        // Đặt ở dòng đầu tiên của thẻ <script>
+        let currentQuizData = []; 
+        let quizTimer;
 
         // State Management
         const state = {
@@ -551,6 +554,7 @@
 
             setTimeout(() => {
                 startQuiz();
+                startTimer(25)
             }, 1000);
         }
 
@@ -692,6 +696,47 @@
                 // Placeholder for sync
             }
         }, 1000);
+
+        function saveProgress() {
+            const inputs = document.querySelectorAll('[id^="quiz-input-"]');
+            const progress = {};
+            inputs.forEach(input => progress[input.id] = input.value);
+            localStorage.setItem('quiz_progress', JSON.stringify(progress));
+        }
+
+        function validateQuiz() {
+            clearInterval(quizTimer); // Dừng đồng hồ
+            let correctCount = 0;
+            const inputs = document.querySelectorAll('[id^="quiz-input-"]');
+    
+            inputs.forEach(input => {
+                const userVal = input.value.toLowerCase().trim();
+                const correctVal = input.dataset.correct.toLowerCase();
+                const isCorrect = (userVal === correctVal);
+                
+                input.className = isCorrect ? "blank-input correct" : "blank-input wrong";
+                if (isCorrect) correctCount++;
+            });
+            alert(`Hoàn thành! Bạn đúng ${correctCount}/${inputs.length} câu.`);
+            localStorage.removeItem('quiz_progress'); 
+        }
+
+        function startTimer(durationInMinutes) {
+            let timeLeft = durationInMinutes * 60;
+            const timerDisplay = document.getElementById('timer'); 
+            
+            quizTimer = setInterval(() => {
+                timeLeft--;
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                if(timerDisplay) timerDisplay.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                if (timeLeft <= 0) {
+                    clearInterval(quizTimer);
+                    alert("Hết giờ! Tự động nộp bài.");
+                    validateQuiz();
+                }
+            }, 1000);
+        }
 
     </script>
 </body>
