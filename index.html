@@ -322,9 +322,6 @@
          * Version: 3.5.0
          * Author: Gemini Adaptive AI
          */
-        // Đặt ở dòng đầu tiên của thẻ <script>
-        let currentQuizData = []; 
-        let quizTimer;
 
         // State Management
         const state = {
@@ -401,45 +398,40 @@
         function renderLyrics(text) {
             const container = document.getElementById('lyric-display');
             container.innerHTML = "";
-            currentQuizData = []; // Reset dữ liệu mỗi khi compile mới
-            
+            let wordCount = 0;
+
             text.split('\n').forEach(line => {
-                if (!line.trim()) return; // Bỏ qua dòng trống
+                if (!line.trim()) return;
+
                 const lineDiv = document.createElement('div');
-                lineDiv.className = 'lyric-line';
+                lineDiv.className = 'lyric-line group';
                 
-                const words = line.split(/\s+/);
-                for (let i = 0; i < words.length; i++) {
-                    // Kiểm tra điều kiện tạo ô trống
-                    if (i < words.length - 3 && Math.random() < 0.2) {
-                        const answer = words.slice(i, i + 3).join(' ');
-                        currentQuizData.push(answer);
-                        
-                        // --- PHẦN CODE TẠO INPUT ---//
-                        const input = document.createElement('input');
-                        input.className = 'blank-input';
-                        input.placeholder = "___";
-                        input.dataset.answer = answer.toLowerCase();
-                       
-                        // Xử lý sự kiện khi gõ vào ô trốn//
-                        input.onchange = (e) => {
-                            const val = e.target.value.toLowerCase().trim();
-                            e.target.className = (val === e.target.dataset.answer) ? 'blank-input correct' : 'blank-input wrong';
-                        };
-                        lineDiv.appendChild(input);
-                        i += 2; // Nhảy qua 2 từ tiếp theo để tránh trùng
+                const words = line.split(/(\s+)/);
+                words.forEach(token => {
+                    if (/\s+/.test(token)) {
+                        lineDiv.appendChild(document.createTextNode(token));
                     } else {
-                        // --- PHẦN CODE HIỂN THỊ TỪ ---//
                         const span = document.createElement('span');
                         span.className = 'source-word';
-                        span.innerText = words[i] + " ";
-                        // Thêm sự kiện để tra từ điển khi click vào từ
-                        span.onclick = () => triggerTranslation(words[i].replace(/[.,!?;:'"“”()\[\]]/g, ""));
+                        span.innerText = token;
+                        
+                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
+                        span.onclick = (e) => {
+                            e.stopPropagation();
+                            if (window.getSelection().toString().length === 0) {
+                                triggerTranslation(cleanWord);
+                            }
+                        };
                         lineDiv.appendChild(span);
+                        wordCount++;
                     }
-                }
+                });
+
                 container.appendChild(lineDiv);
             });
+
+            document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
+            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
         }
 
         // Translation Engine
@@ -559,7 +551,6 @@
 
             setTimeout(() => {
                 startQuiz();
-                startTimer(25)
             }, 1000);
         }
 
@@ -701,47 +692,6 @@
                 // Placeholder for sync
             }
         }, 1000);
-
-        function saveProgress() {
-            const inputs = document.querySelectorAll('[id^="quiz-input-"]');
-            const progress = {};
-            inputs.forEach(input => progress[input.id] = input.value);
-            localStorage.setItem('quiz_progress', JSON.stringify(progress));
-        }
-
-        function validateQuiz() {
-            clearInterval(quizTimer); // Dừng đồng hồ
-            let correctCount = 0;
-            const inputs = document.querySelectorAll('[id^="quiz-input-"]');
-    
-            inputs.forEach(input => {
-                const userVal = input.value.toLowerCase().trim();
-                const correctVal = input.dataset.correct.toLowerCase();
-                const isCorrect = (userVal === correctVal);
-                
-                input.className = isCorrect ? "blank-input correct" : "blank-input wrong";
-                if (isCorrect) correctCount++;
-            });
-            alert(`Hoàn thành! Bạn đúng ${correctCount}/${inputs.length} câu.`);
-            localStorage.removeItem('quiz_progress'); 
-        }
-
-        function startTimer(durationInMinutes) {
-            let timeLeft = durationInMinutes * 60;
-            const timerDisplay = document.getElementById('timer'); 
-            
-            quizTimer = setInterval(() => {
-                timeLeft--;
-                const mins = Math.floor(timeLeft / 60);
-                const secs = timeLeft % 60;
-                if(timerDisplay) timerDisplay.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-                if (timeLeft <= 0) {
-                    clearInterval(quizTimer);
-                    alert("Hết giờ! Tự động nộp bài.");
-                    validateQuiz();
-                }
-            }, 1000);
-        }
 
     </script>
 </body>
