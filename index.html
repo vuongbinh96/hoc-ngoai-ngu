@@ -397,28 +397,23 @@
         });
         // Dán hàm này vào giữa phần <script>
         async function autoFindVideo() {
-            // 1. Lấy toàn bộ nội dung từ ô nhập lời
-            const fullLyrics = document.getElementById('lyric-input').value.trim();
+            const lyricsInput = document.getElementById('lyric-input').value.trim();
             const API_KEY = CONFIG.YOUTUBE_API_KEY; 
 
-            if (!fullLyrics) {
-                alert("Bạn chưa dán lời bài hát vào mà!");
-                return;
-            }
+            if (!lyricsInput) return alert("Vui lòng nhập lời bài hát!");
 
-            // 2. Xử lý từ khóa thông minh hơn:
-            // - Tách thành các dòng, bỏ dòng trống
-            // - Lọc bỏ các từ đệm quá ngắn ở đầu bài
-                const lines = fullLyrics.split('\n')
-                    .map(l => l.trim())
-                    .filter(l => l.length > 5); // Chỉ lấy những dòng có trên 5 ký tự
+            // 1. CHỈNH SỬA CHIẾN THUẬT:
+            // Thay vì lấy 100 chữ liên tục, ta lấy dòng đầu tiên (thường là tên bài) 
+            // cộng với một câu ở giữa đoạn 100 chữ đó để làm từ khóa.
+            const lines = lyricsInput.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+    
+            // Tạo từ khóa: Dòng 1 + Dòng 2 + chữ "lyrics"
+            // Việc thêm chữ "lyrics" giúp YouTube hiểu bạn đang tìm bài hát theo lời.
+            const searchQuery = `${lines[0]} ${lines[1] || ""} lyrics`.substring(0, 100);
 
-            // Gom khoảng 3 dòng có ích nhất hoặc tối đa 100 ký tự để làm từ khóa
-            const searchQuery = lines.slice(0, 3).join(" ").substring(0, 100);
-            console.log("AI đang tìm kiếm với cụm từ: ", searchQuery);
-            
-            // 3. Gọi API YouTube
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchQuery)}&key=${API_KEY}`;
+            console.log("AI đang tìm với từ khóa tối ưu:", searchQuery);
+
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchQuery)}&key=${API_KEY}&type=video`;
 
             try {
                 const response = await fetch(url);
@@ -428,17 +423,16 @@
                     const videoId = data.items[0].id.videoId;
                     document.getElementById('yt-url').value = `https://www.youtube.com/watch?v=${videoId}`;
             
-                    // Tự động load video ngay
-                    if (typeof processYouTubeLink === "function") {
-                        processYouTubeLink();
-                    } else {
+                    // Tự động load video
+                    if (document.getElementById('process-btn')) {
                         document.getElementById('process-btn').click();
                     }
                 } else {
-                    alert("Vẫn không tìm thấy! Bạn hãy thử dán thêm Tên Ca Sĩ vào dòng đầu nhé.");
+                    // NẾU VẪN SAI: Thử phương án dự phòng (Search rộng hơn)
+                    alert("Vẫn chưa chuẩn, bạn hãy thử dán thêm tên Ca sĩ vào dòng đầu tiên nhé!");
                 }
             } catch (error) {
-                alert("Lỗi API! Bạn kiểm tra lại mã Key trong file config hoặc biến CONFIG nhé.");
+                alert("Lỗi API! Kiểm tra lại Key nhé.");
             }
         }
 
