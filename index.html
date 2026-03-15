@@ -395,6 +395,37 @@
                 trackEvent('session_start', { wordCount: rawText.split(/\s+/).length });
             }, 800);
         });
+        // Dán hàm này vào giữa phần <script>
+        async function autoFindVideo() {
+            const lyrics = document.getElementById('lyric-input').value.trim();
+            // Thay 'YOUR_GOOGLE_API_KEY_HERE' bằng mã Key bạn lấy từ Google Cloud
+            const API_KEY = 'YOUR_GOOGLE_API_KEY_HERE'; 
+            
+            if (!lyrics) return alert("Vui lòng nhập lời bài hát trước!");
+            const searchQuery = lyrics.split('\n')[0]; // Dùng dòng đầu của lyrics làm từ khóa
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchQuery)}&key=${API_KEY}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+        
+                if (data.items && data.items.length > 0) {
+                    const videoId = data.items[0].id.videoId;
+                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+            
+                    // Tự động điền link vào ô Input
+                    document.getElementById('yt-url').value = videoUrl;
+            
+                    // Tự động kích hoạt nút "Compile" để load video ngay
+                    document.getElementById('process-btn').click(); 
+                } else {
+                    alert("Không tìm thấy video nào cho lời này!");
+                }
+            } catch (error) {
+                console.error("Lỗi:", error);
+                alert("Có lỗi xảy ra, hãy kiểm tra lại API Key!");
+            }
+        }
 
         function renderLyrics(text) {
             const container = document.getElementById('lyric-display');
@@ -765,6 +796,54 @@
             }
         }, 1000);
 
+        // Tính năng AI: Lyrics <-> YouTube
+        async function autoFindVideo() {
+            const lyrics = document.getElementById('lyric-input').value.trim();
+            const btn = event.currentTarget;
+    
+            if (!lyrics) {
+                alert("Bạn cần dán lời bài hát (Lyrics) vào trước để AI tìm kiếm!");
+                return;
+            }
+
+            // Hiệu ứng loading
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+            btn.disabled = true;
+
+            // Lấy 2 dòng đầu tiên để tìm kiếm cho chính xác
+            const lines = lyrics.split('\n').filter(l => l.trim() !== "");
+            const searchQuery = lines.slice(0, 2).join(" "); 
+            
+            try {
+                // Sử dụng API tìm kiếm (Lưu ý: Đây là ví dụ demo, thực tế cần API Key của YouTube)
+                // Ở đây mình dùng một mẹo nhỏ để mở tìm kiếm nếu chưa có API Key
+                const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
+        
+                // Cách 1: Tự động điền (Nếu bạn có API Key, dùng fetch như mình hướng dẫn ở câu trước)
+                // Cách 2: Mở tab mới để người dùng chọn video nhanh
+                window.open(searchUrl, '_blank');
+        
+                // Giả lập sau khi tìm thấy (Bạn có thể dán link vào ô input)
+                console.log("AI đang tìm kiếm cho cụm từ:", searchQuery);
+
+            } catch (error) {
+                alert("Có lỗi khi tìm kiếm!");
+            } finally {
+                btn.innerHTML = originalIcon;
+                btn.disabled = false;
+            }
+        }
+
+        function getLyricsFromYT() {
+            const ytUrl = document.getElementById('yt-url').value.trim();
+            if (!ytUrl) return alert("Dán link YouTube vào trước nhé!");
+    
+            // Mở trang Genius hoặc Google Search để lấy lời nhanh
+            const videoId = extractVideoID(ytUrl);
+            window.open(`https://www.google.com/search?q=lyrics+video+${videoId}`, '_blank');
+        }
+        
     </script>
 </body>
 </html>
