@@ -165,11 +165,24 @@
                     <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
                 </div>
             </section>
-
+            
             <section class="space-y-4">
                 <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-file-lines text-pink-500"></i> Lyrics / Text
+                    <i class="fa-solid fa-video text-indigo-500"></i> Media Source
                 </h3>
+                <div class="glass-card p-4 space-y-3">
+                    <div id="player-container" class="aspect-video bg-black rounded-xl overflow-hidden shadow-inner">
+                        <div id="player"></div>
+                    </div>
+        
+                    <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
+        
+                    <button onclick="autoFindVideo()" class="w-full bg-slate-800 hover:bg-indigo-900 border border-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex items-center justify-center gap-2 text-indigo-400 hover:text-white">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        AI Auto-Find Video
+                    </button>
+                </div>
+            </section>
                 <div class="glass-card p-4 space-y-3">
                     <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here..." class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
                     <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition active:scale-95 shadow-xl">
