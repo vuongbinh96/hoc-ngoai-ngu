@@ -397,12 +397,27 @@
         });
         // Dán hàm này vào giữa phần <script>
         async function autoFindVideo() {
-            const lyrics = document.getElementById('lyric-input').value.trim();
-            // Thay 'YOUR_GOOGLE_API_KEY_HERE' bằng mã Key bạn lấy từ Google Cloud
+            // 1. Lấy toàn bộ nội dung từ ô nhập lời
+            const fullLyrics = document.getElementById('lyric-input').value.trim();
             const API_KEY = CONFIG.YOUTUBE_API_KEY; 
+
+            if (!fullLyrics) {
+                alert("Bạn chưa dán lời bài hát vào mà!");
+                return;
+            }
+
+            // 2. Xử lý từ khóa thông minh hơn:
+            // - Tách thành các dòng, bỏ dòng trống
+            // - Lọc bỏ các từ đệm quá ngắn ở đầu bài
+                const lines = fullLyrics.split('\n')
+                    .map(l => l.trim())
+                    .filter(l => l.length > 5); // Chỉ lấy những dòng có trên 5 ký tự
+
+            // Gom khoảng 3 dòng có ích nhất hoặc tối đa 100 ký tự để làm từ khóa
+            const searchQuery = lines.slice(0, 3).join(" ").substring(0, 100);
+            console.log("AI đang tìm kiếm với cụm từ: ", searchQuery);
             
-            if (!lyrics) return alert("Vui lòng nhập lời bài hát trước!");
-            const searchQuery = lyrics.split('\n')[0]; // Dùng dòng đầu của lyrics làm từ khóa
+            // 3. Gọi API YouTube
             const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchQuery)}&key=${API_KEY}`;
 
             try {
@@ -411,19 +426,19 @@
         
                 if (data.items && data.items.length > 0) {
                     const videoId = data.items[0].id.videoId;
-                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                    document.getElementById('yt-url').value = `https://www.youtube.com/watch?v=${videoId}`;
             
-                    // Tự động điền link vào ô Input
-                    document.getElementById('yt-url').value = videoUrl;
-            
-                    // Tự động kích hoạt nút "Compile" để load video ngay
-                    document.getElementById('process-btn').click(); 
+                    // Tự động load video ngay
+                    if (typeof processYouTubeLink === "function") {
+                        processYouTubeLink();
+                    } else {
+                        document.getElementById('process-btn').click();
+                    }
                 } else {
-                    alert("Không tìm thấy video nào cho lời này!");
+                    alert("Vẫn không tìm thấy! Bạn hãy thử dán thêm Tên Ca Sĩ vào dòng đầu nhé.");
                 }
             } catch (error) {
-                console.error("Lỗi:", error);
-                alert("Có lỗi xảy ra, hãy kiểm tra lại API Key!");
+                alert("Lỗi API! Bạn kiểm tra lại mã Key trong file config hoặc biến CONFIG nhé.");
             }
         }
 
