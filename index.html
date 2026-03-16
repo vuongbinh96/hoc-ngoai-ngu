@@ -396,45 +396,48 @@
             }, 800);
         });
         // Dán hàm này vào giữa phần <script>
-        async function autoFindVideo() {
-            const lyricsInput = document.getElementById('lyric-input').value.trim();
-            const API_KEY = CONFIG.YOUTUBE_API_KEY; 
+       async function autoFindVideo() {
+           // 1. Lấy nội dung từ khung lyric-input
+           const fullLyrics = document.getElementById('lyric-input').value.trim();
+           const API_KEY = CONFIG.YOUTUBE_API_KEY; 
 
-            if (!lyricsInput) return alert("Vui lòng nhập lời bài hát!");
+           if (!fullLyrics) {
+               alert("Khung lời bài hát đang trống, bạn dán lời vào đã nhé!");
+               return;
+           }
+           // 2. Xử lý từ khóa:
+           // Lấy đoạn đầu thật dài (khoảng 200 ký tự) + thêm chữ "lrc" vào cuối
+           // replace(/\n/g, " ") giúp biến các dòng thành một câu văn liền mạch
+           const searchQuery = fullLyrics.replace(/\n/g, " ").substring(0, 200) + " lrc";
+           
+           console.log("AI đang tìm kiếm với cụm từ:", searchQuery);
 
-            // 1. CHỈNH SỬA CHIẾN THUẬT:
-            // Thay vì lấy 100 chữ liên tục, ta lấy dòng đầu tiên (thường là tên bài) 
-            // cộng với một câu ở giữa đoạn 100 chữ đó để làm từ khóa.
-            const lines = lyricsInput.split('\n').map(l => l.trim()).filter(l => l.length > 5);
-    
-            // Tạo từ khóa: Dòng 1 + Dòng 2 + chữ "lyrics"
-            // Việc thêm chữ "lyrics" giúp YouTube hiểu bạn đang tìm bài hát theo lời.
-            const searchQuery = `${lines[0]} ${lines[1] || ""} lyrics`.substring(0, 100);
+           // 3. Gọi API YouTube để tìm video khớp nhất
+           const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchQuery)}&key=${API_KEY}&type=video`;
 
-            console.log("AI đang tìm với từ khóa tối ưu:", searchQuery);
-
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchQuery)}&key=${API_KEY}&type=video`;
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
+           try {
+               const response = await fetch(url);
+               const data = await response.json();
         
-                if (data.items && data.items.length > 0) {
-                    const videoId = data.items[0].id.videoId;
-                    document.getElementById('yt-url').value = `https://www.youtube.com/watch?v=${videoId}`;
+               if (data.items && data.items.length > 0) {
+                   const videoId = data.items[0].id.videoId;
+                   const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
             
-                    // Tự động load video
-                    if (document.getElementById('process-btn')) {
-                        document.getElementById('process-btn').click();
-                    }
-                } else {
-                    // NẾU VẪN SAI: Thử phương án dự phòng (Search rộng hơn)
-                    alert("Vẫn chưa chuẩn, bạn hãy thử dán thêm tên Ca sĩ vào dòng đầu tiên nhé!");
-                }
-            } catch (error) {
-                alert("Lỗi API! Kiểm tra lại Key nhé.");
-            }
-        }
+                   // Điền link vào ô yt-url
+                   document.getElementById('yt-url').value = videoUrl;
+            
+                   // Tự động nhấn nút Compile để hiện video
+                   if (document.getElementById('process-btn')) {
+                       document.getElementById('process-btn').click();
+                   }
+               } else {
+                   alert("Vẫn không tìm thấy video. Bạn thử kiểm tra lại đoạn lời đã dán nhé!");
+               }
+           } catch (error) {
+               console.error("Lỗi:", error);
+               alert("Có lỗi xảy ra! Hãy chắc chắn bạn đã dán API Key vào file config.js.");
+           }
+       }
 
         function renderLyrics(text) {
             const container = document.getElementById('lyric-display');
