@@ -162,9 +162,11 @@
                     <div id="player-container" class="aspect-video bg-black rounded-xl overflow-hidden shadow-inner">
                         <div id="player"></div>
                     </div>
+                    <div class="search-box" style="margin: 20px 0;">
+                    </div>
             </section>
                 <div class="glass-card p-4 space-y-3">
-                    <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here... (Nhập thêm cú pháp tên bài hát-tên ca sĩ)" class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
+                    <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here... (Thêm cú pháp tên ca sĩ - tên bài hát)" class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
                     <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition active:scale-95 shadow-xl">
                         Compile Study Session
                     </button>
@@ -389,23 +391,24 @@
         });
         // Dán hàm này vào giữa phần <script>
        async function autoFindVideo() {
-           // 1. CHỈ LẤY TỪ KHUNG TÊN BÀI HÁT (Bỏ qua khung Lyrics)
-           // Phải đảm bảo ID ở đây là 'song-query' (hoặc id của ô bạn nhập Tên bài - Ca sĩ)
+           // 1. Lấy dữ liệu trực tiếp từ ô nhập
            const queryInput = document.getElementById('song-query').value.trim();
     
-           // API KEY từ Google Cloud của bạn
+           // API KEY lấy từ file Config của bạn
            const API_KEY = CONFIG.GOOGLE_CLOUD_KEY; 
-           
+
            if (!queryInput) {
-               alert("Bạn hãy nhập 'Tên bài - Ca sĩ' vào ô tìm kiếm nhé!");
+               alert("Bạn ơi, hãy nhập 'Tên bài - Ca sĩ' để mình tìm nhé!");
                return;
            }
 
            const btn = document.getElementById('ai-btn');
            btn.innerText = "🔍 Đang tìm MV...";
+           btn.style.opacity = "0.7";
 
            try {
-               // 2. TÌM TRỰC TIẾP TRÊN YOUTUBE (KHÔNG QUA GEMINI)
+               // 2. GỌI THẲNG YOUTUBE API (Bỏ qua Gemini)
+               // Thêm "official mv" để YouTube ưu tiên video xịn nhất của ca sĩ
                const searchKeyword = `${queryInput} official mv`;
                const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchKeyword)}&key=${API_KEY}&type=video&order=viewCount`;
         
@@ -416,21 +419,26 @@
                    const videoId = ytData.items[0].id.videoId;
                    const finalLink = `https://www.youtube.com/watch?v=${videoId}`;
 
-                   // 3. ĐIỀN LINK VÀO Ô KẾT QUẢ 'yt-url'
+                   // 3. ĐIỀN LINK VÀO Ô KẾT QUẢ
                    document.getElementById('yt-url').value = finalLink;
 
-                   // Load video lên màn hình (nếu bạn có hàm này)
-                   if (typeof processYouTubeLink === "function") processYouTubeLink();
+                   // Kích hoạt hàm hiển thị video (nếu bạn đã có hàm processYouTubeLink)
+                   if (typeof processYouTubeLink === "function") {
+                       processYouTubeLink();
+                   }
             
-                   btn.innerText = "✅ Xong!";
+                   btn.innerText = "✅ Đã tìm thấy!";
                } else {
-                   alert("Không tìm thấy video nào cho tên bài này!");
+                   alert("Không tìm thấy video nào cho: " + queryInput);
                }
            } catch (error) {
-               console.error("Lỗi YouTube:", error);
-               alert("Có lỗi kết nối rồi!");
+               console.error("Lỗi:", error);
+               alert("Có lỗi kết nối với YouTube rồi!");
            } finally {
-               setTimeout(() => btn.innerText = "Tìm MV Ngay", 2000);
+               setTimeout(() => {
+                   btn.innerText = "Tìm MV Ngay";
+                   btn.style.opacity = "1";
+               }, 2000);
            }
        }
         
