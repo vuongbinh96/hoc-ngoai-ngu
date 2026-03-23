@@ -401,24 +401,23 @@
         });
         // Dán hàm này vào giữa phần <script>
        async function autoFindVideo() {
-           // 1. Lấy dữ liệu trực tiếp từ ô nhập
+           // 1. CHỈ LẤY TỪ KHUNG TÊN BÀI HÁT (Bỏ qua khung Lyrics)
+           // Phải đảm bảo ID ở đây là 'song-query' (hoặc id của ô bạn nhập Tên bài - Ca sĩ)
            const queryInput = document.getElementById('song-query').value.trim();
     
-           // API KEY lấy từ file Config của bạn
+           // API KEY từ Google Cloud của bạn
            const API_KEY = CONFIG.GOOGLE_CLOUD_KEY; 
-
+           
            if (!queryInput) {
-               alert("Bạn ơi, hãy nhập 'Tên bài - Ca sĩ' để mình tìm nhé!");
+               alert("Bạn hãy nhập 'Tên bài - Ca sĩ' vào ô tìm kiếm nhé!");
                return;
            }
 
            const btn = document.getElementById('ai-btn');
            btn.innerText = "🔍 Đang tìm MV...";
-           btn.style.opacity = "0.7";
 
            try {
-               // 2. GỌI THẲNG YOUTUBE API (Bỏ qua Gemini)
-               // Thêm "official mv" để YouTube ưu tiên video xịn nhất của ca sĩ
+               // 2. TÌM TRỰC TIẾP TRÊN YOUTUBE (KHÔNG QUA GEMINI)
                const searchKeyword = `${queryInput} official mv`;
                const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchKeyword)}&key=${API_KEY}&type=video&order=viewCount`;
         
@@ -429,26 +428,21 @@
                    const videoId = ytData.items[0].id.videoId;
                    const finalLink = `https://www.youtube.com/watch?v=${videoId}`;
 
-                   // 3. ĐIỀN LINK VÀO Ô KẾT QUẢ
+                   // 3. ĐIỀN LINK VÀO Ô KẾT QUẢ 'yt-url'
                    document.getElementById('yt-url').value = finalLink;
 
-                   // Kích hoạt hàm hiển thị video (nếu bạn đã có hàm processYouTubeLink)
-                   if (typeof processYouTubeLink === "function") {
-                       processYouTubeLink();
-                   }
+                   // Load video lên màn hình (nếu bạn có hàm này)
+                   if (typeof processYouTubeLink === "function") processYouTubeLink();
             
-                   btn.innerText = "✅ Đã tìm thấy!";
+                   btn.innerText = "✅ Xong!";
                } else {
-                   alert("Không tìm thấy video nào cho: " + queryInput);
+                   alert("Không tìm thấy video nào cho tên bài này!");
                }
            } catch (error) {
-               console.error("Lỗi:", error);
-               alert("Có lỗi kết nối với YouTube rồi!");
+               console.error("Lỗi YouTube:", error);
+               alert("Có lỗi kết nối rồi!");
            } finally {
-               setTimeout(() => {
-                   btn.innerText = "Tìm MV Ngay";
-                   btn.style.opacity = "1";
-               }, 2000);
+               setTimeout(() => btn.innerText = "Tìm MV Ngay", 2000);
            }
        }
         
