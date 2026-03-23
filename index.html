@@ -162,22 +162,18 @@
                     <div id="player-container" class="aspect-video bg-black rounded-xl overflow-hidden shadow-inner">
                         <div id="player"></div>
                     </div>
-        
-                    <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
-                    <div class="search-container" style="margin-top: 20px; margin-bottom: 20px;">
-                        <label>Nhập tên bài hát để AI tìm link:</label><br>
-                        <input type="text" id="song-name" placeholder="VD: Từng Là - Vũ Cát Tường" style="width: 80%; padding: 10px; margin-top: 5px;">
-                        <button id="ai-btn" onclick="autoFindVideo()" style="padding: 10px 20px; cursor: pointer;">
-                            <div style="margin-top: 10px;">
-                                <label>Link YouTube kết quả:</label><br>
-                                <input type="text" id="yt-url" placeholder="Link sẽ tự động điền vào đây" style="width: 100%; padding: 10px; background: #f0f0f0;" readonly>
-                            </div>
+                    <div class="search-box" style="margin: 20px 0;">
+                        <label>Tìm kiếm nhạc (Cú pháp: Tên bài - Ca sĩ):</label><br>
+                        <input type="text" id="song-query" placeholder="VD: Thanh Tân - Vương Bình" style="width: 80%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-top: 8px;">
+    
+                        <button id="ai-btn" onclick="autoFindVideo()" style="padding: 12px 20px; border-radius: 8px; cursor: pointer; background: #007bff; color: white; border: none;">
+                            AI Video Found
+                        </button>
+
+                        <div style="margin-top: 15px;">
+                            <input type="text" id="yt-url" placeholder="Link YouTube sẽ hiện ở đây" style="width: 100%; padding: 10px; background: #f8f9fa;" readonly>
+                        </div>
                     </div>
-                    <button onclick="autoFindVideo()" class="w-full bg-slate-800 hover:bg-indigo-900 border border-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex items-center justify-center gap-2 text-indigo-400 hover:text-white">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        AI Auto-Find Video
-                    </button>
-                </div>
             </section>
                 <div class="glass-card p-4 space-y-3">
                     <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here..." class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
