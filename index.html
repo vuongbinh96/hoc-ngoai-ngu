@@ -396,48 +396,48 @@
             }, 800);
         });
         // Dán hàm này vào giữa phần <script>
-       async function autoFindVideo() {
-           // 1. Lấy nội dung từ khung lyric-input
-           const fullLyrics = document.getElementById('lyric-input').value.trim();
-           const API_KEY = CONFIG.YOUTUBE_API_KEY; 
+        async function autoFindVideo() {
+            const fullLyrics = document.getElementById('lyric-input').value.trim();
+            const API_KEY = CONFIG.YOUTUBE_API_KEY; 
 
-           if (!fullLyrics) {
-               alert("Khung lời bài hát đang trống, bạn dán lời vào đã nhé!");
-               return;
-           }
-           // 2. Xử lý từ khóa:
-           // Lấy đoạn đầu thật dài (khoảng 200 ký tự) + thêm chữ "lrc" vào cuối
-           // replace(/\n/g, " ") giúp biến các dòng thành một câu văn liền mạch
-           const searchQuery = fullLyrics.replace(/\n/g, " ").substring(0, 200) + " lrc";
-           
-           console.log("AI đang tìm kiếm với cụm từ:", searchQuery);
+            if (!fullLyrics) return alert("Dán lời vào đã!");
 
-           // 3. Gọi API YouTube để tìm video khớp nhất
-           const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchQuery)}&key=${API_KEY}&type=video`;
+            // BƯỚC 1: Dùng YouTube API để "giải mã" lời bài hát thành Tên Bài Hát
+            // Lấy 150 ký tự đầu tiên + "lyrics"
+            const guessQuery = fullLyrics.replace(/\n/g, " ").substring(0, 150) + " offical song";
+    
+            try {
+                const res1 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(guessQuery)}&key=${API_KEY}&type=video`);
+                const data1 = await res1.json();
 
-           try {
-               const response = await fetch(url);
-               const data = await response.json();
-        
-               if (data.items && data.items.length > 0) {
-                   const videoId = data.items[0].id.videoId;
-                   const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                if (data1.items && data1.items.length > 0) {
+                    // Lấy tiêu đề video đầu tiên (thường là video lyrics chính xác nhất)
+                    const videoTitle = data1.items[0].snippet.title;
             
-                   // Điền link vào ô yt-url
-                   document.getElementById('yt-url').value = videoUrl;
-            
-                   // Tự động nhấn nút Compile để hiện video
-                   if (document.getElementById('process-btn')) {
-                       document.getElementById('process-btn').click();
-                   }
-               } else {
-                   alert("Vẫn không tìm thấy video. Bạn thử kiểm tra lại đoạn lời đã dán nhé!");
-               }
-           } catch (error) {
-               console.error("Lỗi:", error);
-               alert("Có lỗi xảy ra! Hãy chắc chắn bạn đã dán API Key vào file config.js.");
-           }
-       }
+                    // Làm sạch tiêu đề (xóa các chữ thừa để tìm MV chuẩn hơn)
+                    const cleanTitle = videoTitle.replace(/\(.*\)|\[.*\]|Official|Lyrics|MV|Video/gi, "").trim();
+                    console.log("AI đã nhận diện bài hát là:", cleanTitle);
+
+                    // BƯỚC 2: Dùng tiêu đề vừa tìm được để tìm MV CHÍNH CHỦ (Official Music Video)
+                    // Thêm order=viewCount để lấy video có nhiều lượt xem nhất
+                    const finalQuery = cleanTitle + " official music video";
+                    const res2 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(finalQuery)}&key=${API_KEY}&type=video&order=viewCount`);
+                    const data2 = await res2.json();
+
+                    if (data2.items && data2.items.length > 0) {
+                        const videoId = data2.items[0].id.videoId;
+                        document.getElementById('yt-url').value = `https://www.youtube.com/watch?v=${videoId}`;
+                
+                        // Tự động kích hoạt hiển thị video trong app LingoPro của bạn
+                        if (typeof processYouTubeLink === "function") processYouTubeLink();
+                    }
+                } else {
+                    alert("YouTube không nhận ra bài hát này qua lời bạn dán.");
+                }
+            } catch (error) {
+                alert("Có lỗi xảy ra! Có thể do API Key của bạn bị giới hạn.");
+            }
+        }
 
         function renderLyrics(text) {
             const container = document.getElementById('lyric-display');
@@ -608,7 +608,7 @@
                 const wordCount = item.src.trim().split(/\s+/).length;
                 
                 // Nếu có đúng 3 từ thì ưu tiên làm dạng điền vào chỗ trống
-                const isFillInBlank = (wordCount === 3);
+                const isFillInBlank = (wordCount >= 3);
         
                 const distractors = state.notebook
                     .filter(i => i.vi !== item.vi)
