@@ -165,16 +165,16 @@
                     <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
                 </div>
             </section>
+            
+            <button onclick="autoFindVideo()" class="w-full bg-slate-800 hover:bg-indigo-900 border border-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex items-center justify-center gap-2 text-indigo-400 hover:text-white">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                AI Auto-Find Video
+            </button>
 
             <section class="space-y-4">
                 <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <i class="fa-solid fa-file-lines text-pink-500"></i> Lyrics / Text
                 </h3>
-                
-                <button onclick="autoFindVideo()" class="w-full bg-slate-800 hover:bg-indigo-900 border border-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex items-center justify-center gap-2 text-indigo-400 hover:text-white">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        AI Auto-Find Video
-                    </button>
                 
                 <div class="glass-card p-4 space-y-3">
                     <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here... (Nhập thêm cú pháp: tên ca sĩ - tên bài hát" class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
@@ -313,7 +313,6 @@
                     <h2 class="text-4xl font-black mb-2">Study Session Complete!</h2>
                     <p id="quiz-final-score" class="text-xl text-slate-400 mb-8">You mastered 8/10 words</p>
                     <div class="flex gap-4">
-                        <button onclick="startQuiz()" class="flex-1 bg-indigo-600 py-4 rounded-xl font-bold">Try Again</button>
                         <button onclick="closeQuiz()" class="flex-1 bg-slate-800 py-4 rounded-xl font-bold">Close</button>
                     </div>
                 </div>
