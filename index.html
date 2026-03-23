@@ -614,9 +614,9 @@
         function startQuiz() {
             state.quiz.currentStep = 0;
             state.quiz.score = 0;
-            state.quiz.lives = 3;
+            state.quiz.lives = 5;
             const pool = [...state.notebook].sort(() => 0.5 - Math.random());
-            state.quiz.data = pool.slice(0, 10).map(item => {
+            state.quiz.data = pool.slice(0, 50).map(item => {
                 // Tách từ bằng khoảng trắng và lọc các khoảng trắng thừa
                 const wordCount = item.src.trim().split(/\s+/).length;
                 
