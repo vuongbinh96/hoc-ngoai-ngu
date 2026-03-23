@@ -162,21 +162,9 @@
                     <div id="player-container" class="aspect-video bg-black rounded-xl overflow-hidden shadow-inner">
                         <div id="player"></div>
                     </div>
-                    <div class="search-box" style="margin: 20px 0;">
-                        <label>Tìm kiếm nhạc (Cú pháp: Tên bài - Ca sĩ):</label><br>
-                        <input type="text" id="song-query" placeholder="VD: Thanh Tân - Vương Bình" style="width: 80%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-top: 8px;">
-    
-                        <button id="ai-btn" onclick="autoFindVideo()" style="padding: 12px 20px; border-radius: 8px; cursor: pointer; background: #007bff; color: white; border: none;">
-                            AI Video Found
-                        </button>
-
-                        <div style="margin-top: 15px;">
-                            <input type="text" id="yt-url" placeholder="Link YouTube sẽ hiện ở đây" style="width: 100%; padding: 10px; background: #f8f9fa;" readonly>
-                        </div>
-                    </div>
             </section>
                 <div class="glass-card p-4 space-y-3">
-                    <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here..." class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
+                    <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here... (Nhập thêm cú pháp tên bài hát-tên ca sĩ)" class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
                     <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition active:scale-95 shadow-xl">
                         Compile Study Session
                     </button>
