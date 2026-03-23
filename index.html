@@ -401,21 +401,26 @@
         });
         // Dán hàm này vào giữa phần <script>
        async function autoFindVideo() {
-           // 1. Lấy tên bài hát từ ô mới 'song-name'
-           const songName = document.getElementById('song-name').value.trim();
+           // 1. Lấy dữ liệu trực tiếp từ ô nhập
+           const queryInput = document.getElementById('song-query').value.trim();
+    
+           // API KEY lấy từ file Config của bạn
            const API_KEY = CONFIG.GOOGLE_CLOUD_KEY; 
 
-           if (!songName) {
-               alert("Bạn chưa nhập tên bài hát kìa!");
+           if (!queryInput) {
+               alert("Bạn ơi, hãy nhập 'Tên bài - Ca sĩ' để mình tìm nhé!");
                return;
            }
 
            const btn = document.getElementById('ai-btn');
-           btn.innerText = "🔍 Đang tìm...";
+           btn.innerText = "🔍 Đang tìm MV...";
+           btn.style.opacity = "0.7";
 
            try {
-               // 2. Tìm thẳng trên YouTube (Bỏ qua bước đọc Lyrics cho đỡ lỗi)
-               const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(songName + " official mv")}&key=${API_KEY}&type=video&order=viewCount`;
+               // 2. GỌI THẲNG YOUTUBE API (Bỏ qua Gemini)
+               // Thêm "official mv" để YouTube ưu tiên video xịn nhất của ca sĩ
+               const searchKeyword = `${queryInput} official mv`;
+               const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(searchKeyword)}&key=${API_KEY}&type=video&order=viewCount`;
         
                const ytRes = await fetch(ytUrl);
                const ytData = await ytRes.json();
@@ -424,23 +429,29 @@
                    const videoId = ytData.items[0].id.videoId;
                    const finalLink = `https://www.youtube.com/watch?v=${videoId}`;
 
-                   // 3. Đổ link vào ô 'yt-url'
+                   // 3. ĐIỀN LINK VÀO Ô KẾT QUẢ
                    document.getElementById('yt-url').value = finalLink;
 
-                   // Chạy video luôn nếu bạn đã có hàm processYouTubeLink
-                   if (typeof processYouTubeLink === "function") processYouTubeLink();
+                   // Kích hoạt hàm hiển thị video (nếu bạn đã có hàm processYouTubeLink)
+                   if (typeof processYouTubeLink === "function") {
+                       processYouTubeLink();
+                   }
             
-                   btn.innerText = "✅ Xong!";
+                   btn.innerText = "✅ Đã tìm thấy!";
                } else {
-                   alert("Không tìm thấy video!");
+                   alert("Không tìm thấy video nào cho: " + queryInput);
                }
-           } catch (e) {
-               console.error(e);
-               alert("Lỗi API YouTube rồi!");
+           } catch (error) {
+               console.error("Lỗi:", error);
+               alert("Có lỗi kết nối với YouTube rồi!");
            } finally {
-               setTimeout(() => btn.innerText = "AI Tìm Video", 2000);
+               setTimeout(() => {
+                   btn.innerText = "Tìm MV Ngay";
+                   btn.style.opacity = "1";
+               }, 2000);
            }
        }
+        
         function renderLyrics(text) {
             const container = document.getElementById('lyric-display');
             container.innerHTML = "";
