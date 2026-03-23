@@ -396,59 +396,69 @@
             }, 800);
         });
         // Dán hàm này vào giữa phần <script>
-        async function autoFindVideo() {
-            // 1. Lấy TOÀN BỘ nội dung trong khung
-            const fullLyrics = document.getElementById('lyric-input').value.trim();
-            const API_KEY = CONFIG.YOUTUBE_API_KEY; 
+       async function autoFindVideo() {
+           // 1. Lấy TOÀN BỘ nội dung từ khung (không giới hạn dòng)
+           const fullLyrics = document.getElementById('lyric-input').value.trim();
+    
+           // ĐÂY LÀ KEY BẠN ĐÃ LẤY TỪ GOOGLE CLOUD
+           const API_KEY = CONFIG.GOOGLE_CLOUD_KEY; 
 
-            if (!fullLyrics) return alert("Dán hết lời bài hát vào khung đã bạn ơi!");
+           if (!fullLyrics) return alert("Dán lời vào đã bạn ơi!");
 
-            // Hiển thị trạng thái để người dùng biết AI đang quét toàn bộ lờ
-            const btn = document.getElementById('ai-btn');
-            const originalText = btn.innerText;
-            btn.innerText = "🔍 Đang quét toàn bộ lời...";
+           const btn = document.getElementById('ai-btn');
+           btn.innerText = "🤖 Gemini đang đọc toàn bộ...";
 
-            // XỬ LÝ TỪ KHÓA: 
-            // - Thay thế tất cả dấu xuống dòng bằng khoảng trắng để tạo thành 1 chuỗi dài liên tục
-            // - YouTube API cho phép từ khóa khá dài, nên ta cứ lấy hết (hoặc tối đa 500 ký tự cho an toàn)
-            const longSearchQuery = fullLyrics.replace(/\n/g, " ").substring(0, 500);
+           try {
+               // XỬ LÝ: Biến tất cả dấu xuống dòng thành khoảng trắng để gửi đi nguyên khối
+               const cleanLyricsForAI = fullLyrics.replace(/\n/g, " ");
 
-            try {
-                // BƯỚC 1: Tìm "danh tính" bài hát dựa trên TOÀN BỘ lời đã dán
-                const res1 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(longSearchQuery)}&key=${API_KEY}&type=video`);
-                const data1 = await res1.json();
+               // GỌI GEMINI FOR GOOGLE CLOUD
+               const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        
+               const geminiRes = await fetch(geminiUrl, {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json' },
+                   body: JSON.stringify({
+                       contents: [{
+                           parts: [{
+                               text: `Dựa vào toàn bộ lời bài hát sau, hãy tìm tên bài hát và ca sĩ chính xác nhất. Chỉ trả về kết quả dạng "Tên bài - Ca sĩ": \n\n ${cleanLyricsForAI}`
+                           }]
+                       }]
+                   })
+               });
 
-                if (data1.items && data1.items.length > 0) {
-                    // Lấy tiêu đề mà YouTube đoán được từ đống lời đó
-                    const officialTitle = data1.items[0].snippet.title;
- 
-                    // Làm sạch tiêu đề (bỏ [MV], (Official)...)
-                    console.log("AI đã nhận diện bài hát từ toàn bộ lời:", officialTitle);
+               const geminiData = await geminiRes.json();
+        
+               // Kiểm tra xem Gemini có trả về kết quả không
+               if (geminiData.candidates && geminiData.candidates[0].content) {
+                   const detectedTitle = geminiData.candidates[0].content.parts[0].text.trim();
+                   console.log("Gemini nhận diện:", detectedTitle);
 
-                    // BƯỚC 2: Dùng cái tên vừa tìm được để lấy MV phổ biến nhất (order=viewCount
-                    const finalQuery = officialTitle + " official music video";
-                    const res2 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(finalQuery)}&key=${API_KEY}&type=video&order=viewCount`);
-                    const data2 = await res2.json();
+                   // BƯỚC 2: DÙNG TÊN ĐÓ ĐỂ LẤY LINK YOUTUBE
+                   const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(detectedTitle + " official mv")}&key=${API_KEY}&type=video&order=viewCount`;
+                   const ytRes = await fetch(ytUrl);
+                   const ytData = await ytRes.json();
 
-                    if (data2.items && data2.items.length > 0) {
-                        const videoId = data2.items[0].id.videoId;
-                        document.getElementById('yt-url').value = `https://www.youtube.com/watch?v=${videoId}`;
+                   if (ytData.items && ytData.items.length > 0) {
+                       const videoId = ytData.items[0].id.videoId;
+                       const finalLink = `https://www.youtube.com/watch?v=${videoId}`;
+
+                       // ĐỔ LINK VÀO Ô NHẬP LIỆU THỦ CÔNG
+                       document.getElementById('yt-url').value = finalLink;
+
+                       // Tự động hiện video lên màn hình
+                       if (typeof processYouTubeLink === "function") processYouTubeLink();
                 
-                        // Tự động load video lên app
-                        if (typeof processYouTubeLink === "function") processYouTubeLink();
-                        btn.innerText = "✅ Tìm thấy rồi!";
-                    }
-                } else {
-                    alert("Dù đã quét hết lời nhưng vẫn không thấy bài này. Bạn kiểm tra lại lời nhé!");
-                }
-            } catch (error) {
-                console.error("Lỗi:", error);
-                alert("Lỗi kết nối API!");
-            } finally {
-                setTimeout(() => btn.innerText = originalText, 2000);
-            }
-        }
-
+                       btn.innerText = "✅ Đã lấy link!";
+                   }
+               }
+           } catch (error) {
+               console.error("Lỗi:", error);
+               alert("Lỗi! Hãy chắc chắn bạn đã Enable 'Generative Language API' trong Google Cloud Console.");
+           } finally {
+               setTimeout(() => btn.innerText = "AI Auto-Find Video", 2000);
+           }
+       }
         function renderLyrics(text) {
             const container = document.getElementById('lyric-display');
             container.innerHTML = "";
