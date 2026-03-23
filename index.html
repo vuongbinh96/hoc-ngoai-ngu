@@ -164,7 +164,15 @@
                     </div>
         
                     <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
-        
+                    <div class="search-container" style="margin-top: 20px; margin-bottom: 20px;">
+                        <label>Nhập tên bài hát để AI tìm link:</label><br>
+                        <input type="text" id="song-name" placeholder="VD: Từng Là - Vũ Cát Tường" style="width: 80%; padding: 10px; margin-top: 5px;">
+                        <button id="ai-btn" onclick="autoFindVideo()" style="padding: 10px 20px; cursor: pointer;">
+                            <div style="margin-top: 10px;">
+                                <label>Link YouTube kết quả:</label><br>
+                                <input type="text" id="yt-url" placeholder="Link sẽ tự động điền vào đây" style="width: 100%; padding: 10px; background: #f0f0f0;" readonly>
+                            </div>
+                    </div>
                     <button onclick="autoFindVideo()" class="w-full bg-slate-800 hover:bg-indigo-900 border border-slate-700 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition flex items-center justify-center gap-2 text-indigo-400 hover:text-white">
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
                         AI Auto-Find Video
@@ -397,68 +405,44 @@
         });
         // Dán hàm này vào giữa phần <script>
        async function autoFindVideo() {
-           // 1. Lấy TOÀN BỘ nội dung từ khung (không giới hạn dòng)
-           const fullLyrics = document.getElementById('lyric-input').value.trim();
-    
-           // ĐÂY LÀ KEY BẠN ĐÃ LẤY TỪ GOOGLE CLOUD
+           // 1. Lấy tên bài hát từ ô mới 'song-name'
+           const songName = document.getElementById('song-name').value.trim();
            const API_KEY = CONFIG.GOOGLE_CLOUD_KEY; 
 
-           if (!fullLyrics) return alert("Dán lời vào đã bạn ơi!");
+           if (!songName) {
+               alert("Bạn chưa nhập tên bài hát kìa!");
+               return;
+           }
 
            const btn = document.getElementById('ai-btn');
-           btn.innerText = "🤖 Gemini đang đọc toàn bộ...";
+           btn.innerText = "🔍 Đang tìm...";
 
            try {
-               // XỬ LÝ: Biến tất cả dấu xuống dòng thành khoảng trắng để gửi đi nguyên khối
-               const cleanLyricsForAI = fullLyrics.replace(/\n/g, " ");
-
-               // GỌI GEMINI FOR GOOGLE CLOUD
-               const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+               // 2. Tìm thẳng trên YouTube (Bỏ qua bước đọc Lyrics cho đỡ lỗi)
+               const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(songName + " official mv")}&key=${API_KEY}&type=video&order=viewCount`;
         
-               const geminiRes = await fetch(geminiUrl, {
-                   method: 'POST',
-                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                      contents: [{
-                          parts: [{
-                              // THÊM DẤU NGOẶC KÉP BAO QUANH BIẾN LỜI BÀI HÁT
-                              text: "Dưới đây là TOÀN BỘ lời bài hát, hãy đọc hết và tìm Tên bài - Ca sĩ. Lời bài hát: " + processedLyrics
-                          }]
-                      })
-               })
-               const geminiData = await geminiRes.json();
-        
-               // Kiểm tra xem Gemini có trả về kết quả không
-               if (geminiData.candidates && geminiData.candidates[0].content) {
-                   const detectedTitle = geminiData.candidates[0].content.parts[0].text.trim();
-                   console.log("Gemini nhận diện:", detectedTitle);
+               const ytRes = await fetch(ytUrl);
+               const ytData = await ytRes.json();
 
-                   // BƯỚC 2: DÙNG TÊN ĐÓ ĐỂ LẤY LINK YOUTUBE
-                   const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(detectedTitle + " official mv")}&key=${API_KEY}&type=video&order=viewCount`;
-                   const ytRes = await fetch(ytUrl);
-                   const ytData = await ytRes.json();
+               if (ytData.items && ytData.items.length > 0) {
+                   const videoId = ytData.items[0].id.videoId;
+                   const finalLink = `https://www.youtube.com/watch?v=${videoId}`;
 
-                   if (ytData.items && ytData.items.length > 0) {
-                       const videoId = ytData.items[0].id.videoId;
-                       const finalLink = `https://www.youtube.com/watch?v=${videoId}`;
+                   // 3. Đổ link vào ô 'yt-url'
+                   document.getElementById('yt-url').value = finalLink;
 
-                       // ĐỔ LINK VÀO Ô NHẬP LIỆU THỦ CÔNG
-                       document.getElementById('yt-url').value = finalLink;
-
-                       // Tự động hiện video lên màn hình
-                       if (typeof processYouTubeLink === "function") processYouTubeLink();
-
-                       alert("Dữ liệu thực tế gửi đi là: " + processedLyrics.substring(0, 50) + "..."); 
-                       console.log("Toàn bộ nội dung gửi đi:", processedLyrics);
-                
-                       btn.innerText = "✅ Đã lấy link!";
-                   }
+                   // Chạy video luôn nếu bạn đã có hàm processYouTubeLink
+                   if (typeof processYouTubeLink === "function") processYouTubeLink();
+            
+                   btn.innerText = "✅ Xong!";
+               } else {
+                   alert("Không tìm thấy video!");
                }
-           } catch (error) {
-               console.error("Lỗi:", error);
-               alert("Lỗi! Hãy chắc chắn bạn đã Enable 'Generative Language API' trong Google Cloud Console.");
+           } catch (e) {
+               console.error(e);
+               alert("Lỗi API YouTube rồi!");
            } finally {
-               setTimeout(() => btn.innerText = "AI Auto-Find Video", 2000);
+               setTimeout(() => btn.innerText = "AI Tìm Video", 2000);
            }
        }
         function renderLyrics(text) {
