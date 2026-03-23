@@ -1,3 +1,3 @@
 const CONFIG = {
-    YOUTUBE_API_KEY: 'AIzaSyARlJWUXRzac5rtyGX5iRmKvlsTLErI04M'
+    GOOGLE_CLOUD_KEY: 'AIzaSyARlJWUXRzac5rtyGX5iRmKvlsTLErI04M'
 };
