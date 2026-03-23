@@ -418,15 +418,14 @@
                const geminiRes = await fetch(geminiUrl, {
                    method: 'POST',
                    headers: { 'Content-Type': 'application/json' },
-                   body: JSON.stringify({
-                       contents: [{
-                           parts: [{
-                               text: `Dựa vào toàn bộ lời bài hát sau, hãy tìm tên bài hát và ca sĩ chính xác nhất. Chỉ trả về kết quả dạng "Tên bài - Ca sĩ": \n\n ${cleanLyricsForAI}`
-                           }]
-                       }]
-                   })
-               });
-
+                  body: JSON.stringify({
+                      contents: [{
+                          parts: [{
+                              // THÊM DẤU NGOẶC KÉP BAO QUANH BIẾN LỜI BÀI HÁT
+                              text: "Dưới đây là TOÀN BỘ lời bài hát, hãy đọc hết và tìm Tên bài - Ca sĩ. Lời bài hát: " + processedLyrics
+                          }]
+                      })
+               })
                const geminiData = await geminiRes.json();
         
                // Kiểm tra xem Gemini có trả về kết quả không
@@ -448,6 +447,9 @@
 
                        // Tự động hiện video lên màn hình
                        if (typeof processYouTubeLink === "function") processYouTubeLink();
+
+                       alert("Dữ liệu thực tế gửi đi là: " + processedLyrics.substring(0, 50) + "..."); 
+                       console.log("Toàn bộ nội dung gửi đi:", processedLyrics);
                 
                        btn.innerText = "✅ Đã lấy link!";
                    }
