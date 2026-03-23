@@ -397,30 +397,36 @@
         });
         // Dán hàm này vào giữa phần <script>
         async function autoFindVideo() {
+            // 1. Lấy TOÀN BỘ nội dung trong khung
             const fullLyrics = document.getElementById('lyric-input').value.trim();
             const API_KEY = CONFIG.YOUTUBE_API_KEY; 
 
-            if (!fullLyrics) return alert("Dán lời vào đã!");
+            if (!fullLyrics) return alert("Dán hết lời bài hát vào khung đã bạn ơi!");
 
-            // BƯỚC 1: Dùng YouTube API để "giải mã" lời bài hát thành Tên Bài Hát
-            // Lấy 150 ký tự đầu tiên + "lyrics"
-            const guessQuery = fullLyrics.replace(/\n/g, " ").substring(0, 150) + " offical song";
-    
+            // Hiển thị trạng thái để người dùng biết AI đang quét toàn bộ lờ
+            const btn = document.getElementById('ai-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "🔍 Đang quét toàn bộ lời...";
+
+            // XỬ LÝ TỪ KHÓA: 
+            // - Thay thế tất cả dấu xuống dòng bằng khoảng trắng để tạo thành 1 chuỗi dài liên tục
+            // - YouTube API cho phép từ khóa khá dài, nên ta cứ lấy hết (hoặc tối đa 500 ký tự cho an toàn)
+            const longSearchQuery = fullLyrics.replace(/\n/g, " ").substring(0, 500);
+
             try {
-                const res1 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(guessQuery)}&key=${API_KEY}&type=video`);
+                // BƯỚC 1: Tìm "danh tính" bài hát dựa trên TOÀN BỘ lời đã dán
+                const res1 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(longSearchQuery)}&key=${API_KEY}&type=video`);
                 const data1 = await res1.json();
 
                 if (data1.items && data1.items.length > 0) {
-                    // Lấy tiêu đề video đầu tiên (thường là video lyrics chính xác nhất)
-                    const videoTitle = data1.items[0].snippet.title;
-            
-                    // Làm sạch tiêu đề (xóa các chữ thừa để tìm MV chuẩn hơn)
-                    const cleanTitle = videoTitle.replace(/\(.*\)|\[.*\]|Official|Lyrics|MV|Video/gi, "").trim();
-                    console.log("AI đã nhận diện bài hát là:", cleanTitle);
+                    // Lấy tiêu đề mà YouTube đoán được từ đống lời đó
+                    const officialTitle = data1.items[0].snippet.title;
+ 
+                    // Làm sạch tiêu đề (bỏ [MV], (Official)...)
+                    console.log("AI đã nhận diện bài hát từ toàn bộ lời:", officialTitle);
 
-                    // BƯỚC 2: Dùng tiêu đề vừa tìm được để tìm MV CHÍNH CHỦ (Official Music Video)
-                    // Thêm order=viewCount để lấy video có nhiều lượt xem nhất
-                    const finalQuery = cleanTitle + " official music video";
+                    // BƯỚC 2: Dùng cái tên vừa tìm được để lấy MV phổ biến nhất (order=viewCount
+                    const finalQuery = officialTitle + " official music video";
                     const res2 = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(finalQuery)}&key=${API_KEY}&type=video&order=viewCount`);
                     const data2 = await res2.json();
 
@@ -428,14 +434,18 @@
                         const videoId = data2.items[0].id.videoId;
                         document.getElementById('yt-url').value = `https://www.youtube.com/watch?v=${videoId}`;
                 
-                        // Tự động kích hoạt hiển thị video trong app LingoPro của bạn
+                        // Tự động load video lên app
                         if (typeof processYouTubeLink === "function") processYouTubeLink();
+                        btn.innerText = "✅ Tìm thấy rồi!";
                     }
                 } else {
-                    alert("YouTube không nhận ra bài hát này qua lời bạn dán.");
+                    alert("Dù đã quét hết lời nhưng vẫn không thấy bài này. Bạn kiểm tra lại lời nhé!");
                 }
             } catch (error) {
-                alert("Có lỗi xảy ra! Có thể do API Key của bạn bị giới hạn.");
+                console.error("Lỗi:", error);
+                alert("Lỗi kết nối API!");
+            } finally {
+                setTimeout(() => btn.innerText = originalText, 2000);
             }
         }
 
