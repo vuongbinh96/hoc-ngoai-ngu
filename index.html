@@ -165,18 +165,7 @@
                     <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
                 </div>
 
-                <section class="space-y-4">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <i class="fa-solid fa-file-lines text-pink-500"></i> Lyrics / Text
-                </h3>
-                
-                <div class="glass-card p-4 space-y-3">
-                    <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here... " class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
-                    <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition active:scale-95 shadow-xl">
-                        Compile Study Session
-                    </button>
-                </div>
-            </section>
+
                 
                 <div class="lyrics-box" style="text-align: center; padding: 20px;">
                     <h2 style="color: #007bff;">Trình Tìm Lời Nhạc Modern</h2>
@@ -191,9 +180,19 @@
                     </button>
                     
                     <br><br>
-                    <textarea id="lyric-input" rows="15" 
-                        style="width: 90%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; font-family: 'Segoe UI', sans-serif;" 
-                        placeholder="Lời bài hát sẽ xuất hiện ở đây..."></textarea>
+                </div>
+            </section>
+
+            <section class="space-y-4">
+                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <i class="fa-solid fa-file-lines text-pink-500"></i> Lyrics / Text
+                </h3>
+                
+                <div class="glass-card p-4 space-y-3">
+                    <textarea id="lyric-input" rows="8" placeholder="Enter lyrics here... " class="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none focus:border-indigo-500 transition"></textarea>
+                    <button id="process-btn" class="w-full bg-gradient-to-r from-indigo-600 to-pink-600 py-4 rounded-xl font-black uppercase tracking-tighter hover:opacity-90 transition active:scale-95 shadow-xl">
+                        Compile Study Session
+                    </button>
                 </div>
             </section>
 
@@ -414,19 +413,22 @@
         });
         // Dán hàm này vào giữa phần <script>
        async function autoFindLyrics() {
-           // 1. Lấy tên bài hát từ ô nhập (Cú pháp: Tên bài - Ca sĩ)
+           // 1. Lấy tên bài hát từ ô nhập
            const songQuery = document.getElementById('song-query').value.trim();
-    
-           if (!songQuery) return alert("Bạn chưa nhập tên bài hát kìa!");
-
+           const lyricArea = document.getElementById('lyric-input'); // Khung để bạn học
            const btn = document.getElementById('lyric-btn');
-           const lyricArea = document.getElementById('lyric-input');
-    
-           btn.innerText = "🔍 Đang tìm lời...";
-           lyricArea.value = "Đang lùng sục lời bài hát trên mạng...";
+
+           if (!songQuery) {
+               alert("Bạn nhập 'Tên bài - Ca sĩ' để mình tìm lời cho bạn học nhé!");
+               return;
+           }
+
+           // Hiển thị trạng thái
+           btn.innerText = "⏳ Đang soạn bài học...";
+           lyricArea.value = "Đang lấy lời bài hát '" + songQuery + "' về cho bạn...";
 
            try {
-               // Tách tên bài và ca sĩ để tìm cho chính xác (nếu có dấu gạch ngang)
+               // Tách Artist và Title
                let artist = "";
                let title = songQuery;
                if (songQuery.includes("-")) {
@@ -434,32 +436,43 @@
                    title = parts[0].trim();
                    artist = parts[1].trim();
                }
-               // 2. SỬ DỤNG API TÌM KIẾM LỜI (LRCLIB - Miễn phí và cực mạnh)
+
+               // Gọi API lấy lời nhạc (LRCLIB cực chuẩn cho học tập)
                const searchUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`;
         
                const response = await fetch(searchUrl);
         
                if (response.ok) {
                    const data = await response.json();
-                   // Lấy lời bài hát (ưu tiên lời không có thời gian)
-                   const lyrics = data.plainLyrics || data.syncedLyrics || "Không tìm thấy lời văn bản.";
             
-                   lyricArea.value = lyrics;
-                   btn.innerText = "✅ Đã xong!";
+                   // Ưu tiên Plain Lyrics (lời sạch, không dính mốc thời gian) để dễ học
+                   const finalLyrics = data.plainLyrics || data.syncedLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
+            
+                   // >>> ĐỔ VÀO KHUNG ĐỂ BẠN HỌC <<<
+                   lyricArea.value = finalLyrics;
+            
+                   // Nếu bạn có hàm tự động dịch hoặc phân tích từ vựng, có thể gọi ở đây
+                   if (typeof startLearningProcess === "function") {
+                       startLearningProcess();
+                   }
+
+                   btn.innerText = "✨ Sẵn sàng học!";
                } else {
-                   // Nếu không tìm thấy bằng LRCLIB, báo lỗi nhẹ
-                   lyricArea.value = "Hệ thống không tìm thấy lời bài hát này. Bạn có muốn thử gõ lại tên chính xác hơn không?";
+                   lyricArea.value = "Rất tiếc, mình chưa tìm thấy lời bài này. Bạn kiểm tra lại tên nhé!";
                    btn.innerText = "❌ Thử lại";
                }
+
            } catch (error) {
-               console.error("Lỗi tìm kiếm:", error);
-               lyricArea.value = "Lỗi kết nối mạng khi tìm lời!";
+               console.error(error);
+               lyricArea.value = "Lỗi kết nối rồi! Bạn kiểm tra mạng nhé.";
            } finally {
-               setTimeout(() => btn.innerText = "AI Tìm Lyrics", 2000);
+               setTimeout(() => {
+                   btn.innerText = "Tìm lời ngay";
+               }, 2000);
            }
        }
         
-        function renderLyrics(text) {
+        function renderLyrics(finalLyrics) {
             const container = document.getElementById('lyric-display');
             container.innerHTML = "";
             let wordCount = 0;
