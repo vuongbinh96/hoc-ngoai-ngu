@@ -164,10 +164,22 @@
                     </div>
                     <input type="text" id="yt-url" placeholder="Paste YouTube Link..." class="w-full px-4 py-3 rounded-xl text-sm outline-none focus:border-indigo-500 transition">
                 </div>
-                <div class="search-box">
-                    <input type="text" id="song-query" placeholder="VD: Thanh Tân - Vương Bình">
-                    <button id="lyric-btn" onclick="autoFindLyrics()">AI Tìm Lyrics</button>
+                <div class="lyrics-box" style="text-align: center; padding: 20px;">
+                    <h2 style="color: #007bff;">Trình Tìm Lời Nhạc Modern</h2>
+    
+                    <input type="text" id="song-query" placeholder="Cú pháp: Tên bài - Ca sĩ (VD: Từng Là - Vũ Cát Tường)" 
+                        style="width: 80%; padding: 12px; border-radius: 20px; border: 2px solid #007bff; margin-bottom: 10px;">
+                    <br>
+    
+                    <button id="lyric-btn" onclick="autoFindLyrics()" 
+                        style="padding: 12px 30px; border-radius: 20px; background: #007bff; color: white; border: none; font-weight: bold; cursor: pointer;">
+                        Tìm lời ngay
+                    </button>
+                    
                     <br><br>
+                    <textarea id="lyric-input" rows="15" 
+                        style="width: 90%; padding: 15px; border-radius: 10px; border: 1px solid #ddd; font-family: 'Segoe UI', sans-serif;" 
+                        placeholder="Lời bài hát sẽ xuất hiện ở đây..."></textarea>
                 </div>
             </section>
             
