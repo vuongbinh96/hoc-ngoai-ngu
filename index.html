@@ -818,23 +818,20 @@
             document.getElementById('quiz-main').style.display = 'none';
             document.getElementById('quiz-finish').style.display = 'block';
 
-            // Lấy số câu thực tế người dùng đã trải qua (đề phòng họ bị hết lives sớm)
-            const totalQuestionsAsked = state.quiz.currentStep;
-    
-            let percentage = 0;
-            if (totalQuestionsAsked > 0) {
-                // Tính %: (Số câu đúng / Tổng số câu đã làm) * 100
-                percentage = (state.quiz.score / totalQuestionsAsked) * 100;
-            }
+            // Lấy tổng số câu thực tế của bài này
+            const totalInSet = state.quiz.data.length;
 
-            // Làm tròn 2 chữ số thập phân bằng toFixed(2)
+            let percentage = 0
+                if (totalInSet > 0) {
+                    // Tính % dựa trên tổng số câu của cả bài
+                    percentage = (state.quiz.score / totalInSet) * 100;
+                }
             const finalPercent = percentage.toFixed(2);
-
-            // Hiển thị kết quả theo yêu cầu của bạn
+            // Hiển thị: Mastery Level: 8.33% (1/12 questions)
             document.getElementById('quiz-final-score').innerText = 
-                `Mastery Level: ${finalPercent}% (${state.quiz.score}/${totalQuestionsAsked} questions)`;
+                `Mastery Level: ${finalPercent}% (${state.quiz.score}/${totalInSet} questions)`
+        
         }
-
         function closeQuiz() {
             document.getElementById('quiz-overlay').style.display = 'none';
         }
