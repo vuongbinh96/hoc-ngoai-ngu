@@ -321,7 +321,7 @@
                         <i class="fa-solid fa-trophy text-4xl"></i>
                     </div>
                     <h2 class="text-4xl font-black mb-2">Study Session Complete!</h2>
-                    <p id="quiz-final-score" class="text-xl text-slate-400 mb-8">You mastered 8/50 words</p>
+                    <p id="quiz-final-score" class="text-xl text-slate-400 mb-8">You achieved 0.00%</p>
                     <div class="flex gap-4">
                         <button onclick="closeQuiz()" class="flex-1 bg-slate-800 py-4 rounded-xl font-bold">Close</button>
                     </div>
@@ -615,8 +615,8 @@
 
         // QUIZ MANAGEMENT
         function openQuiz() {
-            if (state.notebook.length < 5) {
-                return alert("You need at least 5 saved words to start a quiz!");
+            if (state.notebook.length < 25) {
+                return alert("You need at least 25 saved words to start a quiz!");
             }
             
             document.getElementById('quiz-overlay').style.display = 'flex';
@@ -658,10 +658,20 @@
             document.getElementById('quiz-main').style.display = 'block';
             renderQuestion();
         }
-
+        
         function renderQuestion() {
+            // 1. Lấy dữ liệu câu hỏi hiện tại từ mảng data
             const current = state.quiz.data[state.quiz.currentStep];
-            document.getElementById('quiz-step').innerText = `Question ${state.quiz.currentStep + 1}/10`;
+    
+            // 2. TÍNH TOÁN HIỂN THỊ (Phần bạn vừa hỏi)
+            // Lấy số lượng câu hỏi thực tế nhưng không quá 50
+            const totalInPool = Math.min(state.quiz.data.length, 50);
+    
+            // Cập nhật text hiển thị (Ví dụ: Question 1/50)
+            document.getElementById('quiz-step').innerText = 
+                `Question ${state.quiz.currentStep + 1}/${totalInPool}`;
+    
+            // Cập nhật số mạng còn lại
             document.getElementById('quiz-lives').innerText = state.quiz.lives;
     
             const qElement = document.getElementById('quiz-question');
@@ -773,7 +783,22 @@
         function finishQuiz() {
             document.getElementById('quiz-main').style.display = 'none';
             document.getElementById('quiz-finish').style.display = 'block';
-            document.getElementById('quiz-final-score').innerText = `You mastered ${state.quiz.score}/10 words`;
+
+            // Lấy số câu thực tế người dùng đã trải qua (đề phòng họ bị hết lives sớm)
+            const totalQuestionsAsked = state.quiz.currentStep;
+    
+            let percentage = 0;
+            if (totalQuestionsAsked > 0) {
+                // Tính %: (Số câu đúng / Tổng số câu đã làm) * 100
+                percentage = (state.quiz.score / totalQuestionsAsked) * 100;
+            }
+
+            // Làm tròn 2 chữ số thập phân bằng toFixed(2)
+            const finalPercent = percentage.toFixed(2);
+
+            // Hiển thị kết quả theo yêu cầu của bạn
+            document.getElementById('quiz-final-score').innerText = 
+                `Mastery Level: ${finalPercent}% (${state.quiz.score}/${totalQuestionsAsked} questions)`;
         }
 
         function closeQuiz() {
