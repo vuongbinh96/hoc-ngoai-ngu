@@ -364,6 +364,47 @@
          * Author: Gemini Adaptive AI
          */
 
+        // 1. Chạy chữ thay đổi mỗi 5 giâ
+        const textSlide = document.getElementById('text-slide');
+        const messages = [
+            "Cung cấp bởi đội ngũ sáng tạo nhà trường",
+            "Phú Quý, Lâm Đồng © 2026"
+        ];
+        let currentIndex = 0;
+        
+        setInterval(() => {
+            // Hiệu ứng lướt chữ lên
+            textSlide.style.opacity = "0";
+            textSlide.style.transform = "translateY(-10px)";
+    
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % messages.length;
+                textSlide.innerText = messages[currentIndex];
+                textSlide.style.transform = "translateY(10px)";
+        
+                setTimeout(() => {
+                    textSlide.style.opacity = "1";
+                    textSlide.style.transform = "translateY(0)";
+                }, 50);
+            }, 500);
+        }, 5000);
+
+        function toggleTools() {
+            const tools = document.getElementById('extra-tools');
+            if (tools.classList.contains('hidden')) {
+                tools.classList.remove('hidden');
+                setTimeout(() => {
+                    tools.classList.add('flex');
+                    tools.classList.add('opacity-100');
+                }, 10);
+            } else {
+                tools.classList.remove('opacity-100');
+                setTimeout(() => {
+                    tools.classList.add('hidden');
+                    tools.classList.remove('flex');
+                }, 300);
+            }
+        }
         // State Management
         const state = {
             notebook: JSON.parse(localStorage.getItem('lingopro_vocab')) || [],
