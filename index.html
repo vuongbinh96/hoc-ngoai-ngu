@@ -638,7 +638,7 @@
             state.quiz.data = pool.slice(0, 50).map(item => {
                 const wordCount = item.src.trim().split(/\s+/).length;
                 
-                const isFillInBlank = (wordCount <= 3);
+                const isFillInBlank = (wordCount = 3);
         
                 const distractors = state.notebook
                     .filter(i => i.vi !== item.vi)
