@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LINGOPRO – NỀN TẢNG HỌC NHẠC ĐA NGÔN NGỮ</title>
+    <title>LingoPro Enterprise - APP HỌC TẬP NGOẠI NGỮ ĐA PHƯƠNG TIỆN</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -366,12 +366,19 @@
 
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
+         /** 
+         * LINGOPRO ENTERPRISE - CORE LOGIC
+         * Version: 3.5.0
+         * Author: Gemini Adaptive AI
+         */
+
+        // State Management
         const state = {
             notebook: JSON.parse(localStorage.getItem('lingopro_vocab')) || [],
             player: null,
             currentTranslation: { src: '', vi: '' },
             isDashboardOpen: false,
-            myChart: null, 
+            myChart: null, // Thêm cho Chart
             quiz: {
                 currentStep: 0,
                 score: 0,
@@ -380,6 +387,7 @@
             }
         };
 
+        // UI Initialization
         window.addEventListener('load', () => {
             setTimeout(() => {
                 gsap.to('#loader', { opacity: 0, pointerEvents: 'none', duration: 1 });
@@ -387,7 +395,9 @@
             }, 1500);
         });
 
+        // Youtube Player Logic
         function onYouTubeIframeAPIReady() {
+            // Player will be initialized on Process button click
         }
 
         function extractVideoID(url) {
@@ -396,6 +406,7 @@
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
+        // Process Content
         document.getElementById('process-btn').addEventListener('click', function() {
             const rawText = document.getElementById('lyric-input').value.trim();
             const ytUrl = document.getElementById('yt-url').value.trim();
@@ -403,9 +414,11 @@
 
             if (!rawText) return alert("Please enter some text or lyrics!");
 
+            // Animation Feedback
             btn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> Processing...';
             btn.disabled = true;
 
+            // Handle Video
             const videoId = extractVideoID(ytUrl);
             if (videoId) {
                 if (state.player) {
@@ -420,27 +433,34 @@
                 }
             }
 
+            // Handle Lyrics Parsing
             setTimeout(() => {
                 renderLyrics(rawText);
                 btn.innerHTML = 'Compile Study Session';
                 btn.disabled = false;
                 
+                // Track Analytics
                 trackEvent('session_start', { wordCount: rawText.split(/\s+/).length });
             }, 800);
         });
+        // Dán hàm này vào giữa phần <script>
        async function autoFindLyrics() {
+           // 1. Lấy tên bài hát từ ô nhập
            const songQuery = document.getElementById('song-query').value.trim();
-           const lyricArea = document.getElementById('lyric-input');
+           const lyricArea = document.getElementById('lyric-input'); // Khung để bạn học
            const btn = document.getElementById('lyric-btn');
 
            if (!songQuery) {
                alert("Bạn nhập 'Tên bài - Ca sĩ' để mình tìm lời cho bạn học nhé!");
                return;
            }
+
+           // Hiển thị trạng thái
            btn.innerText = "⏳ Đang soạn bài học...";
            lyricArea.value = "Đang lấy lời bài hát '" + songQuery + "' về cho bạn...";
 
            try {
+               // Tách Artist và Title
                let artist = "";
                let title = songQuery;
                if (songQuery.includes("-")) {
@@ -449,6 +469,7 @@
                    artist = parts[1].trim();
                }
 
+               // Gọi API lấy lời nhạc (LRCLIB cực chuẩn cho học tập)
                const searchUrl = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(title)}`;
         
                const response = await fetch(searchUrl);
@@ -456,10 +477,13 @@
                if (response.ok) {
                    const data = await response.json();
             
+                   // Ưu tiên Plain Lyrics (lời sạch, không dính mốc thời gian) để dễ học
                    const finalLyrics = data.plainLyrics || data.syncedLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
             
+                   // >>> ĐỔ VÀO KHUNG ĐỂ BẠN HỌC <<<
                    lyricArea.value = finalLyrics;
             
+                   // Nếu bạn có hàm tự động dịch hoặc phân tích từ vựng, có thể gọi ở đây
                    if (typeof startLearningProcess === "function") {
                        startLearningProcess();
                    }
@@ -518,8 +542,10 @@
             document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
             gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
         }
+
+        // Translation Engine
         async function triggerTranslation(text) {
-            if (!text || text.length < 1) return;
+            if (!text || text.length < 1) return; // Sửa length nhẹ
 
             const pop = document.getElementById('translation-popup');
             const popSrc = document.getElementById('pop-src');
@@ -548,6 +574,8 @@
                 triggerTranslation(selection);
             }
         }
+
+        // Vocabulary Notebook
         function saveToNotebook() {
             const { src, vi } = state.currentTranslation;
             if (!src || learnedBefore(src)) return;
@@ -556,6 +584,7 @@
             localStorage.setItem('lingopro_vocab', JSON.stringify(state.notebook));
             updateNotebookUI();
             
+            // Visual feedback
             gsap.from('#notebook-sidebar', { borderColor: '#ec4899', borderWidth: 4, duration: 0.5 });
         }
 
@@ -601,6 +630,8 @@
                 updateNotebookUI();
             }
         }
+
+        // Audio System
         function speakText(customText = null) {
             const text = customText || state.currentTranslation.src;
             if (!text) return;
@@ -608,6 +639,7 @@
             const utterance = new SpeechSynthesisUtterance(text);
             const lang = document.getElementById('target-lang').value;
             
+            // Basic language mapping
             const map = { 'vi': 'vi-VN', 'en': 'en-US', 'ko': 'ko-KR', 'ja': 'ja-JP' };
             utterance.lang = map[lang] || 'en-US';
             utterance.rate = document.getElementById('playback-speed').value;
@@ -615,9 +647,10 @@
             window.speechSynthesis.speak(utterance);
         }
 
+        // QUIZ MANAGEMENT
         function openQuiz() {
-            if (state.notebook.length < 5) {
-                return alert("You need at least 5 saved words to start a quiz!");
+            if (state.notebook.length < 25) {
+                return alert("You need at least 25 saved words to start a quiz!");
             }
             
             document.getElementById('quiz-overlay').style.display = 'flex';
@@ -636,9 +669,11 @@
             state.quiz.lives = 5;
             const pool = [...state.notebook].sort(() => 0.5 - Math.random());
             state.quiz.data = pool.slice(0, 50).map(item => {
+                // Tách từ bằng khoảng trắng và lọc các khoảng trắng thừa
                 const wordCount = item.src.trim().split(/\s+/).length;
                 
-                const isFillInBlank = (wordCount = 3);
+                // Nếu có đúng 3 từ thì ưu tiên làm dạng điền vào chỗ trống
+                const isFillInBlank = (wordCount >= 3);
         
                 const distractors = state.notebook
                     .filter(i => i.vi !== item.vi)
@@ -659,13 +694,18 @@
         }
         
         function renderQuestion() {
+            // 1. Lấy dữ liệu câu hỏi hiện tại từ mảng data
             const current = state.quiz.data[state.quiz.currentStep];
     
+            // 2. TÍNH TOÁN HIỂN THỊ (Phần bạn vừa hỏi)
+            // Lấy số lượng câu hỏi thực tế nhưng không quá 50
             const totalInPool = Math.min(state.quiz.data.length, 50);
     
+            // Cập nhật text hiển thị (Ví dụ: Question 1/50)
             document.getElementById('quiz-step').innerText = 
                 `Question ${state.quiz.currentStep + 1}/${totalInPool}`;
     
+            // Cập nhật số mạng còn lại
             document.getElementById('quiz-lives').innerText = state.quiz.lives;
     
             const qElement = document.getElementById('quiz-question');
@@ -674,6 +714,7 @@
 
             if (current.type === 'fill') {
                 const words = current.q.split(/\s+/);
+                // Hiển thị dạng: Từ1 [___] Từ3
                 const displayPrompt = `${words[0]} <span class="text-indigo-500 underline">?</span> ${words[2]}`;
         
                 qElement.innerHTML = `
@@ -706,6 +747,7 @@
                 optContainer.appendChild(btn);
 
             } else {
+                // Trắc nghiệm cho các từ đơn hoặc câu có độ dài khác 3 từ
                 qElement.innerText = current.q;
                 current.options.forEach(opt => {
                     const btn = document.createElement('button');
@@ -747,7 +789,7 @@
         function checkFillAnswer(userValue, inputElement) {
             const current = state.quiz.data[state.quiz.currentStep];
             const words = current.q.toLowerCase().split(/\s+/);
-            const correctAnswer = words[1];
+            const correctAnswer = words[1]; // Lấy từ ở giữa
     
             const isCorrect = userValue.toLowerCase().trim() === correctAnswer;
             inputElement.disabled = true;
@@ -776,13 +818,16 @@
             document.getElementById('quiz-main').style.display = 'none';
             document.getElementById('quiz-finish').style.display = 'block';
 
+            // Lấy tổng số câu thực tế của bài này
             const totalInSet = state.quiz.data.length;
 
             let percentage = 0
                 if (totalInSet > 0) {
+                    // Tính % dựa trên tổng số câu của cả bài
                     percentage = (state.quiz.score / totalInSet) * 100;
                 }
             const finalPercent = percentage.toFixed(2);
+            // Hiển thị: Mastery Level: 8.33% (1/12 questions)
             document.getElementById('quiz-final-score').innerText = 
                 `Mastery Level: ${finalPercent}% (${state.quiz.score}/${totalInSet} questions)`
         
@@ -790,6 +835,8 @@
         function closeQuiz() {
             document.getElementById('quiz-overlay').style.display = 'none';
         }
+
+        // PHẦN THÊM: DASHBOARD LOGIC
         function toggleDashboard() {
             const dash = document.getElementById('dashboard-overlay');
             if (dash.classList.contains('hidden')) {
@@ -840,9 +887,10 @@
             console.log(`[Analytics] ${name}`, props);
         }
 
+        // Utility: Auto-scroll with player time
         setInterval(() => {
             if (state.player && state.player.getCurrentTime && document.getElementById('auto-scroll').checked) {
-
+                // Placeholder for sync
             }
         }, 1000);
 
