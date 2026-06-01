@@ -649,8 +649,8 @@
 
         // QUIZ MANAGEMENT
         function openQuiz() {
-            if (state.notebook.length < 25) {
-                return alert("You need at least 25 saved words to start a quiz!");
+            if (state.notebook.length < 5) {
+                return alert("You need at least 5 saved words to start a quiz!");
             }
             
             document.getElementById('quiz-overlay').style.display = 'flex';
@@ -673,7 +673,7 @@
                 const wordCount = item.src.trim().split(/\s+/).length;
                 
                 // Nếu có đúng 3 từ thì ưu tiên làm dạng điền vào chỗ trống
-                const isFillInBlank = (wordCount >= 3);
+                const isFillInBlank = (wordCount = 3);
         
                 const distractors = state.notebook
                     .filter(i => i.vi !== item.vi)
