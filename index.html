@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LingoPro - APP HỌC TẬP NGOẠI NGỮ ĐA PHƯƠNG TIỆN</title>
+    <title>LingoPro Enterprise - APP HỌC TẬP NGOẠI NGỮ ĐA PHƯƠNG TIỆN</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -478,7 +478,7 @@
                    const data = await response.json();
             
                    // Ưu tiên Plain Lyrics (lời sạch, không dính mốc thời gian) để dễ học
-                   const finalLyrics = data.syncedLyrics || data.plainLyrics ||  "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
+                   const finalLyrics = data.syncedLyrics || data.plainLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
             
                    // >>> ĐỔ VÀO KHUNG ĐỂ BẠN HỌC <<<
                    lyricArea.value = finalLyrics;
@@ -534,6 +534,11 @@
                        state.player.playVideo();
                    }
                };
+                       };
+                       lineDiv.appendChild(span);
+                       wordCount++;
+                   }
+               }
 
                // Thêm khoảng trắng nhỏ sau mỗi dòng để giữ khoảng cách đều
                lineDiv.appendChild(document.createTextNode(" "));
