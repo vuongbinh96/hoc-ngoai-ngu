@@ -535,61 +535,6 @@
                    }
                };
 
-               // 3. Tách từ và tự động tạo ô trống điền từ ngẫu nhiên (Cụm 3 từ)
-               const words = cleanLine.split(/\s+/);
-               for (let i = 0; i < words.length; i++) {
-                   if (i < words.length - 3 && Math.random() < 0.2) {
-                       const answer = words.slice(i, i + 3).join(' ');
-                
-                // Đẩy đáp án này vào kho dữ liệu làm bài test điền từ
-                       state.quiz.data.push({
-                           q: `Điền cụm từ còn thiếu trong câu`,
-                           a: answer,
-                           type: 'fill'
-                       });
-                
-                       // Tạo ô Input nhập liệu trực tiếp tại màn hình lời bài hát
-                       const input = document.createElement('input');
-                       input.type = 'text';
-                       input.placeholder = "___";
-                       // Style nhỏ gọn phù hợp với giao diện tối (Dark mode)
-                       input.className = "mx-1 px-2 py-0.5 bg-slate-800 border-b-2 border-indigo-500 rounded text-center text-sm outline-none text-indigo-400 font-bold focus:border-pink-500 transition-all";
-                       input.style.width = "110px";
-                       input.dataset.answer = answer.toLowerCase();
-                
-                       // Kiểm tra đúng sai trực tiếp tại màn hình chính khi học viên gõ xong
-                       input.onchange = (e) => {
-                           const val = e.target.value.toLowerCase().trim();
-                           if (val === e.target.dataset.answer) {
-                               e.target.style.borderColor = "#10b981"; // Màu xanh nếu đúng
-                               e.target.style.color = "#10b981";
-                           } else {
-                               e.target.style.borderColor = "#ef4444"; // Màu đỏ nếu sai
-                               e.target.style.color = "#ef4444";
-                           }
-                       };
-                
-                       lineDiv.appendChild(input);
-                       i += 2; // Bỏ qua 2 từ tiếp theo vì đã gộp thành cụm ô trống
-                       wordCount += 3;
-                   } else {
-                       // Hiển thị từ thông thường có tương tác dịch thuật của bạn
-                       if (!words[i]) continue;
-                       const span = document.createElement('span');
-                       span.className = 'source-word mx-0.5';
-                       span.innerText = words[i];
-                       const cleanWord = words[i].replace(/[.,!?;:'"“”()\[\]]/g, "");
-                       span.onclick = (e) => {
-                           e.stopPropagation(); // Không kích hoạt cơ chế tua nhạc của cả dòng khi đang bấm tra từ cụ thể
-                           if (window.getSelection().toString().length === 0) {
-                               triggerTranslation(cleanWord);
-                           }
-                       };
-                       lineDiv.appendChild(span);
-                       wordCount++;
-                   }
-               }
-
                // Thêm khoảng trắng nhỏ sau mỗi dòng để giữ khoảng cách đều
                lineDiv.appendChild(document.createTextNode(" "));
                container.appendChild(lineDiv);
