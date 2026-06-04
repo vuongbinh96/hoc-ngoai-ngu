@@ -504,6 +504,7 @@
            }
        }
         
+        on: 0.5 });
         function renderLyrics(finalLyrics) {
             const container = document.getElementById('lyric-display');
             container.innerHTML = "";
@@ -513,29 +514,45 @@
                 if (!line.trim()) return;
 
                 const lineDiv = document.createElement('div');
-                lineDiv.className = 'lyric-line group';
-                
-                const words = line.split(/(\s+)/);
-                words.forEach(token => {
-                    if (/\s+/.test(token)) {
-                        lineDiv.appendChild(document.createTextNode(token));
-                    } else {
-                        const span = document.createElement('span');
-                        span.className = 'source-word';
-                        span.innerText = token;
-                        
-                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
-                        span.onclick = (e) => {
-                            e.stopPropagation();
-                            if (window.getSelection().toString().length === 0) {
-                                triggerTranslation(cleanWord);
-                            }
-                        };
-                        lineDiv.appendChild(span);
-                        wordCount++;
+                lineDiv.className = 'lyric-line group cursor-pointer'; 
+        
+                // Nhận diện mốc thời gian để click tua nhạc
+                const timeRegex = /^\[(\d{2}):(\d{2})(?:\.\d{2,3})?\]/;
+                const match = line.match(timeRegex);
+        
+                let cleanLine = line;
+                if (match) {
+                    lineDiv.dataset.time = parseInt(match[1]) * 60 + parseInt(match[2]);
+                    cleanLine = line.replace(timeRegex, '').trim(); 
+                }
+        
+                lineDiv.onclick = (e) => {
+                    if (lineDiv.dataset.time && state.player && typeof state.player.seekTo === 'function') {
+                        state.player.seekTo(parseFloat(lineDiv.dataset.time), true);
+                        state.player.playVideo();
                     }
+                };
+
+                // Hiển thị từ thông thường, click là tra từ, không tạo ô trống ở đây nữa
+                const words = cleanLine.split(/\s+/);
+                words.forEach(token => {
+                    if (!token) return;
+                    const span = document.createElement('span');
+                    span.className = 'source-word mx-0.5';
+                    span.innerText = token;
+            
+                    const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
+                    span.onclick = (e) => {
+                        e.stopPropagation(); 
+                        if (window.getSelection().toString().length === 0) {
+                            triggerTranslation(cleanWord);
+                        }
+                    };
+                    lineDiv.appendChild(span);
+                    wordCount++;
                 });
 
+                lineDiv.appendChild(document.createTextNode(" "));
                 container.appendChild(lineDiv);
             });
 
