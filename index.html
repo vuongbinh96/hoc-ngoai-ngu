@@ -478,7 +478,7 @@
                    const data = await response.json();
             
                    // Ưu tiên Plain Lyrics (lời sạch, không dính mốc thời gian) để dễ học
-                   const finalLyrics = data.plainLyrics || data.syncedLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
+                   const finalLyrics = data.syncedLyrics || data.plainLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
             
                    // >>> ĐỔ VÀO KHUNG ĐỂ BẠN HỌC <<<
                    lyricArea.value = finalLyrics;
@@ -503,47 +503,8 @@
                }, 2000);
            }
        }
-        
-        function renderLyrics(finalLyrics) {
-            const container = document.getElementById('lyric-display');
-            container.innerHTML = "";
-            let wordCount = 0;
 
-            finalLyrics.split('\n').forEach(line => {
-                if (!line.trim()) return;
-
-                const lineDiv = document.createElement('div');
-                lineDiv.className = 'lyric-line group';
-                
-                const words = line.split(/(\s+)/);
-                words.forEach(token => {
-                    if (/\s+/.test(token)) {
-                        lineDiv.appendChild(document.createTextNode(token));
-                    } else {
-                        const span = document.createElement('span');
-                        span.className = 'source-word';
-                        span.innerText = token;
-                        
-                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
-                        span.onclick = (e) => {
-                            e.stopPropagation();
-                            if (window.getSelection().toString().length === 0) {
-                                triggerTranslation(cleanWord);
-                            }
-                        };
-                        lineDiv.appendChild(span);
-                        wordCount++;
-                    }
-                });
-
-                container.appendChild(lineDiv);
-            });
-
-            document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
-            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
-        }
-
-        // Translation Engine
+                // Translation Engine
         async function triggerTranslation(text) {
             if (!text || text.length < 1) return; // Sửa length nhẹ
 
@@ -566,6 +527,73 @@
             } catch (error) {
                 popVi.innerText = "Error translation";
             }
+        }
+        
+        function renderLyrics(finalLyrics) {
+            const container = document.getElementById('lyric-display');
+            if (!container) return;
+    
+            container.innerHTML = "";
+            let wordCount = 0;
+
+            // Tách lời bài hát thành từng dòng một cách an toàn
+            finalLyrics.split('\n').forEach(line => {
+                if (!line.trim()) return;
+
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'lyric-line group cursor-pointer py-1 px-2 rounded hover:bg-slate-800/30 transition'; 
+        
+                // Nhận diện mốc thời gian [mm:ss.xx] để click tua nhạc
+                const timeRegex = /^\[(\d{2}):(\d{2trim})(?:\.\d{2,3})?\]/;
+                const match = line.match(timeRegex);
+        
+                let cleanLine = line;
+                if (match) {
+                    lineDiv.dataset.time = parseInt(match[1]) * 60 + parseInt(match[2]);
+                    cleanLine = line.replace(timeRegex, '').trim(); 
+                }
+        
+                // Click vào dòng để tua nhạc
+                lineDiv.onclick = (e) => {
+                    if (lineDiv.dataset.time && state.player && typeof state.player.seekTo === 'function') {
+                        state.player.seekTo(parseFloat(lineDiv.dataset.time), true);
+                        state.player.playVideo();
+                    }
+                };
+
+                // Tách từ bằng khoảng trắng
+                const words = cleanLine.split(/\s+/).filter(w => w.length > 0);
+        
+                if (words.length > 0) {
+                    // Duyệt tuần tự qua từng từ bằng forEach (An toàn 100%, không lo treo/lặp vô hạn)
+                    words.forEach(token => {
+                        const span = document.createElement('span');
+                        span.className = 'source-word mx-0.5 inline-block text-slate-300 hover:text-indigo-400 font-medium transition cursor-pointer';
+                        span.innerText = token;
+                
+                        const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
+                        span.onclick = (e) => {
+                            e.stopPropagation(); // Ngăn việc bấm vào từ bị nhảy tua nhạc của cả dòng
+                            if (window.getSelection().toString().length === 0 && typeof triggerTranslation === 'function') {
+                                triggerTranslation(cleanWord);
+                            }
+                        };
+                        lineDiv.appendChild(span);
+                        wordCount++;
+                    });
+                } else if (cleanLine.length > 0) {
+                    // Fallback hiển thị nguyên câu cho tiếng Nhật/Hàn nếu câu không có khoảng trắng
+                    const span = document.createElement('span');
+                    span.className = 'source-word text-slate-300 hover:text-indigo-400 font-medium transition';
+                    span.innerText = cleanLine;
+                    lineDiv.appendChild(span);
+                    wordCount += cleanLine.length;
+                }
+                container.appendChild(lineDiv);
+            });
+
+            const badge = document.getElementById('word-count-badge');
+            if (badge) badge.innerText = `${wordCount} WORDS`;
         }
 
         function handleSelection() {
