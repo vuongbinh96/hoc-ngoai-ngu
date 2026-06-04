@@ -477,8 +477,8 @@
                if (response.ok) {
                    const data = await response.json();
             
-                   // Ưu tiên Plain Lyrics (lời sạch, không dính mốc thời gian) để dễ học
-                   const finalLyrics = data.plainLyrics || data.syncedLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
+                   // Ưu tiên synced Lyrics (lời sạch, không dính mốc thời gian) để dễ học
+                   const finalLyrics = data.syncedLyrics || data.plainLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
             
                    // >>> ĐỔ VÀO KHUNG ĐỂ BẠN HỌC <<<
                    lyricArea.value = finalLyrics;
