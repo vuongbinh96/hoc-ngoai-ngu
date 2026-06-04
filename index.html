@@ -478,7 +478,7 @@
                    const data = await response.json();
             
                    // Ưu tiên Plain Lyrics (lời sạch, không dính mốc thời gian) để dễ học
-                   const finalLyrics = data.syncedLyrics || data.plainLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
+                   const finalLyrics = data.plainLyrics || data.syncedLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
             
                    // >>> ĐỔ VÀO KHUNG ĐỂ BẠN HỌC <<<
                    lyricArea.value = finalLyrics;
@@ -511,7 +511,7 @@
 
             finalLyrics.split('\n').forEach(line => {
                 if (!line.trim()) return;
-                
+
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'lyric-line group';
                 
@@ -530,43 +530,19 @@
                             if (window.getSelection().toString().length === 0) {
                                 triggerTranslation(cleanWord);
                             }
-        
-                // Sự kiện click vào dòng để tua video YouTube của Player
-                lineDiv.onclick = (e) => {
-                    if (lineDiv.dataset.time && state.player && typeof state.player.seekTo === 'function') {
-                        state.player.seekTo(parseFloat(lineDiv.dataset.time), true);
-                        state.player.playVideo();
+                        };
+                        lineDiv.appendChild(span);
+                        wordCount++;
                     }
-                };
-
-                // Tách từ bằng khoảng trắng
-                const words = cleanLine.split(/\s+/).filter(w => w.length > 0);
-            
-                    // Khử bớt ký tự đặc biệt dính kèm từ để tra từ điển chính xác
-                    const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
-                    span.onclick = (e) => {
-                        e.stopPropagation(); // Ngăn sự kiện nhảy tua nhạc của cả dòng
-                        if (window.getSelection().toString().length === 0 && typeof triggerTranslation === 'function') {
-                            triggerTranslation(cleanWord);
-                        }
-                    };
-            
-                    lineDiv.appendChild(span);
-                    wordCount++;
-                });
-                    }
-                    container.appendChild(lineDiv);
                 });
 
-                // Cập nhật số lượng từ lên badge giao diện
-                const badge = document.getElementById('word-count-badge');
-                if (badge) badge.innerText = `${wordCount} WORDS`;
-                
-                // Hiệu ứng mượt mà nếu bạn có nhúng thư viện GSAP
-                if (typeof gsap !== 'undefined') {
-                    gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.02, duration: 0.4 });
-                }
-            }
+                container.appendChild(lineDiv);
+            });
+
+            document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
+            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
+        }
+
         // Translation Engine
         async function triggerTranslation(text) {
             if (!text || text.length < 1) return; // Sửa length nhẹ
