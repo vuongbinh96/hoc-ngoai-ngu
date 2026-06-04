@@ -297,7 +297,7 @@
         <div class="flex items-center gap-2 pt-4 border-t border-slate-700">
             <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Context Engine AI</span>
             <div class="flex-1 h-[1px] bg-slate-700"></div>
-            <button onclick="closePopup()" class="text-xs text-slate-400 hover:text-white">Close</button>
+            <button onclick="closeQuizOverlay()" class="flex-1 bg-slate-800 py-4 rounded-xl font-bold">Close</button>
         </div>
     </div>
 
@@ -478,15 +478,12 @@
                    const data = await response.json();
             
                    // Ưu tiên Plain Lyrics (lời sạch, không dính mốc thời gian) để dễ học
-                   const finalLyrics = data.syncedLyrics || data.plainLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
+                   const finalLyrics = data.plainLyrics || data.syncedLyrics || "Tìm thấy tên bài nhưng dữ liệu lời đang trống.";
             
                    // >>> ĐỔ VÀO KHUNG ĐỂ BẠN HỌC <<<
                    lyricArea.value = finalLyrics;
             
-                   // Nếu bạn có hàm tự động dịch hoặc phân tích từ vựng, có thể gọi ở đây
-                   if (typeof startLearningProcess === "function") {
-                       startLearningProcess();
-                   }
+                   renderLyrics(finalLyrics);
 
                    btn.innerText = "✨ Sẵn sàng học!";
                } else {
@@ -504,61 +501,103 @@
            }
        }
         
-        on: 0.5 });
-        function renderLyrics(finalLyrics) {
-            const container = document.getElementById('lyric-display');
-            container.innerHTML = "";
-            let wordCount = 0;
+       function renderLyrics(finalLyrics) {
+           const container = document.getElementById('lyric-display');
+           container.innerHTML = "";
+           let wordCount = 0;
 
-            finalLyrics.split('\n').forEach(line => {
-                if (!line.trim()) return;
+           // Reset lại kho câu hỏi Quiz điền từ mỗi lần biên dịch lời mới
+           state.quiz.data = []; 
 
-                const lineDiv = document.createElement('div');
-                lineDiv.className = 'lyric-line group cursor-pointer'; 
+           finalLyrics.split('\n').forEach(line => {
+               if (!line.trim()) return;
+
+               const lineDiv = document.createElement('div');
+               lineDiv.className = 'lyric-line group cursor-pointer'; // Thêm bàn tay trỏ chuột
         
-                // Nhận diện mốc thời gian để click tua nhạc
-                const timeRegex = /^\[(\d{2}):(\d{2})(?:\.\d{2,3})?\]/;
-                const match = line.match(timeRegex);
+               // 1. Kiểm tra và trích xuất mốc thời gian [mm:ss] từ bài hát
+               const timeRegex = /^\[(\d{2}):(\d{2})(?:\.\d{2,3})?\]/;
+               const match = line.match(timeRegex);
         
-                let cleanLine = line;
-                if (match) {
-                    lineDiv.dataset.time = parseInt(match[1]) * 60 + parseInt(match[2]);
-                    cleanLine = line.replace(timeRegex, '').trim(); 
-                }
+               let cleanLine = line;
+               if (match) {
+                   // Đổi mm:ss thành số giây để nạp vào thuộc tính data-time
+                   lineDiv.dataset.time = parseInt(match[1]) * 60 + parseInt(match[2]);
+                   cleanLine = line.replace(timeRegex, '').trim(); // Xóa mốc thời gian để hiển thị sạch
+               }
         
-                lineDiv.onclick = (e) => {
-                    if (lineDiv.dataset.time && state.player && typeof state.player.seekTo === 'function') {
-                        state.player.seekTo(parseFloat(lineDiv.dataset.time), true);
-                        state.player.playVideo();
-                    }
-                };
+               // 2. Sự kiện Click vào dòng để TỰ ĐỘNG TUA VIDEO YOUTUB
+               lineDiv.onclick = (e) => {
+                   if (e.target.tagName === 'INPUT') return; // Đang gõ chữ thì không tua nhạc
+                   if (lineDiv.dataset.time && state.player && typeof state.player.seekTo === 'function') {
+                       state.player.seekTo(parseFloat(lineDiv.dataset.time), true);
+                       state.player.playVideo();
+                   }
+               };
 
-                // Hiển thị từ thông thường, click là tra từ, không tạo ô trống ở đây nữa
-                const words = cleanLine.split(/\s+/);
-                words.forEach(token => {
-                    if (!token) return;
-                    const span = document.createElement('span');
-                    span.className = 'source-word mx-0.5';
-                    span.innerText = token;
-            
-                    const cleanWord = token.replace(/[.,!?;:'"“”()\[\]]/g, "");
-                    span.onclick = (e) => {
-                        e.stopPropagation(); 
-                        if (window.getSelection().toString().length === 0) {
-                            triggerTranslation(cleanWord);
-                        }
-                    };
-                    lineDiv.appendChild(span);
-                    wordCount++;
-                });
+               // 3. Tách từ và tự động tạo ô trống điền từ ngẫu nhiên (Cụm 3 từ)
+               const words = cleanLine.split(/\s+/);
+               for (let i = 0; i < words.length; i++) {
+                   if (i < words.length - 3 && Math.random() < 0.2) {
+                       const answer = words.slice(i, i + 3).join(' ');
+                
+                // Đẩy đáp án này vào kho dữ liệu làm bài test điền từ
+                       state.quiz.data.push({
+                           q: `Điền cụm từ còn thiếu trong câu`,
+                           a: answer,
+                           type: 'fill'
+                       });
+                
+                       // Tạo ô Input nhập liệu trực tiếp tại màn hình lời bài hát
+                       const input = document.createElement('input');
+                       input.type = 'text';
+                       input.placeholder = "___";
+                       // Style nhỏ gọn phù hợp với giao diện tối (Dark mode)
+                       input.className = "mx-1 px-2 py-0.5 bg-slate-800 border-b-2 border-indigo-500 rounded text-center text-sm outline-none text-indigo-400 font-bold focus:border-pink-500 transition-all";
+                       input.style.width = "110px";
+                       input.dataset.answer = answer.toLowerCase();
+                
+                       // Kiểm tra đúng sai trực tiếp tại màn hình chính khi học viên gõ xong
+                       input.onchange = (e) => {
+                           const val = e.target.value.toLowerCase().trim();
+                           if (val === e.target.dataset.answer) {
+                               e.target.style.borderColor = "#10b981"; // Màu xanh nếu đúng
+                               e.target.style.color = "#10b981";
+                           } else {
+                               e.target.style.borderColor = "#ef4444"; // Màu đỏ nếu sai
+                               e.target.style.color = "#ef4444";
+                           }
+                       };
+                
+                       lineDiv.appendChild(input);
+                       i += 2; // Bỏ qua 2 từ tiếp theo vì đã gộp thành cụm ô trống
+                       wordCount += 3;
+                   } else {
+                       // Hiển thị từ thông thường có tương tác dịch thuật của bạn
+                       if (!words[i]) continue;
+                       const span = document.createElement('span');
+                       span.className = 'source-word mx-0.5';
+                       span.innerText = words[i];
+                       const cleanWord = words[i].replace(/[.,!?;:'"“”()\[\]]/g, "");
+                       span.onclick = (e) => {
+                           e.stopPropagation(); // Không kích hoạt cơ chế tua nhạc của cả dòng khi đang bấm tra từ cụ thể
+                           if (window.getSelection().toString().length === 0) {
+                               triggerTranslation(cleanWord);
+                           }
+                       };
+                       lineDiv.appendChild(span);
+                       wordCount++;
+                   }
+               }
 
-                lineDiv.appendChild(document.createTextNode(" "));
-                container.appendChild(lineDiv);
-            });
+               // Thêm khoảng trắng nhỏ sau mỗi dòng để giữ khoảng cách đều
+               lineDiv.appendChild(document.createTextNode(" "));
+               container.appendChild(lineDiv);
+           });
 
-            document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
-            gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
-        }
+           document.getElementById('word-count-badge').innerText = `${wordCount} WORDS`;
+           gsap.from('.lyric-line', { opacity: 0, x: -20, stagger: 0.05, duration: 0.5 });
+       }
 
         // Translation Engine
         async function triggerTranslation(text) {
@@ -665,49 +704,140 @@
         }
 
         // QUIZ MANAGEMENT
-        function openQuiz() {
-            if (state.notebook.length < 5) {
-                return alert("You need at least 5 saved words to start a quiz!");
-            }
-            
-            document.getElementById('quiz-overlay').style.display = 'flex';
-            document.getElementById('quiz-loading').style.display = 'block';
-            document.getElementById('quiz-main').style.display = 'none';
-            document.getElementById('quiz-finish').style.display = 'none';
 
-            setTimeout(() => {
-                startQuiz();
+        let quizTimer = null; // Biến toàn cục quản lý bộ đếm thời gian thi
+
+        function openQuiz() {
+            // Nếu chưa có câu hỏi điền từ được sinh ra từ lyrics bài hát
+            if (!state.quiz.data || state.quiz.data.length === 0) {
+                return alert("Chưa có dữ liệu câu hỏi! Bạn vui lòng nhập hoặc Tìm lời bài hát, sau đó bấm 'Compile Study Session' để hệ thống tự tạo câu hỏi trước khi thi nhé!");
+            }
+            document.getElementById('quiz-overlay').style.display = 'flex';
+            document.getElementById('quiz-loading').style.display = 'none';
+    
+            const mainQuiz = document.getElementById('quiz-main');
+            mainQuiz.classList.remove('hidden');
+            mainQuiz.style.display = 'block'; // Đảm bảo hiển thị trên flex overlay
+    
+            // Thay đổi cấu trúc tiêu đề và chuẩn bị hiển thị danh sách câu hỏi điền từ
+            mainQuiz.innerHTML = `
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-800">
+            <div>
+            <h2 class="text-xl font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-signature text-indigo-500"></i> BÀI THI ĐIỀN TỪ TỰ ĐỘNG
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Hệ thống trích xuất ngẫu nhiên tối đa 60 câu hỏi từ bài học</p>
+            </div>
+            <div class="bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-2 rounded-xl font-mono font-bold text-lg flex items-center gap-2">
+            <i class="fa-regular fa-clock"></i>
+            <span id="quiz-countdown">25:00</span>
+            </div>
+            </div>
+            <div id="quiz-fill-list" class="space-y-4 max-h-[50vh] overflow-y-auto pr-2"></div>
+            <div class="mt-6 pt-4 border-t border-slate-800 flex justify-end gap-3">
+            <button onclick="closeQuizOverlay()" class="px-5 py-3 rounded-xl font-bold text-slate-400 hover:bg-slate-800 transition text-sm">Hủy thi</button>
+            <button onclick="submitFillQuiz()" class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-pink-600 hover:opacity-90 text-white rounded-xl font-bold transition text-sm shadow-lg">Nộp bài & Chấm điểm</button>
+            </div>
+            `;
+
+            const container = document.getElementById('quiz-fill-list');
+            // Lấy tối đa 60 câu hỏi điền từ từ kho lyrics
+                const testQuestions = state.quiz.data.slice(0, 60);
+    
+            testQuestions.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "p-4 bg-slate-900/50 border border-slate-800 rounded-xl space-y-2";
+                div.innerHTML = `
+                <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">Câu hỏi ${index + 1}</span>
+                </div>
+                <p class="text-sm text-slate-300 italic">Nghe nhạc và điền các từ còn thiếu vào ô dưới:</p>
+                <input type="text" id="enterprise-quiz-${index}" 
+                class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-indigo-500 outline-none transition font-medium" 
+                placeholder="Nhập cụm từ tại đây..."
+                data-correct="${item.a}" 
+                oninput="saveQuizProgress()">
+                `;
+                container.appendChild(div);
+            });
+            // KHÔI PHỤC TIẾN ĐỘ LÀM BÀI CŨ TỪ LOCALSTORAGE (Nếu lỡ F5)
+            const savedProgress = localStorage.getItem('lingopro_enterprise_progress');
+            if (savedProgress) {
+                const progress = JSON.parse(savedProgress);
+                Object.keys(progress).forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = progress[id];
+                });
+            }
+
+            // Bắt đầu đếm ngược thời gian 25 phút
+            startQuizTimer(25);
+        }
+
+        // Bộ đếm thời gian
+        function startQuizTimer(minutes) {
+            clearInterval(quizTimer);
+            let timeLeft = minutes * 60;
+            const display = document.getElementById('quiz-countdown');
+    
+            quizTimer = setInterval(() => {
+                timeLeft--;
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                if (display) display.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        
+                if (timeLeft <= 0) {
+                    clearInterval(quizTimer);
+                    alert("Hết thời gian làm bài 25 phút! Hệ thống tiến hành nộp bài tự động.");
+                    submitFillQuiz();
+                }
             }, 1000);
         }
+
+        // Lưu tiến độ khi đang g
+        function saveQuizProgress() {
+            const inputs = document.querySelectorAll('[id^="enterprise-quiz-"]');
+            const progress = {};
+            inputs.forEach(input => progress[input.id] = input.value);
+            localStorage.setItem('lingopro_enterprise_progress', JSON.stringify(progress));
+        }
+        // Chấm điểm và nộp bà
+        function submitFillQuiz() {
+            clearInterval(quizTimer);
+            let correctCount = 0;
+            const inputs = document.querySelectorAll('[id^="enterprise-quiz-"]');
+    
+            if (inputs.length === 0) return;
+
+            inputs.forEach(input => {
+                const userVal = input.value.toLowerCase().trim();
+                const correctVal = input.dataset.correct.toLowerCase().trim();
         
-        function startQuiz() {
-            state.quiz.currentStep = 0;
-            state.quiz.score = 0;
-            state.quiz.lives = 5;
-            const pool = [...state.notebook].sort(() => 0.5 - Math.random());
-            state.quiz.data = pool.slice(0, 50).map(item => {
-                // Tách từ bằng khoảng trắng và lọc các khoảng trắng thừa
-                const wordCount = item.src.trim().split(/\s+/).length;
-                
-                // Nếu có đúng 3 từ thì ưu tiên làm dạng điền vào chỗ trống
-                const isFillInBlank = (wordCount = 3);
-        
-                const distractors = state.notebook
-                    .filter(i => i.vi !== item.vi)
-                    .sort(() => 0.5 - Math.random())
-                    .slice(0, 3)
-                    .map(i => i.vi);
-                
-                return {
-                    q: item.src.trim(),
-                    a: item.vi,
-                    type: isFillInBlank ? 'fill' : 'choice',
-                    options: [item.vi, ...distractors].sort(() => 0.5 - Math.random())
-                };
+                if (userVal === correctVal) {
+                    input.className = "w-full px-4 py-2.5 bg-emerald-950/30 border border-emerald-500 rounded-xl text-sm text-emerald-400 outline-none font-bold";
+                    correctCount++;
+                } else {
+                    input.className = "w-full px-4 py-2.5 bg-rose-950/30 border border-rose-500 rounded-xl text-sm text-rose-400 outline-none font-medium";
+                    // Hiển thị đáp án đúng gợi ý nhỏ bên dưới nếu sai
+                    const hint = document.createElement('p');
+                    hint.className = "text-xs text-rose-500 mt-1 font-bold";
+                    hint.innerText = `Đáp án đúng: ${input.dataset.correct}`;
+                    if (!input.nextElementSibling) input.parentNode.appendChild(hint);
+                }
             });
-            document.getElementById('quiz-loading').style.display = 'none';
-            document.getElementById('quiz-main').style.display = 'block';
-            renderQuestion();
+    
+            const accuracy = Math.round((correctCount / inputs.length) * 100);
+            alert(`🎉 Hoàn thành bài kiểm tra!\n\nKết quả của bạn: Đúng ${correctCount}/${inputs.length} câu.\nTỷ lệ chính xác đạt: ${accuracy}%`);
+    
+            // Cập nhật tỷ lệ chính xác lên Dashboard Analytics của bạn
+            document.getElementById('stat-accuracy').innerText = `${accuracy}%`;
+            localStorage.removeItem('lingopro_enterprise_progress'); // Xóa trạng thái lưu tạm sau khi hoàn tất nộp bài
+        }
+
+        // Đóng khung Overlay Qui
+        function closeQuizOverlay() {
+            document.getElementById('quiz-overlay').style.display = 'none';
+            clearInterval(quizTimer);
         }
         
         function renderQuestion() {
