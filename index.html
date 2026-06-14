@@ -694,34 +694,107 @@
             }, 1000);
         }
         
-        function startQuiz() {
-            state.quiz.currentStep = 0;
-            state.quiz.score = 0;
-            state.quiz.lives = 5;
-            const pool = [...state.notebook].sort(() => 0.5 - Math.random());
-            state.quiz.data = pool.slice(0, 50).map(item => {
-                // Tách từ bằng khoảng trắng và lọc các khoảng trắng thừa
-                const wordCount = item.src.trim().split(/\s+/).length;
-                
-                // Nếu có đúng 3 từ thì ưu tiên làm dạng điền vào chỗ trống
-                const isFillInBlank = (wordCount = 3);
-        
-                const distractors = state.notebook
-                    .filter(i => i.vi !== item.vi)
-                    .sort(() => 0.5 - Math.random())
-                    .slice(0, 3)
-                    .map(i => i.vi);
-                
-                return {
-                    q: item.src.trim(),
-                    a: item.vi,
-                    type: isFillInBlank ? 'fill' : 'choice',
-                    options: [item.vi, ...distractors].sort(() => 0.5 - Math.random())
-                };
-            });
-            document.getElementById('quiz-loading').style.display = 'none';
-            document.getElementById('quiz-main').style.display = 'block';
-            renderQuestion();
+       function startQuiz() {
+           // Kiểm tra điều kiện Notebook theo đúng logic dự án của bạn
+           if (!state.notebook || state.notebook.length < 5) {
+               alert("You need at least 5 saved words to start a quiz!");
+               if (typeof closeQuizOverlay === 'function') closeQuizOverlay();
+               return;
+           }
+
+           // 1. TỐI ƯU THUẬT TOÁN: Trộn đề siêu tốc bằng Fisher-Yates
+           const quizQuestions = [...state.notebook];
+           for (let i = quizQuestions.length - 1; i > 0; i--) {
+               const j = Math.floor(Math.random() * (i + 1));
+               [quizQuestions[i], quizQuestions[j]] = [quizQuestions[j], quizQuestions[i]];
+           }
+
+           // Giới hạn số câu hỏi làm bài (ví dụ max 10 câu để load cho nhanh)
+           state.quiz.questions = quizQuestions.slice(0, 10);
+           state.quiz.currentIdx = 0;
+           state.quiz.score = 0;
+
+           // 2. Ẩn loading và hiện khung làm bài ngay lập tức
+           const loadingEl = document.getElementById('quiz-loading');
+           const mainEl = document.getElementById('quiz-main');
+           const finishEl = document.getElementById('quiz-finish');
+    
+           if (loadingEl) loadingEl.style.display = 'none';
+           if (finishEl) finishEl.style.display = 'none';
+           if (mainEl) {
+               mainEl.classList.remove('hidden');
+               mainQuiz.style.display = 'block';
+           }
+
+           // Gọi hàm hiển thị câu hỏi đầu tiên
+           showQuestion();
+       }
+
+        function showQuestion() {
+            const mainEl = document.getElementById('quiz-main');
+            if (!mainEl || state.quiz.currentIdx >= state.quiz.questions.length) {
+                // Nếu hết câu hỏi thì chuyển sang hàm kết thúc bài thi của bạn
+                if (typeof finishQuiz === 'function') finishQuiz();
+                return;
+            }
+            const currentWord = state.quiz.questions[state.quiz.currentIdx];
+            
+            // TẠO ĐÁP ÁN NHIỄU SIÊU TỐC: Dùng Set để lọc trùng ngay lập tức, không lo kẹt vòng lặp
+            const optionsSet = new Set();
+            optionsSet.add(currentWord.meaning); // Thêm đáp án đúng trước
+
+            // Lấy nhanh các từ khác trong notebook làm đáp án nhiễu
+            const allMeanings = state.notebook.map(item => item.meaning).filter(m => m !== currentWord.meaning);
+    
+            // Trộn ngẫu nhiên danh sách nghĩa để lấy ra 3 nghĩa khác
+            allMeanings.sort(() => 0.5 - Math.random());
+            for (let i = 0; i < Math.min(3, allMeanings.length); i++) {
+                optionsSet.add(allMeanings[i]);
+            }
+
+            // Chuyển Set về mảng và trộn lại lần nữa để vị trí đáp án đúng không cố định
+            const options = Array.from(optionsSet).sort(() => 0.5 - Math.random());
+            // Dựng giao diện câu hỏi (giữ nguyên giao diện Blue & Cyber mượt mà của bạn)
+            mainEl.innerHTML = `
+            <div class="space-y-6">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">
+            Question ${state.quiz.currentIdx + 1} of ${state.quiz.questions.length}
+            </span>
+            <span class="text-xs font-mono font-bold text-slate-500">
+            Score: ${state.quiz.score}
+            </span>
+            </div>
+            
+            <div class="text-center py-4">
+            <h3 class="text-2xl font-black text-white tracking-wide">${currentWord.word}</h3>
+            <p class="text-xs text-slate-500 mt-1">Chọn nghĩa chính xác của từ trên</p>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-3">
+            ${options.map((opt, index) => `
+            <button onclick="handleAnswer('${opt.replace(/'/g, "\\'")}', '${currentWord.meaning.replace(/'/g, "\\'")}')" 
+            class="w-full text-left px-5 py-4 bg-slate-900/60 hover:bg-indigo-950/40 border border-slate-800 hover:border-indigo-500/50 rounded-xl text-slate-300 hover:text-white font-medium transition duration-200 flex items-center gap-3 group">
+            <span class="w-6 h-6 rounded-lg bg-slate-800 group-hover:bg-indigo-600/20 text-xs font-bold text-slate-500 group-hover:text-indigo-400 flex items-center justify-center font-mono">
+            ${String.fromCharCode(65 + index)}
+            </span>
+            <span>${opt}</span>
+            </button>
+            `).join('')}
+            </div>
+            </div>
+            `;
+        }
+
+        function handleAnswer(selected, correct) {
+            if (selected === correct) {
+                state.quiz.score++;
+                // Bạn có thể chèn hiệu ứng âm thanh hoặc thông báo đúng ở đây nếu muốn
+            }
+    
+            // Chuyển sang câu tiếp theo luôn mà không bị trễ
+            state.quiz.currentIdx++;
+            showQuestion();
         }
         
         function renderQuestion() {
