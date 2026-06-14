@@ -694,90 +694,49 @@
             }, 1000);
         }
         
-        function openQuiz() {
-            if (state.notebook.length < 5) {
-                return alert("You need at least 5 saved words to start a quiz!");
-            }
-            
-            document.getElementById('quiz-overlay').style.display = 'flex';
-            document.getElementById('quiz-loading').style.display = 'block';
-            document.getElementById('quiz-main').style.display = 'none';
-            document.getElementById('quiz-finish').style.display = 'none';
-
-            setTimeout(() => {
-                startQuiz();
-            }, 1000);
-        }
-        
-        function startQuiz() {
-            // 1. Kiểm tra kho từ vựng cá nhân (Notebook) của bạn
-            if (!state.notebook || state.notebook.length < 5) {
-                alert("You need at least 5 saved words to start a quiz!");
-                if (typeof closeQuizOverlay === 'function') closeQuizOverlay();
-                return;
-            }
-
-            // 2. Trộn câu hỏi từ Notebook (Dùng toán tử ... để copy mảng an toàn)
-            const quizQuestions = [...state.notebook];
-            for (let i = quizQuestions.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [quizQuestions[i], quizQuestions[j]] = [quizQuestions[j], quizQuestions[i]];
-            }
-
-            // Cập nhật trạng thái Quiz vào hệ thống của bạn
-            state.quiz.questions = quizQuestions.slice(0, 10); // Giới hạn tối đa 10 câu
-            state.quiz.currentIdx = 0;
+function startQuiz() {
+            state.quiz.currentStep = 0;
             state.quiz.score = 0;
-
-            // 3. Điều khiển bật/ẩn giao diện: Ẩn loading xám, bật màn hình câu hỏi
-            const overlayEl = document.getElementById('quiz-overlay');
-            const loadingEl = document.getElementById('quiz-loading');
-            const mainEl = document.getElementById('quiz-main');
-            const finishEl = document.getElementById('quiz-finish');
-    
-            if (overlayEl) overlayEl.style.display = 'flex';
-            if (loadingEl) loadingEl.style.display = 'none'; // Ẩn triệt để thanh xám đứng hình
-            if (finishEl) finishEl.style.display = 'none';
-            if (mainEl) {
-                mainEl.style.display = 'block';
-                mainEl.classList.remove('hidden');
-            }
-
-            // 4. XỬ LÝ LỖI DÒNG 720: Lấy đáp án nhiễu bằng map (Trả về trực tiếp, KHÔNG gán lại hằng số
-            const currentWord = state.quiz.questions[0];
-    
-            // Sử dụng map thu gọn, tránh tạo biến const trung gian rồi gán lại lung tung
-            let allMeanings = state.notebook
-                .map(item => item.meaning)
-                .filter(m => m !== currentWord.meaning);
-
-            // Trộn ngẫu nhiên danh sách nghĩa nhiễu bằng thuật toán nhanh
-            allMeanings.sort(() => 0.5 - Math.random());
-
-            // Gom đáp án không trùng lặp bằng Set
-            const optionsSet = new Set();
-            optionsSet.add(currentWord.meaning);
-    
-            for (let i = 0; i < Math.min(3, allMeanings.length); i++) {
-                optionsSet.add(allMeanings[i]);
-            }
-
-            // Lưu mảng các lựa chọn A, B, C, D đã được xáo trộn vào state hệ thống
-            state.quiz.options = Array.from(optionsSet).sort(() => 0.5 - Math.random());
-            // 5. Kích hoạt hiển thị câu hỏi đầu tiên lên màn hình của bạn
-            if (typeof showQuestion === 'function') {
-                showQuestion();
-            }
+            state.quiz.lives = 5;
+            const pool = [...state.notebook].sort(() => 0.5 - Math.random());
+            state.quiz.data = pool.slice(0, 50).map(item => {
+                // Tách từ bằng khoảng trắng và lọc các khoảng trắng thừa
+                const wordCount = item.src.trim().split(/\s+/).length;
+                
+                // Nếu có đúng 3 từ thì ưu tiên làm dạng điền vào chỗ trống
+                const isFillInBlank = (wordCount === 3);
+        
+                const distractors = state.notebook
+                    .filter(i => i.vi !== item.vi)
+                    .sort(() => 0.5 - Math.random())
+                    .slice(0, 3)
+                    .map(i => i.vi);
+                
+                return {
+                    q: item.src.trim(),
+                    a: item.vi,
+                    type: isFillInBlank ? 'fill' : 'choice',
+                    options: [item.vi, ...distractors].sort(() => 0.5 - Math.random())
+                };
+            });
+            document.getElementById('quiz-loading').style.display = 'none';
+            document.getElementById('quiz-main').style.display = 'block';
+            renderQuestion();
         }
         
         function renderQuestion() {
+            // 1. Lấy dữ liệu câu hỏi hiện tại từ mảng data
             const current = state.quiz.data[state.quiz.currentStep];
     
+            // 2. TÍNH TOÁN HIỂN THỊ (Phần bạn vừa hỏi)
+            // Lấy số lượng câu hỏi thực tế nhưng không quá 50
             const totalInPool = Math.min(state.quiz.data.length, 50);
     
+            // Cập nhật text hiển thị (Ví dụ: Question 1/50)
             document.getElementById('quiz-step').innerText = 
                 `Question ${state.quiz.currentStep + 1}/${totalInPool}`;
     
+            // Cập nhật số mạng còn lại
             document.getElementById('quiz-lives').innerText = state.quiz.lives;
     
             const qElement = document.getElementById('quiz-question');
@@ -786,6 +745,7 @@
 
             if (current.type === 'fill') {
                 const words = current.q.split(/\s+/);
+                // Hiển thị dạng: Từ1 [___] Từ3
                 const displayPrompt = `${words[0]} <span class="text-indigo-500 underline">?</span> ${words[2]}`;
         
                 qElement.innerHTML = `
@@ -818,6 +778,7 @@
                 optContainer.appendChild(btn);
 
             } else {
+                // Trắc nghiệm cho các từ đơn hoặc câu có độ dài khác 3 từ
                 qElement.innerText = current.q;
                 current.options.forEach(opt => {
                     const btn = document.createElement('button');
@@ -859,7 +820,7 @@
         function checkFillAnswer(userValue, inputElement) {
             const current = state.quiz.data[state.quiz.currentStep];
             const words = current.q.toLowerCase().split(/\s+/);
-            const correctAnswer = words[1];
+            const correctAnswer = words[1]; // Lấy từ ở giữa
     
             const isCorrect = userValue.toLowerCase().trim() === correctAnswer;
             inputElement.disabled = true;
@@ -888,13 +849,16 @@
             document.getElementById('quiz-main').style.display = 'none';
             document.getElementById('quiz-finish').style.display = 'block';
 
+            // Lấy tổng số câu thực tế của bài này
             const totalInSet = state.quiz.data.length;
 
-            let percentage = 0
+            let percentage = 0;
                 if (totalInSet > 0) {
+                    // Tính % dựa trên tổng số câu của cả bài
                     percentage = (state.quiz.score / totalInSet) * 100;
                 }
             const finalPercent = percentage.toFixed(2);
+            // Hiển thị: Mastery Level: 8.33% (1/12 questions)
             document.getElementById('quiz-final-score').innerText = 
                 `Mastery Level: ${finalPercent}% (${state.quiz.score}/${totalInSet} questions)`
         
@@ -902,6 +866,7 @@
         function closeQuiz() {
             document.getElementById('quiz-overlay').style.display = 'none';
         }
+
         function toggleDashboard() {
             const dash = document.getElementById('dashboard-overlay');
             if (dash.classList.contains('hidden')) {
