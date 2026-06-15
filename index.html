@@ -628,6 +628,8 @@
             list.innerHTML = state.notebook.length === 0 
                 ? '<p class="text-xs text-slate-600 italic">No saved words yet.</p>' 
                 : '';
+            // Thêm đúng dòng này vào dưới dòng list.innerHTML = ...
+            list.className = "flex flex-col gap-3 w-full";
 
             state.notebook.forEach((item, index) => {
                 const div = document.createElement('div');
